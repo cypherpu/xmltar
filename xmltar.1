@@ -1,0 +1,101 @@
+.TH XMLTAR "1" "June 2010" "xmltar 0.2" "User Commands"
+.SH NAME
+xmltar \- manual page for xmltar 0.2
+.SH SYNOPSIS
+.B xmltar
+[\fIOPTION\fR...] [\fIFILE\fR]...
+.SH DESCRIPTION
+`xmltar' saves many files together into a disk archive, and can
+restore individual files from the archive.
+.SH EXAMPLES
+.TP
+xmltar \fB\-cf\fR archive.xmltar foo bar
+# Create archive.xmltar from files foo and bar.
+.TP
+xmltar \fB\-xf\fR archive.xmltar
+.TP
+xmltar \fBcf\fR 
+# Extract all files from archive.xmltar.
+.TP
+xmltar \fBcf\fR archive-%03d.xmltar
+\fB--multi-volume\fR \
+\fB--starting-volume=1\fR \
+\fB--tape-length=940000000\fR \
+\fB--stop-after 5\fR \
+\fB--listed-incremental archive.xmltar.list\fR \
+\fB--xz\fR \
+\fRarchive.xmltar
+.br
+# Create a series of multivolume archives with names following
+the pattern archive.001.xmltar, archive.002.xmltar, ..., where
+each archive is exactly 940Mb long. Stop adding additional files
+to the archive after 5 volumes have been completed. Use xz to
+compress the archive. Create a list of files which have been
+archive in the file archive.xmltar.list.
+.IP
+.SH OPTIONS
+.SH Main operation mode:
+.TP
+\fB\-c\fR, \fB\-\-create\fR
+create a new archive
+.TP
+\fB\-r\fR, \fB\-\-append\fR
+append files to the end of an archive
+.TP
+\fB\-t\fR, \fB\-\-list\fR
+list the contents of an archive
+.TP
+\fB\-x\fR, \fB\-\-extract\fR, \fB\-\-get\fR
+extract files from an archive
+.IP
+.SH\fBCommon Options:\fR
+.TP
+\fB-f\fR, \fB--file=ARCHIVE\fR
+use archive file or device ARCHIVE
+.TP
+\fB-j\fR, \fB--bzip2\fR
+filter the archive through bzip2
+.TP
+\fB -J\fR, \fB--xz\fR
+filter the archive through xz
+.TP
+\fB-z\fR, \fB--gzip\fR
+filter the archive through gzip
+
+.SH Operation modifiers:
+.TP
+\fB\-M\fR, \fB\-\-multi\-volume\fR
+create/list/extract multi\-volume archive
+.TP
+\fB\-j\fR, \fB\-\-bzip2\fR
+filter the archive through bzip2
+.TP
+\fB\-\-lzma\fR
+filter the archive through lzma
+.TP
+\fB\-z\fR, \fB\-\-gzip\fR, \fB\-\-gunzip\fR, \fB\-\-ungzip\fR
+filter the archive through gzip
+.TP
+\fB\-J\fR, \fB\-\-xz\fR
+filter the archive through xz
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+verbosely list files processed
+.SH Other options:
+.TP
+\-?, \fB\-\-help\fR
+give this help list
+.SH AUTHOR
+Written by David A. Betz.
+.SH "REPORTING BUGS"
+Report bugs to <dbetz@sbcglobal.net>.
+.SH COPYRIGHT
+Copyright \(co 2010 David A. Betz
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+Command line options for xmltar are meant to be similar
+to the command line options for
+.B tar\fR.

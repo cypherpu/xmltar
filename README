@@ -1,0 +1,58 @@
+/*
+
+Copyright 2010 by David A. Betz
+
+This file is part of xmltar.
+
+xmltar is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+xmltar is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+xmltar is intended to be a general purpose archive program. It
+creates archives in an (optionally compressed) xml format. It is
+currently targeted towards linux systems with ext[2,3,4]
+filesystems.
+
+This is to be considered pre-alpha software. The current version
+can be used for generating backups, however it's true purpose is
+to serve as a test-bed for future versions.
+
+xmltar has several advantages compared to tar:
+
+1. Archives are created in a simple, extensible xml format. As a
+consequence, the structure of the archives can be easily
+investigated, and one can easily verify that no unwanted or private
+information is included in the archive.
+
+2. Multivolume archive processing is much enhanced. It is possible
+to compress multivolume archives. It is possible to append to
+multivolume archives.
+
+The current version of xmltar has some disadvantages:
+
+1. It is much slower than tar.
+
+2. Only regular files, symbolic links, and directories are
+supported in the current version.
+
+If you have questions or comments, my email name is
+
+    dbetz
+
+and my email domain is
+
+    sbcglobal.net
+    
+(To contact me, form my email address by concatenating my email
+name with my email address, separated by an @ sign.)

@@ -1,0 +1,291 @@
+commit e4b014b5386a070fbacbaf12c19cb32ef40f38e1
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Sun Jun 6 06:06:19 2010 -0700
+
+    Make better use of blocking IO to hopefully increase throughput.
+
+commit 008605b513a31dde30de9280b5b3d7412b49dbd1
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Fri Jun 4 17:01:03 2010 -0700
+
+    Moved member function bodies into .cpp
+
+commit fb4545ce0cc1d482773084cf92feeece550102dc
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Wed Jun 2 05:39:47 2010 -0700
+
+    initialized all pipe fds to -1 so that we don't try to close unopened pipefds.
+    checked pipe_state before closing, so that if pipe_state_ is unopened, we don't try to close any fds.
+
+commit b304a9ddbd74a383ebb7caa6151f04535dae7a73
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Mon May 31 07:41:43 2010 -0700
+
+    Release 0.1
+
+commit a8b5994ab8dfb139a7ef0039fed0ed7c8aeeed87
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Mon May 31 05:42:42 2010 -0700
+
+    Added GPL license information to all source files.
+
+commit ca7b631c402f3f38dfcdbcbb1a3a96fc185755f2
+Author: David Betz <dbetz@localhost.localdomain>
+Date:   Sun May 30 16:40:52 2010 -0700
+
+    Added XmltarOptions, which contains all xmltar options and also
+    common subroutines for finding proper encoders/decoders.
+
+commit aac8909a57a69335f63f0025faebf7c19def0cff
+Author: David Betz <dbetz@localhost.localdomain>
+Date:   Sun May 30 16:39:32 2010 -0700
+
+    Added guards to tabs and newlines.
+    Added --no-tabs and --no-newlines options.
+    Factored out options from Xmltar, Archive, and Archive_Member.
+
+commit 413603b95b9d3e74691545ee968d49d6391b9b4e
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sun May 30 06:31:01 2010 -0700
+
+    implemented base64 encoding
+
+commit d58bafb55defe3fdb901d7d61e592371668f8e05
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Wed May 26 05:36:58 2010 -0700
+
+    Rearrangement of extract parser.
+
+commit 98ba7682da5d7c40db57b8ba5fa2758e56724ba4
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue May 25 15:21:17 2010 -0700
+
+    Corrected bug in Bidirectional_Pipe::Initialize. It is necessary to set the FD_CLOEXEC flags on
+    the pipe file descriptors. Otherwise, each fork after the first will duplicate *all* preceding file
+    descriptors, leaving multiple writers to the slave pipes, resulting in the slave pipes never
+    seeing EOF because they have writers. Investigated using the tool 'lsof -a -p <pid>' and
+    'find -type p'.
+
+commit ae7fae7ed24249df8ee2a186ff09d25bff168274
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sun May 23 09:22:42 2010 -0700
+
+    - unguarded debugging statements removed
+    - before eliminating special case identity and base16 encoders
+
+commit 2aaa446aa54398b1ff9f037850db416c1dac3b9a
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sat May 22 18:22:34 2010 -0700
+
+    corrected bug in basic_pipe_transitbuf::underflow
+
+commit 4c10eaa0ff45743d363791ac363fdbc955670795
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Fri May 21 07:13:49 2010 -0700
+
+    Extract can now extract multivolume archives
+
+commit 916e910f029471fc881b9dbc58ae5ee51352caeb
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue May 18 06:06:33 2010 -0700
+
+    Spirit extract works for directories and links.
+
+commit 526a6b4f4e7ff0a435f3a5ad40ba67350330fb62
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sun May 2 09:14:39 2010 -0700
+
+    xz, bzip2, gz, identity all implemented
+
+commit 20c75c7cb36e6e7f8ac7546713fb99bd1b5d533e
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Apr 29 20:22:44 2010 -0700
+
+    Identity postcompress multivolume working.
+
+commit 7ee7448a0cb2cdf8ba8a84bed9e0cd955cc5a93d
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Mon Apr 26 05:45:01 2010 -0700
+
+    Rearrangement of source files.
+    Consistent naming of header and trailer for Archive and Archive_Member
+
+commit 2fcad4b0bede8e62fb2c444bf1d84b01fb6cbe2f
+Author: dbetz <dbetz@localhost>
+Date:   Thu Apr 22 14:28:54 2010 -0700
+
+    hunting down bug in Open_New_Postcompressor
+
+commit db5d66ba3c632a7a45235e1a14fd58349ca0e865
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Apr 22 06:11:48 2010 -0700
+
+    basic_pipe_transitbuf_base created, but not working correctly.
+
+commit fc3857bb14c8b722c2c7b3c9529b2c76727b8484
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Wed Apr 21 06:02:39 2010 -0700
+
+    Collapsing of Bidirectional_Pipe::Close using default arguments.
+    Added back identitybuf.hpp
+
+commit e04f6bbe7599f5a4d4a32fff4e2ca6ef7fab8708
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue Apr 20 06:08:57 2010 -0700
+
+    Codec implemented, almost working on simple archives
+
+commit 7148ba46f2192034edc3226eaf21e7d8133f9bcc
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Mon Apr 19 06:15:31 2010 -0700
+
+    Bidirectional_Pipe::close_write now empties the write buffer before closing the pipe.
+    Began work on Codec class as a base class of all encoders/decoders.
+
+commit e0c77a7a15170d188a4c68ea4172cf79f5fbbdb7
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sun Apr 18 11:38:59 2010 -0700
+
+    Works for single-volume archives.
+
+commit 6631c64cd13ccb6c2d1e8e8d5b04648e3794029b
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Sat Apr 17 19:33:53 2010 -0700
+
+    added back .cproject and .project
+
+commit bde2ca9a43edff3234f1b742fd042214b2c6b4fe
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Sat Apr 17 19:27:54 2010 -0700
+
+    deleted .cproject and .project
+
+commit 9f04ae81c4ff2548ed6e92ebaa8e9dd3ca5979b8
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Sat Apr 17 17:20:37 2010 -0700
+
+    Rearranged files for Eclipse
+
+commit 674b93a1b5066c9804c799a1b75ad610d65b4be3
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sat Apr 17 17:17:46 2010 -0700
+
+    Xmltar5
+
+commit 266f58b5184e25c7ee3002bd40beb3001293c46b
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sat Apr 17 07:01:06 2010 -0700
+
+    Working Bidirectional_Pipe
+
+commit 2efc79ec9071cbae49ce131755b86f07646ccc29
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Apr 15 20:36:56 2010 -0700
+
+    Test of using pstream_base64buf to replate base64_transitbuf.
+    Last commit before major rewrite to use stacked xz files.
+
+commit 13fecf5fd62dfbc4ede7ce0e0f47b16681e9f553
+Author: dbetz <dbetz@localhost>
+Date:   Tue Apr 13 17:20:11 2010 -0700
+
+    Added pstreambuf to tracking.
+    Pstreambuf is an implementation of code conversion using pstreams.
+
+commit 6accedd55fa71aab491de3d35ba0452aa3c70146
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue Apr 13 05:44:28 2010 -0700
+
+    Removed std::cerr debugging comments.
+    DEBUG=0
+
+commit 400a2fb7563865ec4fd46bc641939e3342b72197
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Mon Apr 12 06:38:12 2010 -0700
+
+    Added RandomFile to version control.
+
+commit 6969f3da934292f9419eee2f08e7aa2871119d9f
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Fri Apr 9 05:24:40 2010 -0700
+
+    base64 decoding with extraction implemented.
+    non-multi-volume archives now have a is-last-volume tag at their end
+
+commit d8abd83953afe5d33b124ae64c59fc323194d63e
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Apr 8 04:59:54 2010 -0700
+
+    Track Debug.hpp
+
+commit aa35b1efd90867194152f15a37fdba42cac7a403
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Apr 8 04:54:09 2010 -0700
+
+    Symlink extraction works correctly.
+
+commit 76fc0721f9a5c2926d809cef785741b1eafeed8e
+Author: David Betz <dbetz@localhost.localdomain>
+Date:   Tue Apr 6 14:44:25 2010 -0700
+
+    fix compile errors
+
+commit 3da6ef6a4936c20cbfbb86a9c7b2310b1b5874c4
+Author: David Betz <dbetz@localhost.localdomain>
+Date:   Tue Apr 6 11:10:27 2010 -0700
+
+    Change in file format:
+    	all <file> nodes have a <content> subnode
+    	symlink names are now stored in <content> subnodes
+
+commit 51d7fccd052df3776d3781182666554d52db3310
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue Apr 6 07:04:49 2010 -0700
+
+    Extract able to extract files, but not symlinks.
+    Format altered to include file type in <file> tag.
+    Format altered to remove symlink target from metadata.
+
+commit 01b52999492bd1da1df83663811c45c2268a5486
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Tue Mar 30 06:13:55 2010 -0700
+
+    Extraction up to file header.
+
+commit bcfc2a904a96da3ffb48f17ac22cd6ca42c07fd7
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Thu Mar 25 05:27:28 2010 -0700
+
+    Incomplete implementation of Extract
+
+commit 3f27ac949a15a5c0f256a01032e3755196f311f7
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sat Mar 20 07:12:16 2010 -0700
+
+    Modified non-multi-volume trailers to include is-last-volume and padding, for simpler handling on extraction.
+
+commit 7c393884d882cff536458d743389adf6bba0921d
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sun Mar 14 12:33:42 2010 -0700
+
+    Archive_Member: removed open_encoders flag. We now check to see if the scoped_ptrs for encoder and precompressor are 0.
+    Add_To_Archive: move Write_Header/Trailer and Open_Encoders to Archive::Write.
+    added Incremental_File write functionality.
+
+commit 091641ff27cfc1ba633ae6846d83be8b884cc583
+Author: dbetz <dbetz@memorial-anesthesia.org>
+Date:   Sat Mar 13 09:18:20 2010 -0800
+
+    Open_Encoders hidden.
+
+commit a6bb695ffa3fff75bb4f46d20170982ecc5bebf8
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Thu Mar 11 20:10:41 2010 -0800
+
+    Include .cproject and .project so eclipse can recognize a project on importing
+
+commit c285b427aeb8e069272cc04f4aa28e34d1a8c6ec
+Author: David Betz <dbetz@www.memorial-anesthesia.org>
+Date:   Thu Mar 11 09:15:59 2010 -0800
+
+    Without incremental file support
