@@ -19,23 +19,36 @@ link_directories(/usr/lib64)
 set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random boost_filesystem boost_system)
 
 include_directories(
-/usr/include/mysql++
-/usr/include/mysql
 src/
 src/common/
+src/common/Generated
 src/common/Include
 )
 
 file(GLOB SOURCES 
-src/common/*.[ch]pp
-src/common/Xmltar/*.[ch]pp
+	src/common/*.[ch]pp
+	src/common/Generated/*.[ch]pp
+	src/common/Xmltar/*.[ch]pp
 )
 
 file(GLOB TEST_SOURCES 
-src/common/Test.[ch]pp
-src/common/Tests/Test.*.[ch]pp
+	src/common/Test.[ch]pp
+	src/common/Tests/Test.*.[ch]pp
 )
 
+file(GLOB BIDIRECTIONAL_PIPE
+	../Bidirectional_Pipe/*.[ch]pp
+)
+
+ADD_CUSTOM_COMMAND(
+   OUTPUT src/common/Generated/*.[hc]pp
+   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BIDIRECTIONAL_PIPE} ${CMAKE_CURRENT_SOURCE_DIR}/src/common/Generated
+   DEPENDS src/common/Generated
+)
+
+ADD_CUSTOM_TARGET(generate_foo DEPENDS src/common/Generated/*.[hc]pp)
+ 
 add_executable(xmltar src/xmltar.cpp ${SOURCES})
-set_target_properties( xmltar PROPERTIES RUNTIME_OUTPUT_DIRECTORY .. )
+ADD_DEPENDENCIES(xmltar generate_foo)
+set_target_properties(xmltar PROPERTIES RUNTIME_OUTPUT_DIRECTORY .. )
 target_link_libraries (xmltar ${LIBS})
