@@ -40,11 +40,11 @@ file(GLOB BIDIRECTIONAL_PIPE
 	../Bidirectional_Pipe/*.[ch]pp
 )
 
-ADD_CUSTOM_COMMAND(
-   OUTPUT src/common/Generated/*.[hc]pp
-   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BIDIRECTIONAL_PIPE} ${CMAKE_CURRENT_SOURCE_DIR}/src/common/Generated
-   DEPENDS src/common/Generated
-)
+#ADD_CUSTOM_COMMAND(
+#   OUTPUT src/common/Generated/*.[hc]pp
+#   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BIDIRECTIONAL_PIPE} ${CMAKE_CURRENT_SOURCE_DIR}/src/common/Generated
+#   DEPENDS src/common/Generated
+#)
 
 ADD_CUSTOM_TARGET(generate_foo DEPENDS src/common/Generated/*.[hc]pp)
  

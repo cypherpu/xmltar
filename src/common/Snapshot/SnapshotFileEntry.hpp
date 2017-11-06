@@ -8,11 +8,16 @@
 #ifndef SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_
 #define SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_
 
+#include <boost/filesystem.hpp>
+#include <vector>
+#include <string>
+
 class SnapshotFileEntry {
 public:
-	std::string pathname_;
-	time_t modificationTime_;
-	std::string checksum_;
+	boost::filesystem::path pathname_;
+	time_t lastBackupEpochTime_;
+	std::string lastBackupAsciiTime_;
+	std::vector<int> mediaNumbers_;
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_ */
