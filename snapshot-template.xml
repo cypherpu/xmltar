@@ -7,10 +7,10 @@
 			<path>/HOME/DBETZ</path>
 			<last-backup-epoch-time>0</last-backup-epoch-time>
 			<last-backup-ascii-time>ASCII DATE</last-backup-ascii-time>
-			<media-number-sequence>
-				<media-number></media-number>
-				<media-number></media-number>
-			</media-number-sequence>
+			<volume-number-sequence>
+				<volume-number>1</volume-number>
+				<volume-number>2</volume-number>
+			</volume-number-sequence>
 		</file>
 	</file-sequence>
 </xmltar-snapshot>
