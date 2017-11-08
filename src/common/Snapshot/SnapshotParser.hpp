@@ -39,13 +39,13 @@ struct SnapshotParser : qi::grammar<Iterator,Snapshot()>
 					>> qi::lit("</options>")
 					>> *qi::lit('\t')
 					>> qi::lit("<file-sequence>")
-				)[phoenix::construct<Snapshot>()]
-#if 0
-					>> qi::lit("</options>")
-					>> qi::lit("<file-sequence>")
 						>> *(
-								   qi::lit("<file>")
+								*qi::lit('\t')
+							 >> qi::lit("<file>")
+							 >> *qi::lit('\t')
 									>> qi::lit("<path>")
+						)
+#if 0
 										>> qi::string
 									>> qi::lit("</path>")
 									>> qi::lit("<last-backup-epoch-time>")
@@ -59,7 +59,8 @@ struct SnapshotParser : qi::grammar<Iterator,Snapshot()>
 					>> qi::lit("</file-sequence>")
 					>> qi::lit("</xmltar-snapshot>")
 #endif
-				;
+				)
+				[phoenix::construct<Snapshot>()];
 
 	using namespace qi;
     using namespace boost::phoenix;

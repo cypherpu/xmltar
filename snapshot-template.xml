@@ -4,9 +4,9 @@
 	</options>
 	<file-sequence>
 		<file>
-			<path></path>
-			<last-backup-epoch-time></last-backup-epoch-time>
-			<last-backup-ascii-time></last-backup-ascii-time>
+			<path>/HOME/DBETZ</path>
+			<last-backup-epoch-time>0</last-backup-epoch-time>
+			<last-backup-ascii-time>ASCII DATE</last-backup-ascii-time>
 			<media-number-sequence>
 				<media-number></media-number>
 				<media-number></media-number>
