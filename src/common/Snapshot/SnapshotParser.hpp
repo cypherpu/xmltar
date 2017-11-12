@@ -5,103 +5,136 @@
  *      Author: dbetz
  */
 
-#include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_bind.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
-#include <boost/fusion/include/io.hpp>
-#include <boost/variant/recursive_variant.hpp>
+#include <iostream>
+
+#include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/sax2/DefaultHandler.hpp>
+#include <xercesc/sax2/SAX2XMLReader.hpp>
+#include <xercesc/sax2/XMLReaderFactory.hpp>
+#include <xercesc/util/XMLString.hpp>
 
 #include "Snapshot/Snapshot.hpp"
 
-namespace qi = boost::spirit::qi;
-namespace ascii = boost::spirit::ascii;
-namespace phoenix=boost::phoenix;
-
-template <typename Iterator>
-struct SnapshotParser : qi::grammar<Iterator,Snapshot()>
+class SnapshotHandler : public xercesc::DefaultHandler
 {
-	SnapshotParser() : SnapshotParser::base_type(start,"SnapshotParser")
-	{
-		using phoenix::construct;
-		using phoenix::val;
+	Snapshot & snapshot_;
+	std::vector<std::string> elementNameStack_;
+	std::vector<std::vector<XMLCh>> characterDataStack_;
+public:
+	SnapshotHandler(Snapshot & snapshot)
+		: snapshot_(snapshot){}
+	virtual ~SnapshotHandler(){}
 
-		start =	(
-					   qi::lit("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-					>> qi::lit("<xmltar-snapshot xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">")
-					>> *qi::lit('\t')
-					>> qi::lit("<options>")
-					>> *qi::lit('\t')
-					>> qi::lit("</options>")
-					>> *qi::lit('\t')
-					>> qi::lit("<file-sequence>")
-						>> *(
-								*qi::lit('\t')
-							 >> qi::lit("<file>")
-							 >> *qi::lit('\t')
-									>> qi::lit("<path>")
-										>> *(qi::char_ - qi::lit("</path>"))
-									>> qi::lit("</path>")
-									>> *qi::lit('\t')
-									>> qi::lit("<last-backup-epoch-time>")
-										>> qi::ulong_
-									>> qi::lit("</last-backup-epoch-time>")
-									>> *qi::lit('\t')
-									>> qi::lit("<last-backup-ascii-time>")
-										>> *(qi::char_ - qi::lit("</last-backup-ascii-time>"))
-									>> qi::lit("</last-backup-ascii-time>")
-									>> *qi::lit('\t')
-									>> qi::lit("<volume-number-sequence>")
-										>> *(*qi::lit('\t')
-												>> qi::lit("<volume-number>")
-												>> qi::uint_
-												>> qi::lit("</volume-number>")
-											)
-									>> *qi::lit('\t')
-									>> qi::lit("</volume-number-sequence>")
-							>> *qi::lit('\t')
-							>> qi::lit("</file>")
-					)[phoenix::construct<SnapshotFileEntry>()]
-					>> *qi::lit('\t')
-					>> qi::lit("</file-sequence>")
-					>> *qi::lit('\t')
-					>> qi::lit("</xmltar-snapshot>")
-#if 0
-										>> (*(qi::uint_)[phoenix::push_back(phoenix::ref(qi::_val),qi::_1)])
-									>> qi::lit("</volume-number-sequence>")
-								>> qi::lit("</file>")
-							)
-					>> qi::lit("</file-sequence>")
-					>> qi::lit("</xmltar-snapshot>")
-#endif
-				)
-				[phoenix::construct<Snapshot>()];
-
-	using namespace qi;
-    using namespace boost::phoenix;
-    on_error<fail> ( start , std::cout << val("Error! Expecting ") << _4 << val(" here: \"") << construct<std::string>(_3, _2) << val("\"") << std::endl );
-  }
-
-  qi::rule<Iterator,Snapshot()> start;
+	void startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs);
+	void endElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname);
+	void characters(const XMLCh* const chars, const XMLSize_t length);
+	void fatalError(const xercesc::SAXParseException&);
 };
 
+void SnapshotHandler::startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs){
+	char* name = xercesc::XMLString::transcode(localname);
+	elementNameStack_.push_back(name);
+	characterDataStack_.push_back(std::vector<XMLCh>());
+	if (elementNameStack_.back()=="file"){
+		snapshot_.fileEntries_.push_back(SnapshotFileEntry());
+	}
+	xercesc::XMLString::release(&name);
+}
+
+void SnapshotHandler::endElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname){
+	char* name = xercesc::XMLString::transcode(localname);
+	if (elementNameStack_.back()!=name){
+		std::cerr << "end element sequence error " << elementNameStack_.back() << " " << name << std::endl;
+		exit(1);
+	}
+
+	characterDataStack_.back().push_back(0);
+	if (elementNameStack_.back()=="path"){
+		char* tmp = xercesc::XMLString::transcode(& characterDataStack_.back()[0]);
+		std::cerr << elementNameStack_.back() << "=\"" << tmp << "\"" << std::endl;
+		xercesc::XMLString::release(&name);
+	}
+	else if (elementNameStack_.back()=="last-backup-epoch-time"){
+		char* tmp = xercesc::XMLString::transcode(& characterDataStack_.back()[0]);
+		std::cerr << elementNameStack_.back() << "=\"" << tmp << "\"" << std::endl;
+		xercesc::XMLString::release(&name);
+	}
+	else if (elementNameStack_.back()=="last-backup-ascii-time"){
+		char* tmp = xercesc::XMLString::transcode(& characterDataStack_.back()[0]);
+		std::cerr << elementNameStack_.back() << "=\"" << tmp << "\"" << std::endl;
+		xercesc::XMLString::release(&name);
+	}
+	else if (elementNameStack_.back()=="volume-number"){
+		char* tmp = xercesc::XMLString::transcode(& characterDataStack_.back()[0]);
+		std::cerr << elementNameStack_.back() << "=\"" << tmp << "\"" << std::endl;
+		xercesc::XMLString::release(&name);
+	}
+
+	characterDataStack_.pop_back();
+	elementNameStack_.pop_back();
+	xercesc::XMLString::release(&name);
+}
+
+void SnapshotHandler::fatalError(const xercesc::SAXParseException& exception){
+	char* message = xercesc::XMLString::transcode(exception.getMessage());
+	std::cout << "Fatal Error: " << message
+		 << " at line: " << exception.getLineNumber()
+		 << std::endl;
+	xercesc::XMLString::release(&message);
+}
+
+void SnapshotHandler::characters(const XMLCh* const chars, const XMLSize_t length){
+	auto oldSize=characterDataStack_.back().size();
+	characterDataStack_.back().resize(oldSize+length);
+	std::copy(chars,chars+length,characterDataStack_.back().begin()+oldSize);
+}
+
 bool ParseSnapshot(std::string input, Snapshot & snapshot){
-	  typedef std::string::const_iterator iterator_type;
-	  std::string::const_iterator iter = input.begin();
-	  std::string::const_iterator end = input.end();
-	  SnapshotParser<iterator_type> Snapshot_p;
+    try {
+        xercesc::XMLPlatformUtils::Initialize();
+    }
+    catch (const xercesc::XMLException& toCatch) {
+        char* message = xercesc::XMLString::transcode(toCatch.getMessage());
+        std::cout << "Error during initialization! :\n";
+        std::cout << "Exception message is: \n"
+             << message << "\n";
+        xercesc::XMLString::release(&message);
+        return 1;
+    }
 
-	  bool r = parse(iter, end, Snapshot_p, snapshot );
+    char const * xmlFile = "snapshot-template.xml";
+    xercesc::SAX2XMLReader* parser = xercesc::XMLReaderFactory::createXMLReader();
+    parser->setFeature(xercesc::XMLUni::fgSAX2CoreValidation, true);
+    parser->setFeature(xercesc::XMLUni::fgSAX2CoreNameSpaces, true);   // optional
 
-      std::string::const_iterator some = iter+400;
-      std::string context(iter, (some>end)?end:some);
-      std::cerr << "stopped at:\n\"" << context << "...\"\n";
+    xercesc::DefaultHandler* defaultHandler = new SnapshotHandler(snapshot);
 
-	  if (iter==end) return true;
+    parser->setContentHandler(defaultHandler);
+    parser->setErrorHandler(defaultHandler);
 
-	  return false;
+    try {
+        parser->parse(xmlFile);
+    }
+    catch (const xercesc::XMLException& toCatch) {
+        char* message = xercesc::XMLString::transcode(toCatch.getMessage());
+        std::cout << "Exception message is: \n"
+             << message << "\n";
+        xercesc::XMLString::release(&message);
+        return -1;
+    }
+    catch (const xercesc::SAXParseException& toCatch) {
+        char* message = xercesc::XMLString::transcode(toCatch.getMessage());
+        std::cout << "Exception message is: \n"
+             << message << "\n";
+        xercesc::XMLString::release(&message);
+        return -1;
+    }
+    catch (...) {
+        std::cout << "Unexpected Exception \n" ;
+        return -1;
+    }
+
+    delete parser;
+    delete defaultHandler;
+    return 0;
 }

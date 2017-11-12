@@ -19,8 +19,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef Debug_hpp_
-#define Debug_hpp_
+#ifndef DEBUG_HPP_
+#define DEBUG_HPP_
 
 #include <iostream>
 
@@ -60,7 +60,7 @@ void Terminate(const char *);
 #else
 #define DEBUGCXX(x,y)	;
 #define DEBUGCXXTAB(x)  ""
-#define Terminate(x)    throw x
+//#define Terminate(x)    throw x			// FIXME
 #endif
 
-#endif /* Debug_hpp_ */
+#endif /* DEBUG_HPP_ */
