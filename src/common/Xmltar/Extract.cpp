@@ -56,7 +56,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/spirit/include/qi_grammar.hpp>
 
 #include <boost/spirit/include/qi.hpp>
-#include "Pipe_Codecs.hpp"
 #include "Xmltar/Xmltar.hpp"
 
 namespace qi = boost::spirit::qi;

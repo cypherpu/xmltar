@@ -35,37 +35,49 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 class Bidirectional_Pipe {
 public:
-    enum State { UNOPENED, RUNNING, EXITED };
+    enum class ChildState { NOT_STARTED, RUNNING, EXITED };
+    enum class DescriptorState { NOT_OPENED, OPENED, OPENED_READABLE, OPENED_WRITABLE, CLOSED };
+
+    friend std::ostream & operator<<(std::ostream & os, ChildState p);
+    friend std::ostream & operator<<(std::ostream & os, DescriptorState p);
+
 public: // protected:
     int child_pid_;
     int exit_status_;
-    bool child_alive_;
+
     int parent_to_child_stdin_;           // parent -> child::std::in
     int child_stdout_to_parent_;          // child::std::out -> parent
     int child_stderr_to_parent_;          // child::std::err -> parent
-    State pipe_state_;
+
+    ChildState childState_;
     size_t read1_count;
+    size_t read2_count;
     size_t write_count;
     static const size_t pipe_buf_size=PIPE_BUF;
-    std::vector<const char *> saved_args;
-    bool can_read1;
-    bool can_read2;
-    bool can_write;
+    std::vector<char const *> saved_args;
 
-    void Init(const char *prog, const std::vector<const char *> argv);
+    DescriptorState read1DescriptorState_;
+    DescriptorState read2DescriptorState_;
+    DescriptorState writeDescriptorState_;
+
+    void Init(const char *path, const std::vector<const char *> argv);
     void Set_Child_Status(void);
     void Select_Helper(struct timeval *pt);
     void Select_Nonblocking(void);
     void Select_Blocking(void);
     void Select_Blocking(unsigned int microseconds);
+
+    std::string writeBuffer_;
+    bool writeCloseWhenEmpty_;
 public:
     Bidirectional_Pipe(void);
+    Bidirectional_Pipe(const char *path, std::vector<char const *> argv);
 
     ~Bidirectional_Pipe(void);
 
-    void Open(const char *prog, const char *argv1=NULL, const char *argv2=NULL, const char *argv3=NULL, const char *argv4=NULL);
+    void Open(const char *path, std::vector<char const *> argv);
 
-    State get_state(void);
+    ChildState getChildState(void);
     void close_write(void);
     void close_read1(void);
     void close_read2(void);
@@ -79,8 +91,13 @@ public:
     bool Can_Read2(void);
     bool Can_Write(void);
 
-    ssize_t Write(const char *p, size_t n);
+    void Write();
+    void QueueWrite(std::string const & data);
     std::string Read1(size_t n=PIPE_BUF);
+    std::string Read2(size_t n=PIPE_BUF);
+
+    void QueueWriteClose();
+    bool ChildExitedAndAllPipesClosed();
 };
 
 #endif /* Bidirectional_Pipe_hpp_ */

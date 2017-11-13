@@ -60,7 +60,7 @@ void Terminate(const char *);
 #else
 #define DEBUGCXX(x,y)	;
 #define DEBUGCXXTAB(x)  ""
-//#define Terminate(x)    throw x			// FIXME
+// #define Terminate(x)    throw(x)			// FIXME
 #endif
 
 #endif /* DEBUG_HPP_ */

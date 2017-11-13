@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include <xercesc/sax2/DefaultHandler.hpp>
+
 #include "Snapshot/SnapshotOptions.hpp"
 #include "Snapshot/SnapshotFileEntry.hpp"
 
@@ -34,7 +36,8 @@ public:
 	SnapshotOptions options_;
 	std::vector<SnapshotFileEntry> fileEntries_;
 
-	Snapshot(){}
+	Snapshot();
+	Snapshot(char const *xmlFile);
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

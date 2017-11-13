@@ -26,7 +26,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/scoped_ptr.hpp>
 
-#include "basic_transitbuf.hpp"
 #include "Xmltar/Xmltar.hpp"
 #include "Debug.hpp"
 
@@ -36,7 +35,6 @@ class Archive {
         XmltarOptions options_;
         int archive_sequence_number;
 		std::string filename;
-		boost::scoped_ptr<transitbuf_base> post;
 		std::streamoff last_flush_position;
         std::string archive_header;
 		std::string archive_trailer;
@@ -70,10 +68,6 @@ class Archive {
 		size_t Size(void);
 		void Close(bool last_volume);
 		void Close_Transitbuf(void);
-
-		transitbuf_base *rdbuf(void){
-			return post.get();
-		}
 
 		void Write_Archive_Header(void);
 

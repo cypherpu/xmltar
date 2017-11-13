@@ -25,67 +25,18 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits>
 
-#include "Pipe_Codecs.hpp"
-
 class XmltarOptions {
 public:
     enum Operation { NOOP, APPEND, CREATE, LIST, EXTRACT };
-    enum Compression { IDENTITY, GZIP, BZIP2, XZ };
+    enum Compression { IDENTITY, GZIP, BZIP2, LZIP };
 	enum Encoding { BASE16, BASE64 };
 
-protected:
-	transitbuf_base *New_Compressor(XmltarOptions::Compression comp){
-		transitbuf_base *tb=0;
-
-		switch(comp){
-		case XmltarOptions::IDENTITY:
-			tb=new identity_encoder_transitbuf;
-			break;
-		case XmltarOptions::GZIP:
-			tb=new gzip_encoder_transitbuf;
-			break;
-		case XmltarOptions::BZIP2:
-			tb=new bzip2_encoder_transitbuf;
-			break;
-		case XmltarOptions::XZ:
-			tb=new xz_encoder_transitbuf;
-			break;
-		default:
-			throw "XmltarOptions::New_Precompressor: unrecognized precompress";
-		}
-
-		return tb;
-	}
-
-	transitbuf_base *New_Decompressor(XmltarOptions::Compression comp){
-		transitbuf_base *tb=0;
-
-		switch(comp){
-		case XmltarOptions::IDENTITY:
-			tb=new identity_decoder_transitbuf;
-			break;
-		case XmltarOptions::GZIP:
-			tb=new gzip_decoder_transitbuf;
-			break;
-		case XmltarOptions::BZIP2:
-			tb=new bzip2_decoder_transitbuf;
-			break;
-		case XmltarOptions::XZ:
-			tb=new xz_decoder_transitbuf;
-			break;
-		default:
-			throw "XmltarOptions::New_Decompressor: unknown postcompressor type";
-		}
-
-		return tb;
-	}
-
-public:
 	Operation operation;
 	int verbosity;
 	bool multi_volume;
-	Compression precompress;
-	Compression postcompress;
+	Compression fileCompress;
+	Compression archiveMemberCompress;
+	Compression archiveCompress;
 	Encoding encoding;
 	bool incremental;
 	bool compress_listed_incremental_file;
@@ -103,80 +54,42 @@ public:
 	unsigned int starting_sequence_number;						// starting_volume;
 
 	std::string current_xmltar_file_name;
-	unsigned int current_sequence_number;
+	unsigned int current_volume_number;
 
     XmltarOptions(void)
-        : operation(NOOP), verbosity(0), multi_volume(false), precompress(IDENTITY), postcompress(IDENTITY),
+        : operation(NOOP), verbosity(0), multi_volume(false), fileCompress(IDENTITY), archiveMemberCompress(IDENTITY), archiveCompress(IDENTITY),
           encoding(BASE16), incremental(false), compress_listed_incremental_file(false),
           tape_length(std::numeric_limits<std::size_t>::max()), stop_after(std::numeric_limits<std::size_t>::max()),
-          tag(""), tabs_(true), newlines_(true) { }
+          tag(""), tabs_(true), newlines_(true), current_volume_number(0) { }
 
     std::string HeaderMagicNumber(void){
-		switch(postcompress){
+		switch(archiveCompress){
 		case IDENTITY:
 			return std::string("<?xml");
 		case GZIP:
 			return std::string("\x1f\x8b");
 		case BZIP2:
 			return std::string("BZh");
-		case XZ:
-			return std::string("\xfd\x37zXZ\0",6);
+		case LZIP:
+			return std::string("\x4c\x5a\x49\x50\x01");
 		default:
 			throw "XmltarOptions::HeaderMagicNumber: unrecognized Compression";
 		}
 	}
 
     std::string TrailerMagicNumber(void){
-		switch(postcompress){
+		switch(archiveCompress){
 		case IDENTITY:
 			return std::string("</members");
 		case GZIP:
 			return std::string("\x1f\x8b");
 		case BZIP2:
 			return std::string("BZh");
-		case XZ:
-			return std::string("\xfd\x37zXZ\0",6);
+		case LZIP:
+			return std::string("\x4c\x5a\x49\x50\x01");
 		default:
 			throw "XmltarOptions::TrailerMagicNumber: unrecognized Compression";
 		}
-	}
-
-	transitbuf_base *New_Encoder(void){
-	    switch(encoding){
-	    case XmltarOptions::BASE16:
-            return new base16_encoder_transitbuf;
-	    case XmltarOptions::BASE64:
-	        return new base64_encoder_transitbuf;
-	    default:
-	        throw "XmltarOptions::New_Encoder: unrecognized encoder";
-	    }
-	}
-
-	transitbuf_base *New_Decoder(void){
-	    switch(encoding){
-	    case XmltarOptions::BASE16:
-            return new base16_decoder_transitbuf;
-	    case XmltarOptions::BASE64:
-	        return new base64_decoder_transitbuf;
-	    default:
-	        throw "XmltarOptions::New_Decoder: unrecognized encoder";
-	    }
-	}
-
-	transitbuf_base *New_Precompressor(void){
-		return New_Compressor(precompress);
-	}
-
-	transitbuf_base *New_Postcompressor(void){
-		return New_Compressor(postcompress);
-	}
-
-	transitbuf_base *New_Predecompressor(void){
-		return New_Decompressor(precompress);
-	}
-
-	transitbuf_base *New_Postdecompressor(void){
-		return New_Decompressor(postcompress);
 	}
 
 	std::string Tabs(const char *tabStr){

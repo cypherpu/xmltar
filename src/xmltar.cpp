@@ -25,7 +25,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Include/Incremental_File.hpp"
 #include "basic_transitbuf.hpp"
 #include "Xmltar/Xmltar.hpp"
-#include "Snapshot/SnapshotParser.hpp"
+#include "Snapshot/Snapshot.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -35,9 +35,8 @@ int main(int argc, char *argv[])
 		result+=line;
 	}
 
-	Snapshot snapshot;
-	ParseSnapshot(result,snapshot);
-	exit(0);
+	// Snapshot snapshot("snapshot-template.xml");
+	// exit(0);
 
 	try {
 	    DEBUGCXX(debugcxx,"main");
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
 		std::cerr << msg << std::endl;
 		exit(-1);
 	}
-	catch (std::string msg){
+	catch (std::string & msg){
 		std::cerr << msg << std::endl;
 		exit(-1);
 	}
