@@ -16,7 +16,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 link_directories(/usr/local/lib)
 link_directories(/usr/lib64)
 
-set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random boost_filesystem boost_system xerces-c)
+set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random boost_filesystem boost_system xerces-c gtest)
 
 include_directories(
 src/
@@ -54,3 +54,8 @@ add_executable(xmltar src/xmltar.cpp ${SOURCES})
 ADD_DEPENDENCIES(xmltar generate_foo)
 set_target_properties(xmltar PROPERTIES RUNTIME_OUTPUT_DIRECTORY .. )
 target_link_libraries (xmltar ${LIBS})
+
+add_executable(Xmltar.Test src/Xmltar.Test.cpp ${SOURCES} ${TEST_SOURCES})
+set_target_properties( Xmltar.Test PROPERTIES RUNTIME_OUTPUT_DIRECTORY .. )
+target_link_libraries (Xmltar.Test ${LIBS})
+

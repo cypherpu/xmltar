@@ -19,10 +19,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "Xmltar/Xmltar.hpp"
+#include "XmltarRun.hpp"
 
-bool Xmltar::Exclude_File(std::string filename){
-    for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files.begin(); i!=options_.exclude_files.end(); ++i){
+bool XmltarRun::Exclude_File(std::string filename){
+    for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files_.begin(); i!=options_.exclude_files_.end(); ++i){
         std::cerr << filename << "==" << *i << " " << std::boolalpha << (filename==*i) << std::endl;
         if (filename==*i){
             std::cerr << "Excluding file=" << filename << std::endl;

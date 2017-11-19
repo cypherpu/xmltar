@@ -22,9 +22,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 #include <boost/format.hpp>
+
+#include "common/Xmltar/XmltarRun.hpp"
 #include "Include/Incremental_File.hpp"
-#include "basic_transitbuf.hpp"
-#include "Xmltar/Xmltar.hpp"
 #include "Snapshot/Snapshot.hpp"
 
 int main(int argc, char *argv[])
@@ -35,9 +35,8 @@ int main(int argc, char *argv[])
 		result+=line;
 	}
 
-	// Snapshot snapshot("snapshot-template.xml");
-	// exit(0);
-
+	Snapshot snapshot("snapshot-template.xml");
+#if 0
 	try {
 	    DEBUGCXX(debugcxx,"main");
 		Xmltar xmltar(argc, argv);
@@ -72,5 +71,6 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
+#endif
 	return 0;
 }

@@ -36,7 +36,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Meta_Data_Ext4.hpp"
 #include "Debug.hpp"
 
-class Xmltar {
+class XmltarRun {
 private:
 	std::string version;
 public:
@@ -47,7 +47,8 @@ public:
 	std::vector<boost::filesystem::path> file_stack;			// files waiting to be archived
 	std::map<boost::filesystem::path,meta_data_ext4> directory_map;
 
-	Xmltar(int, char *[]);
+	XmltarRun(int, char const *[]);
+
 	bool Exclude_File(std::string);
 	void Add_To_Archive(void);
 	void Extract(void);

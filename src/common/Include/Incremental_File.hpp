@@ -30,7 +30,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 
 #include "Archive_Member.hpp"
-#include "Pipe_Codecs.hpp"
 
 class Incremental_File {
 	public:
@@ -39,7 +38,6 @@ class Incremental_File {
 			time_t last_backed_up_time;
 		};
 	protected:
-		boost::scoped_ptr<transitbuf_base> *post;
 		std::map<std::string,Incremental_Data> incremental_data_map;
 		std::string filename_;
 		bool is_compressed;

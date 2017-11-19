@@ -29,10 +29,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Archive.hpp"
 #include "Archive_Member.hpp"
-#include "Pipe_Codecs.hpp"
-#include "Xmltar/Xmltar.hpp"
 #include "Conversions.hpp"
 #include "Incremental_File.hpp"
+#include "XmltarRun.hpp"
 
 extern "C" {
 #include <unistd.h>
@@ -45,50 +44,50 @@ extern "C" {
  * 2. Append, in which case bytes_already_written=the number of bytes already written by a previous invocation of xmltar
  */
 
-void Xmltar::Add_To_Archive(void){
+void XmltarRun::Add_To_Archive(void){
     DEBUGCXX(debugcxx,"Xmltar::Add_To_Archive");
 	size_t volumes_completed(0);
-	int sequence_number(options_.starting_sequence_number);
+	int sequence_number(options_.starting_sequence_number_);
 
 	boost::scoped_ptr<Archive> archive(new Archive(options_,sequence_number));
 
-    if (options_.operation==XmltarOptions::CREATE){
+    if (options_.operation_==XmltarOptions::CREATE){
         archive->Attach();
         archive->Write_Archive_Header();
     }
 
 	Incremental_File ifs;
-	if (options_.incremental) ifs.Open(options_.listed_incremental_file.string(),options_.compress_listed_incremental_file);
+	if (options_.incremental_) ifs.Open(options_.listed_incremental_file_.string(),options_.compress_listed_incremental_file_);
 
-	while(options_.source_files.size()!=0){
-	    boost::filesystem::path current_file(options_.source_files.back());
-	    options_.source_files.pop_back();
+	while(options_.source_files_.size()!=0){
+	    boost::filesystem::path current_file(options_.source_files_.back());
+	    options_.source_files_.pop_back();
 
 		if (boost::filesystem::is_directory(current_file))
 			for(boost::filesystem::directory_iterator it(current_file); it!=boost::filesystem::directory_iterator(); ++it)
-				if (!Exclude_File(it->path().string())) options_.source_files.push_back(*it);
+				if (!Exclude_File(it->path().string())) options_.source_files_.push_back(*it);
 				else std::cerr << "Excluding file at " << *it << std::endl;
 
         Archive_Member member(current_file, options_);
 
-		if (options_.incremental)
+		if (options_.incremental_)
 			if (ifs.Is_Current(member))
 				continue;
 
-		if (options_.verbosity>=1)
+		if (options_.verbosity_>=1)
 		    std::cerr << current_file << std::endl;
 
 		volumes_completed=archive->Store_Member(member);
 
-		if (options_.incremental)
+		if (options_.incremental_)
 			ifs.Update(member);
 
-		if (volumes_completed>=options_.stop_after) break;
+		if (volumes_completed>=options_.stop_after_) break;
 	}
 
 	archive->Close(true);
 
-	if (options_.incremental){
+	if (options_.incremental_){
 		ifs.Write();
 		ifs.Close();
 	}

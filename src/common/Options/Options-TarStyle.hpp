@@ -223,6 +223,27 @@ public:
 		if (lfs!="") long_forms.insert(std::pair<std::string,Option *>(lfs,p));
 	}
 
+	void Add_Option(N_Args nargs, const char *sf, const char *lf, const char *desc, Action* a1, Action* a2, Action* a3){
+		std::string sfs(sf), lfs(lf), descs(desc);
+
+		if (sfs!="")
+			if (sfs.size()>2)
+				throw "Add_Option: short form option has too many characters";
+			else if (sfs.size()<2)
+				throw "Add_Option: short form option has too few characters";
+			else if (sfs[0]!='-')
+				throw "Add_Option: short form option must start with a '-'";
+
+		Option *p=new Option(nargs, sfs, lfs, descs);
+
+		p->actions.push_back(a1);
+		p->actions.push_back(a2);
+		p->actions.push_back(a3);
+		all_options.push_back(p);
+		if (sfs!="") short_forms.insert(std::pair<std::string,Option *>(sfs,p));;
+		if (lfs!="") long_forms.insert(std::pair<std::string,Option *>(lfs,p));
+	}
+
 	void Add_Option(N_Args nargs, const char *sf, const char *lf, const char *desc, Action* a1, Action* a2){
 		std::string sfs(sf), lfs(lf), descs(desc);
 
@@ -242,7 +263,7 @@ public:
 		if (lfs!="") long_forms.insert(std::pair<std::string,Option *>(lfs,p));
 	}
 
-	std::vector<std::string> Parse(int argc, char *argv[]){
+	std::vector<std::string> Parse(int argc, char const *argv[]){
 		std::vector<std::string> left_over_args;
 
 		int next_arg=1;
@@ -319,29 +340,38 @@ public:
 				long_forms[opt]->Do_Actions(arg);
 			}
 			else if (argv[next_arg][1]!='\0'){						// short option
-				std::string opt(argv[next_arg],2);
-				std::string arg;
+				int current_arg=next_arg;
+				int next_index=1;
 
-				if (short_forms.find(opt)->second->number_of_arguments==0)
-					if (argv[next_arg][2]!='\0')
-						throw "unrecognized option, switch without arguments, or extra characters in short option";
-					else ;
-				else if (short_forms.find(opt)->second->number_of_arguments==1)
-					if (argv[next_arg][2]=='\0')
-						if (next_arg+1<argc)
-							arg=std::string(argv[++next_arg]);
-						else throw "option needs argument";
-					else
-						arg=std::string(argv[next_arg++]+2);
-				else throw "no support except for 0 or 1 arguments";
+				for( ; argv[current_arg][next_index]!='\0'; ){
+					std::string opt=std::string("-")+std::string(argv[current_arg]+next_index++,1);
+					std::string arg;
 
-				if (short_forms.find(opt)==short_forms.end())
-					throw "unknown options";
+					if (short_forms.find(opt)==short_forms.end())
+						throw std::invalid_argument("unknown options: "+opt);
 
-				short_forms[opt]->number_of_times_assigned++;
-				short_forms[opt]->Do_Actions(arg);
+					if (short_forms.find(opt)->second->number_of_arguments==0){
+						short_forms[opt]->number_of_times_assigned++;
+						short_forms[opt]->Do_Actions(arg);
+					}
+					else if (short_forms.find(opt)->second->number_of_arguments==1)
+						if (argv[current_arg][next_index]=='\0')
+							if (next_arg+1<argc){
+								arg=std::string(argv[++next_arg]);
+								short_forms[opt]->number_of_times_assigned++;
+								short_forms[opt]->Do_Actions(arg);
+							}
+							else throw std::invalid_argument("option needs argument");
+						else {
+							arg=std::string(argv[next_arg]+next_index);
+							short_forms[opt]->number_of_times_assigned++;
+							short_forms[opt]->Do_Actions(arg);
+							break;
+						}
+					else throw std::invalid_argument("no support except for 0 or 1 arguments");
+				}
 			}
-			else throw "option cannot be only -";
+			else throw std::invalid_argument("option cannot be only -");
 		}
 
 		while(next_arg<argc)

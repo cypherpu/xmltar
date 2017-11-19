@@ -19,13 +19,13 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "Xmltar/Xmltar.hpp"
+#include "XmltarRun.hpp"
 
-bool Xmltar::Matches_Archive_Member(std::string filename){
+bool XmltarRun::Matches_Archive_Member(std::string filename){
 	// if no files to be extracted were specified, extract all files
-	if (options_.source_files.size()==0) return true;
+	if (options_.source_files_.size()==0) return true;
 
-	for(std::vector<boost::filesystem::path>::iterator i=options_.source_files.begin(); i!=options_.source_files.end(); ++i){
+	for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.begin(); i!=options_.source_files_.end(); ++i){
 
 	}
 

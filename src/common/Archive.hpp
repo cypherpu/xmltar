@@ -26,8 +26,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/scoped_ptr.hpp>
 
-#include "Xmltar/Xmltar.hpp"
 #include "Debug.hpp"
+#include "Xmltar/XmltarRun.hpp"
 
 class Archive_Member;
 
@@ -50,7 +50,6 @@ class Archive {
 		std::string Encode_String(std::string s);
 		std::string Generate_Archive_Trailer(bool last_volume, int padding);
 		bool Is_Trailer(std::string s);
-		void Open_Postcompressor(void){ post->open(std::ios_base::out,os->rdbuf()); }
 		void Initialize(void);
 	public:
 		Archive(const XmltarOptions&, int);

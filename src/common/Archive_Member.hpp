@@ -41,9 +41,8 @@ extern "C" {
 }
 
 #include "Debug.hpp"
-#include "Xmltar/Xmltar.hpp"
+#include "Xmltar/XmltarRun.hpp"
 #include "Conversions.hpp"
-#include "Pipe_Codecs.hpp"
 
 class Archive_Member {
 		XmltarOptions options_;
@@ -54,9 +53,6 @@ class Archive_Member {
 		off_t file_size;
 		off_t start_tell;
 		bool metadata_written;
-		boost::scoped_ptr<transitbuf_base> encoder;
-		boost::scoped_ptr<transitbuf_base> precompressor;
-		transitbuf_base *archive_tb;
 		std::ifstream ifs;
 		std::string archive_member_header, archive_member_trailer;
 		bool is_attached;
@@ -85,13 +81,6 @@ class Archive_Member {
 			ifs.close();
 		}
 
-        void Reset_Encoder_and_Precompressor(void){
-            encoder.reset(options_.New_Encoder());
-            precompressor.reset(options_.New_Precompressor());
-        }
-
-		void Attach(transitbuf_base *tb);
-
 		bool Is_Attached(void){ return is_attached; }
 
 		bool Is_Empty(void){
@@ -111,38 +100,6 @@ class Archive_Member {
 		void Write(size_t n);
 
 		size_t Delta_Encoded_Length(size_t n, bool include_header);
-
-		void Close_Encoders(void){
-		    if (Is_Attached()){
-		        precompressor->close();
-		        encoder->close();
-		    }
-
-			precompressor.reset(0);
-			encoder.reset(0);
-
-			is_attached=false;
-		}
-
-		void Reset_Destination_Stream(transitbuf_base *tb){
-			archive_tb=tb;
-			encoder->rdbuf(archive_tb);
-			is_attached=true;
-		}
-
-		void Write_Archive_Member_Header(void){
-			archive_tb->sputn(archive_member_header.c_str(), archive_member_header.size());
-			archive_tb->pubsync();
-			metadata_written=true;
-			archive_member_header=Generate_Archive_Member_Header();
-
-            if (!Is_Regular()) is_empty=true;
-		}
-
-		void Write_Archive_Member_Trailer(void){
-			archive_tb->sputn(archive_member_trailer.c_str(), archive_member_trailer.size());
-			archive_tb->pubsync();
-		}
 
 		std::string Archive_Member_Header(void){ return archive_member_header; }
 
