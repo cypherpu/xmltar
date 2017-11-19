@@ -36,19 +36,21 @@ XmltarRun::XmltarRun(int argc, char const *argv[])
 		if (options_.operation_==XmltarOptions::CREATE) std::cerr << "Operation=CREATE" << std::endl;
 		if (options_.operation_==XmltarOptions::LIST) std::cerr << "Operation=LIST" << std::endl;
 		if (options_.operation_==XmltarOptions::EXTRACT) std::cerr << "Operation=EXTRACT" << std::endl;
-		std::cerr << "verbosity=" << options_.verbosity_ << std::endl;
+		std::cerr << "verbosity=" << options_.verbosity_.get() << std::endl;
 		if (options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
-		std::cerr << "starting_sequence_number=" << options_.starting_sequence_number_ << std::endl;
-		std::cerr << "listed-incremental=" << options_.incremental_ << std::endl;
-		std::cerr << "tape length=" << options_.tape_length_ << std::endl;
-		std::cerr << "stop after=" << options_.stop_after_ << std::endl;
-		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_ << std::endl;
-		std::cerr << "Source file size=" << options_.source_files_.size() << std::endl;
-		for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files_.begin(); i!=options_.exclude_files_.end(); ++i)
-			std::cerr << "Exclude file=" << *i << std::endl;
-		for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.begin(); i!=options_.source_files_.end(); ++i)
-			std::cerr << "Source file=" << *i << std::endl;
-		std::cerr << "listed-incremental file=" << options_.listed_incremental_file_ << std::endl;
-		std::cerr << "files from=" << options_.files_from_ << std::endl;
+		std::cerr << "starting_sequence_number=" << options_.starting_sequence_number_.get() << std::endl;
+		std::cerr << "listed-incremental=" << options_.incremental_.get() << std::endl;
+		std::cerr << "tape length=" << options_.tape_length_.get() << std::endl;
+		std::cerr << "stop after=" << options_.stop_after_.get() << std::endl;
+		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_.get() << std::endl;
+		std::cerr << "Source file size=" << options_.source_files_.get().size() << std::endl;
+		if (options_.exclude_files_)
+			for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files_.get().begin(); i!=options_.exclude_files_.get().end(); ++i)
+				std::cerr << "Exclude file=" << *i << std::endl;
+		if (options_.source_files_)
+			for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i)
+				std::cerr << "Source file=" << *i << std::endl;
+		std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
+		std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 }

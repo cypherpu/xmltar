@@ -37,7 +37,7 @@ public:
 	std::vector<SnapshotFileEntry> fileEntries_;
 
 	Snapshot();
-	Snapshot(char const *xmlFile);
+	Snapshot(std::string const & xmlFile);
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

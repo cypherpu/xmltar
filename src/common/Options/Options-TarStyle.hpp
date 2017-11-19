@@ -23,6 +23,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #define Tar_Options_hpp_
 
 #include <sstream>
+#include <map>
+
 #include <boost/filesystem.hpp>
 
 namespace Parse_Opts {
@@ -46,6 +48,24 @@ public:
 	void Do_Action(std::string s){
 		std::istringstream iss(s);
 		iss >> destination;
+		if (!iss.eof()) throw "unused characters in option";
+	}
+};
+
+/*
+ * assign a single argument
+ */
+template <typename T> class Action_Assign_Args_Optional : public Action {
+	boost::optional<T>& destination;
+public:
+	Action_Assign_Args_Optional(boost::optional<T>& dest)
+		: destination(dest) { }
+	~Action_Assign_Args_Optional(void) { }
+	void Do_Action(std::string s){
+		std::istringstream iss(s);
+		T t;
+		iss >> t;
+		destination=t;
 		if (!iss.eof()) throw "unused characters in option";
 	}
 };
@@ -97,6 +117,22 @@ public:
 };
 
 /*
+ * assign a pre-selected value
+ */
+template <typename T> class Action_Assign_Value_Optional : public Action {
+	boost::optional<T>& destination;
+	T value;
+public:
+	Action_Assign_Value_Optional(boost::optional<T>& dest, T val)
+		: destination(dest), value(val) { }
+	~Action_Assign_Value_Optional(void){ }
+
+	void Do_Action(std::string s){
+		destination=value;
+	}
+};
+
+/*
  * increment a value
  */
 template <typename T> class Action_Increment_Value : public Action {
@@ -108,6 +144,22 @@ public:
 
 	void Do_Action(std::string s){
 		destination++;
+	}
+};
+
+/*
+ * increment a value
+ */
+template <typename T> class Action_Increment_Value_Optional : public Action {
+	boost::optional<T>& destination;
+public:
+	Action_Increment_Value_Optional(boost::optional<T>& dest)
+		: destination(dest) { }
+	~Action_Increment_Value_Optional(void) { }
+
+	void Do_Action(std::string s){
+		if (destination) destination=destination.get()+1;
+		else destination=1;
 	}
 };
 
@@ -151,6 +203,18 @@ public:
 	}
 };
 
+template <> class Action_Append_Args<boost::optional<boost::filesystem::path>> : public Action {
+	boost::optional<std::vector<boost::filesystem::path>>& destination;
+public:
+	Action_Append_Args(boost::optional<std::vector<boost::filesystem::path>>& dest)
+		: destination(dest) { }
+	~Action_Append_Args(void) { }
+	void Do_Action(std::string s){
+		if (!destination) destination=std::vector<boost::filesystem::path>();
+		destination.get().push_back(boost::filesystem::path(s));
+	}
+};
+
 class Option {
 public:
 	int number_of_times_assigned;
@@ -187,8 +251,20 @@ public:
 		return tmp;
 	}
 
+	template <typename T> Action_Assign_Args_Optional<T> *Assign_Args(boost::optional<T>& dest){
+		Action_Assign_Args_Optional<T> *tmp=new Action_Assign_Args_Optional<T>(dest);
+
+		return tmp;
+	}
+
 	template <typename T> Action_Assign_Value<T> *Assign_Value(T& dest, T val){
 		Action_Assign_Value<T> *tmp = new Action_Assign_Value<T>(dest,val);
+
+		return tmp;
+	}
+
+	template <typename T> Action_Assign_Value_Optional<T> *Assign_Value(boost::optional<T> & dest, T val){
+		Action_Assign_Value_Optional<T> *tmp = new Action_Assign_Value_Optional<T>(dest,val);
 
 		return tmp;
 	}
@@ -199,8 +275,20 @@ public:
 		return tmp;
 	}
 
+	template <typename T> Action_Increment_Value_Optional<T> *Increment_Value(boost::optional<T>& dest){
+		Action_Increment_Value_Optional<T> *tmp=new Action_Increment_Value_Optional<T>(dest);
+
+		return tmp;
+	}
+
 	template <typename T> Action_Append_Args<T> *Append_Args(std::vector<T>& dest){
 		Action_Append_Args<T> *tmp=new Action_Append_Args<T>(dest);
+
+		return tmp;
+	}
+
+	template <typename T> Action_Append_Args<boost::optional<T>> *Append_Args(boost::optional<std::vector<T>>& dest){
+		Action_Append_Args<boost::optional<T>> *tmp=new Action_Append_Args<boost::optional<T>>(dest);
 
 		return tmp;
 	}

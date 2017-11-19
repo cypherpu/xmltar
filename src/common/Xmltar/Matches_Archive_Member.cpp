@@ -23,9 +23,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 bool XmltarRun::Matches_Archive_Member(std::string filename){
 	// if no files to be extracted were specified, extract all files
-	if (options_.source_files_.size()==0) return true;
+	if (options_.source_files_.get().size()==0) return true;
 
-	for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.begin(); i!=options_.source_files_.end(); ++i){
+	for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i){
 
 	}
 

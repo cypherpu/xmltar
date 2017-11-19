@@ -29,6 +29,7 @@ src/common/Snapshot
 file(GLOB SOURCES 
 	src/common/*.[ch]pp
 	src/common/Generated/*.[ch]pp
+	src/common/Options/*.[ch]pp
 	src/common/Snapshot/*.[ch]pp
 	src/common/Xmltar/*.[ch]pp
 )

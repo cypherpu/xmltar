@@ -27,7 +27,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
 
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
 	std::string line, result;
 	std::ifstream ifs("snapshot-template.xml");
@@ -35,19 +35,26 @@ int main(int argc, char *argv[])
 		result+=line;
 	}
 
-	Snapshot snapshot("snapshot-template.xml");
-#if 0
+	XmltarRun xmltarRun(argc, argv);
+
+	if (xmltarRun.options_.incremental_)
+		if (boost::filesystem::exists(xmltarRun.options_.listed_incremental_file_.get()))
+			Snapshot snapshot(xmltarRun.options_.listed_incremental_file_.get().string());
+		else {	// create snapshot file
+			if (xmltarRun.options_.verbosity_>=1)
+				std::cerr << "xmltar: creating snapshot file " << xmltarRun.options_.listed_incremental_file_.get() << std::endl;
+		}
+
 	try {
 	    DEBUGCXX(debugcxx,"main");
-		Xmltar xmltar(argc, argv);
 
-		switch(xmltar.options_.operation){
+		switch(xmltarRun.options_.operation_.get()){
 			case XmltarOptions::APPEND:
 			case XmltarOptions::CREATE:
-				xmltar.Add_To_Archive();
+				//xmltar.Add_To_Archive();
 				break;
 			case XmltarOptions::EXTRACT:
-				xmltar.Extract();
+				//xmltar.Extract();
 				break;
 			default:
 				throw ;
@@ -71,6 +78,5 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
-#endif
 	return 0;
 }

@@ -37,7 +37,7 @@ std::string Archive::Generate_Archive_Header(void){
     s+=options_.Tabs("\t\t")+"<archive-name>"+filename+"</archive-name>"+options_.Newline();
     if (options_.multi_volume_){
         s+=options_.Tabs("\t\t")+"<multi-volume>"+options_.Newline();
-        s+=options_.Tabs("\t\t\t")+"<name-pattern>"+options_.base_xmltar_file_name_+"</name-pattern>"+options_.Newline();
+        s+=options_.Tabs("\t\t\t")+"<name-pattern>"+options_.base_xmltar_file_name_.get()+"</name-pattern>"+options_.Newline();
         s+=options_.Tabs("\t\t\t")+"<sequence-number>"+To_Decimal_Int(archive_sequence_number)+"</sequence-number>"+options_.Newline();
         s+=options_.Tabs("\t\t")+"</multi-volume>"+options_.Newline();
     }
@@ -114,12 +114,12 @@ void Archive::Initialize(void){
         if (ofs.is_open()) ofs.close();
 
         if (options_.multi_volume_){
-            boost::format fmt(options_.base_xmltar_file_name_);
+            boost::format fmt(options_.base_xmltar_file_name_.get());
             fmt % archive_sequence_number;
             filename=str(fmt);
         }
         else
-            filename=options_.base_xmltar_file_name_;
+            filename=options_.base_xmltar_file_name_.get();
 
         if (filename=="-"){
             if (options_.multi_volume_)

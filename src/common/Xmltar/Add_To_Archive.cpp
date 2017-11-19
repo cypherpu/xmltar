@@ -47,7 +47,7 @@ extern "C" {
 void XmltarRun::Add_To_Archive(void){
     DEBUGCXX(debugcxx,"Xmltar::Add_To_Archive");
 	size_t volumes_completed(0);
-	int sequence_number(options_.starting_sequence_number_);
+	int sequence_number(options_.starting_sequence_number_.get());
 
 	boost::scoped_ptr<Archive> archive(new Archive(options_,sequence_number));
 
@@ -57,15 +57,15 @@ void XmltarRun::Add_To_Archive(void){
     }
 
 	Incremental_File ifs;
-	if (options_.incremental_) ifs.Open(options_.listed_incremental_file_.string(),options_.compress_listed_incremental_file_);
+	if (options_.incremental_) ifs.Open(options_.listed_incremental_file_.get().string(),options_.compress_listed_incremental_file_.get());
 
-	while(options_.source_files_.size()!=0){
-	    boost::filesystem::path current_file(options_.source_files_.back());
-	    options_.source_files_.pop_back();
+	while(options_.source_files_.get().size()!=0){
+	    boost::filesystem::path current_file(options_.source_files_.get().back());
+	    options_.source_files_.get().pop_back();
 
 		if (boost::filesystem::is_directory(current_file))
 			for(boost::filesystem::directory_iterator it(current_file); it!=boost::filesystem::directory_iterator(); ++it)
-				if (!Exclude_File(it->path().string())) options_.source_files_.push_back(*it);
+				if (!Exclude_File(it->path().string())) options_.source_files_.get().push_back(*it);
 				else std::cerr << "Excluding file at " << *it << std::endl;
 
         Archive_Member member(current_file, options_);

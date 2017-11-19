@@ -77,7 +77,7 @@ void Snapshot::SnapshotHandler::characters(const XMLCh* const chars, const XMLSi
 Snapshot::Snapshot(){
 }
 
-Snapshot::Snapshot(char const * xmlFile){
+Snapshot::Snapshot(std::string const & xmlFile){
     try {
         xercesc::XMLPlatformUtils::Initialize();
     }
@@ -100,7 +100,7 @@ Snapshot::Snapshot(char const * xmlFile){
     parser->setErrorHandler(defaultHandler);
 
     try {
-        parser->parse(xmlFile);
+        parser->parse(xmlFile.c_str());
     }
     catch (const xercesc::XMLException& toCatch) {
         char* message = xercesc::XMLString::transcode(toCatch.getMessage());
