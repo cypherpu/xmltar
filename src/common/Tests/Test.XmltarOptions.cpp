@@ -18,6 +18,7 @@ TEST(XmltarTest,Options1)
 		EXPECT_EQ(opts.operation_,XmltarOptions::CREATE);
 		EXPECT_TRUE(opts.base_xmltar_file_name_ && opts.base_xmltar_file_name_.get()=="foo");
 		EXPECT_FALSE(opts.source_files_);
+		std::cerr << opts.toXMLString();
 	}
 }
 
@@ -30,5 +31,6 @@ TEST(XmltarTest,Options2)
 		EXPECT_TRUE(opts.operation_ && opts.operation_==XmltarOptions::CREATE);
 		EXPECT_TRUE(opts.base_xmltar_file_name_ && opts.base_xmltar_file_name_.get()=="z");
 		EXPECT_TRUE(opts.source_files_ && opts.source_files_.get().size()==1 && opts.source_files_.get()[0]=="foo");
+		std::cerr << opts.toXMLString();
 	}
 }

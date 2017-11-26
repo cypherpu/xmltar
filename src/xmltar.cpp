@@ -37,7 +37,7 @@ int main(int argc, char const *argv[])
 
 	XmltarRun xmltarRun(argc, argv);
 
-	if (xmltarRun.options_.incremental_)
+	if (false)
 		if (boost::filesystem::exists(xmltarRun.options_.listed_incremental_file_.get()))
 			Snapshot snapshot(xmltarRun.options_.listed_incremental_file_.get().string());
 		else {	// create snapshot file

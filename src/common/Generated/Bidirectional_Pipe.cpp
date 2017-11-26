@@ -347,6 +347,12 @@ void Bidirectional_Pipe::Write(){
     // std::cerr << "w=" << result << " ";
 }
 
+void Bidirectional_Pipe::QueueWrite(char const c){
+    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
+
+    writeBuffer_.push_back(c);
+}
+
 void Bidirectional_Pipe::QueueWrite(std::string const & data){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
@@ -412,6 +418,12 @@ bool Bidirectional_Pipe::ChildExitedAndAllPipesClosed(){
 		return true;
 
 	return false;
+}
+
+int Bidirectional_Pipe::ExitStatus(){
+	if (childState_==ChildState::EXITED)
+		return exit_status_;
+	else throw std::logic_error("BidirectionalPipe::ExitStatus: called before child has exited");
 }
 
 std::ostream & operator<<(std::ostream & os, Bidirectional_Pipe::ChildState c){

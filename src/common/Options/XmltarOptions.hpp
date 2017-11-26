@@ -38,42 +38,48 @@ public:
 	boost::optional<Operation> operation_;
 	boost::optional<int> verbosity_;
 	boost::optional<bool> multi_volume_;
-	boost::optional<Compression> fileCompress_;
+	boost::optional<Compression> fileCompression_;
 	boost::optional<Encoding> encoding_;
-	boost::optional<Compression> archiveMemberCompress_;
-	boost::optional<Compression> archiveCompress_;
-	boost::optional<bool> incremental_;
-	boost::optional<bool> compress_listed_incremental_file_;
+	boost::optional<Compression> archiveMemberCompression_;
+	boost::optional<Compression> archiveCompression_;
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
-	boost::optional<std::vector<boost::filesystem::path>> source_files_;
 	boost::optional<boost::filesystem::path> listed_incremental_file_;
+	boost::optional<bool> compress_listed_incremental_file_;
 	boost::optional<boost::filesystem::path> files_from_;
 	boost::optional<std::vector<boost::filesystem::path>> exclude_files_;
 	boost::optional<std::string> archiveMemberTag_;
 	boost::optional<bool> tabs_;
 	boost::optional<bool> newlines_;
-
 	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
 	boost::optional<unsigned int> starting_sequence_number_;						// starting_volume;
+	boost::optional<std::vector<boost::filesystem::path>> source_files_;
 
 	std::string current_xmltar_file_name_;
 	unsigned int current_sequence_number_;
 
     XmltarOptions(void)
-        : operation_(NOOP), verbosity_(0), multi_volume_(false), fileCompress_(IDENTITY), archiveMemberCompress_(IDENTITY), archiveCompress_(IDENTITY),
-          encoding_(BASE16), incremental_(false), compress_listed_incremental_file_(false),
-          tape_length_(std::numeric_limits<std::size_t>::max()), stop_after_(std::numeric_limits<std::size_t>::max()),
-		  archiveMemberTag_(""), tabs_(true), newlines_(true), starting_sequence_number_(0), current_sequence_number_(0) { }
+        : operation_(), verbosity_(), multi_volume_(),
+		  fileCompression_(IDENTITY), encoding_(BASE16), archiveMemberCompression_(IDENTITY), archiveCompression_(IDENTITY),
+          tape_length_(), stop_after_(),
+		  source_files_(), listed_incremental_file_(), compress_listed_incremental_file_(),
+		  files_from_(), exclude_files_(),
+		  archiveMemberTag_(),tabs_(), newlines_(),
+		  base_xmltar_file_name_(), starting_sequence_number_(),
+		  current_xmltar_file_name_(), current_sequence_number_() { }
 
     void ProcessOptions(int argc, char const *argv[]);
 
-	std::string Tabs(const char *tabStr){
-		return tabs_?std::string(tabStr):std::string("");
+	std::string Tabs(char const *tabStr) const {
+		if (tabs_)
+			return tabs_.get()?std::string(tabStr):std::string("");
+		else return std::string(tabStr);
 	}
 
-	std::string Newline(){
-		return newlines_?std::string("\n"):std::string("");
+	std::string Newline() const {
+		if (newlines_)
+			return newlines_.get()?std::string("\n"):std::string("");
+		else return std::string("\n");
 	}
 
 	std::string toXMLString();

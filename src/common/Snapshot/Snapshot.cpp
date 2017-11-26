@@ -12,72 +12,17 @@
 #include <xercesc/sax2/XMLReaderFactory.hpp>
 #include <xercesc/util/XMLString.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 #include "Snapshot/Snapshot.hpp"
-
-void Snapshot::SnapshotHandler::startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs){
-	char* name = xercesc::XMLString::transcode(localname);
-	elementNameStack_.push_back(name);
-	characterDataStack_.push_back(std::vector<XMLCh>());
-	if (elementNameStack_.back()=="file"){
-		snapshot_.fileEntries_.push_back(SnapshotFileEntry());
-	}
-	xercesc::XMLString::release(&name);
-}
-
-void Snapshot::SnapshotHandler::endElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname){
-	char* name = xercesc::XMLString::transcode(localname);
-	if (elementNameStack_.back()!=name){
-		std::cerr << "end element sequence error " << elementNameStack_.back() << " " << name << std::endl;
-		exit(1);
-	}
-
-	characterDataStack_.back().push_back(0);
-	char* tmp = xercesc::XMLString::transcode(& characterDataStack_.back()[0]);
-	std::string tmpStr(tmp);
-	xercesc::XMLString::release(&tmp);
-
-	if (elementNameStack_.back()=="path"){
-		snapshot_.fileEntries_.back().pathname_=tmpStr;
-		std::cerr << elementNameStack_.back() << "=\"" << tmpStr << "\"" << std::endl;
-	}
-	else if (elementNameStack_.back()=="last-backup-epoch-time"){
-		snapshot_.fileEntries_.back().lastBackupEpochTime_=boost::lexical_cast<time_t>(tmpStr);
-		std::cerr << elementNameStack_.back() << "=\"" << tmpStr << "\"" << std::endl;
-	}
-	else if (elementNameStack_.back()=="last-backup-ascii-time"){
-		snapshot_.fileEntries_.back().lastBackupAsciiTime_=tmpStr;
-		std::cerr << elementNameStack_.back() << "=\"" << tmpStr << "\"" << std::endl;
-	}
-	else if (elementNameStack_.back()=="volume-number"){
-		snapshot_.fileEntries_.back().lastBackupEpochTime_=boost::lexical_cast<unsigned int>(tmpStr);
-		std::cerr << elementNameStack_.back() << "=\"" << tmpStr << "\"" << std::endl;
-	}
-
-	characterDataStack_.pop_back();
-	elementNameStack_.pop_back();
-	xercesc::XMLString::release(&name);
-}
-
-void Snapshot::SnapshotHandler::fatalError(const xercesc::SAXParseException& exception){
-	char* message = xercesc::XMLString::transcode(exception.getMessage());
-	std::cout << "Fatal Error: " << message
-		 << " at line: " << exception.getLineNumber()
-		 << std::endl;
-	xercesc::XMLString::release(&message);
-}
-
-void Snapshot::SnapshotHandler::characters(const XMLCh* const chars, const XMLSize_t length){
-	auto oldSize=characterDataStack_.back().size();
-	characterDataStack_.back().resize(oldSize+length);
-	std::copy(chars,chars+length,characterDataStack_.back().begin()+oldSize);
-}
+#include "Snapshot/SnapshotHandler.hpp"
 
 Snapshot::Snapshot(){
 }
 
 Snapshot::Snapshot(std::string const & xmlFile){
+	Load(xmlFile);
+}
+
+void Snapshot::Load(std::string const & xmlFile){
     try {
         xercesc::XMLPlatformUtils::Initialize();
     }
@@ -94,7 +39,7 @@ Snapshot::Snapshot(std::string const & xmlFile){
     parser->setFeature(xercesc::XMLUni::fgSAX2CoreValidation, true);
     parser->setFeature(xercesc::XMLUni::fgSAX2CoreNameSpaces, true);   // optional
 
-    xercesc::DefaultHandler* defaultHandler = new SnapshotHandler(*this);
+    SnapshotHandler* defaultHandler = new SnapshotHandler(*this);
 
     parser->setContentHandler(defaultHandler);
     parser->setErrorHandler(defaultHandler);
@@ -120,6 +65,9 @@ Snapshot::Snapshot(std::string const & xmlFile){
         std::cout << "Unexpected Exception \n" ;
         //return -1;
     }
+
+    std::vector<char const *> argv=defaultHandler->optionsArgv();
+    options_.ProcessOptions(argv.size(),&argv[0]);
 
     delete parser;
     delete defaultHandler;

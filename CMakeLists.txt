@@ -24,13 +24,17 @@ src/common/
 src/common/Generated
 src/common/Include
 src/common/Snapshot
+src/common/Utilities
+src/common/Xmltar
 )
 
 file(GLOB SOURCES 
 	src/common/*.[ch]pp
+	src/common/Compression/*.[ch]pp
 	src/common/Generated/*.[ch]pp
 	src/common/Options/*.[ch]pp
 	src/common/Snapshot/*.[ch]pp
+	src/common/Utilities/*.[ch]pp
 	src/common/Xmltar/*.[ch]pp
 )
 

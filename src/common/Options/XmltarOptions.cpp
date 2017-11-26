@@ -10,8 +10,6 @@
 #include "Options/XmltarOptions.hpp"
 
 void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
-	std::cerr << "ProcessOptions: " << 0 << std::endl;
-
 	Parse_Opts::Option_Parser p;
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-c","--create","create archive",
@@ -27,13 +25,13 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Increment_Value(verbosity_));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
-			p.Assign_Value(fileCompress_, Compression::IDENTITY));
+			p.Assign_Value(fileCompression_, Compression::IDENTITY));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompress_, Compression::GZIP));
+			p.Assign_Value(fileCompression_, Compression::GZIP));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-bzip2","file-compress files before archiving",
-			p.Assign_Value(fileCompress_, Compression::BZIP2));
+			p.Assign_Value(fileCompression_, Compression::BZIP2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-lzip","file-compress files before archiving",
-			p.Assign_Value(fileCompress_, Compression::LZIP));
+			p.Assign_Value(fileCompression_, Compression::LZIP));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
 			p.Assign_Value(encoding_,XmltarOptions::BASE16));
@@ -41,25 +39,23 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(encoding_,XmltarOptions::BASE64));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompress_, Compression::GZIP));
+			p.Assign_Value(archiveMemberCompression_, Compression::GZIP));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-bzip2","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompress_, Compression::BZIP2));
+			p.Assign_Value(archiveMemberCompression_, Compression::BZIP2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-lzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompress_, Compression::LZIP));
+			p.Assign_Value(archiveMemberCompression_, Compression::LZIP));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompress_, Compression::GZIP));
+			p.Assign_Value(archiveCompression_, Compression::GZIP));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--bzip2","compress archive",
-			p.Assign_Value(archiveCompress_, Compression::BZIP2));
+			p.Assign_Value(archiveCompression_, Compression::BZIP2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--lzip","compress archive",
-			p.Assign_Value(archiveCompress_, Compression::LZIP));
+			p.Assign_Value(archiveCompression_, Compression::LZIP));
 
+	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
+			p.Assign_Args(listed_incremental_file_));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--compress-listed-incremental","compress listed-incremental file",
 			p.Assign_Value(compress_listed_incremental_file_,true));
-	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
-			p.Assign_Args(listed_incremental_file_),
-			p.Assign_Value(incremental_,true));
-
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-f","--file","specify archive to create/append/list/extract",
 			p.Assign_Args(base_xmltar_file_name_));
@@ -93,7 +89,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 		source_files_.get().push_back(boost::filesystem::path(*i));
 	}
 
-	current_sequence_number_=starting_sequence_number_.get();
+	if (starting_sequence_number_)
+		current_sequence_number_=starting_sequence_number_.get();
 }
 
 std::string XmltarOptions::toXMLString(){
@@ -101,73 +98,99 @@ std::string XmltarOptions::toXMLString(){
 
 	oss << Tabs("\t\t") << "<options>" << std::endl;
 
-	oss << Tabs("\t\t\t") << "<operation>" << std::endl;
-	if (operation_==APPEND) oss << "--apppend";
-	else if (operation_==CREATE) oss << "--create";
-	else if (operation_==LIST) oss << "--list";
-	else if (operation_==EXTRACT) oss << "--extract";
-	else oss << "UNKNOWN OPERATION";
-	oss << "</operation>" << std::endl;
-
-	for(int i=0; i<verbosity_; ++i)
-		oss << Tabs("\t\t\t") << "<verbosity>-v</verbosity>" << std::endl;
+	if (operation_){
+		oss << Tabs("\t\t\t") << "<option>";
+		if (operation_==APPEND) oss << "--apppend";
+		else if (operation_==CREATE) oss << "--create";
+		else if (operation_==LIST) oss << "--list";
+		else if (operation_==EXTRACT) oss << "--extract";
+		else throw(std::logic_error("XmltarOptions::toXMLString: unknown operation"));
+		oss << "</option>" << std::endl;
+	}
+	if (verbosity_)
+		for(int i=0; i<verbosity_.get(); ++i)
+			oss << Tabs("\t\t\t") << "<option>--verbosity</option>" << std::endl;
 
 	if(multi_volume_)
-		oss << Tabs("\t\t\t") << "<multi-volume>--multi-volume</verbosity>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--multi-volume</option>" << std::endl;
 
-	oss << Tabs("\t\t\t") << "<file-compression>" << std::endl;
-	if (fileCompress_==IDENTITY) oss << "--file-identity";
-	else if (fileCompress_==GZIP) oss << "--file-gzip";
-	else if (fileCompress_==BZIP2) oss << "--file-bzip2";
-	else if (fileCompress_==LZIP) oss << "--file-lzip";
-	else oss << "UNKNOWN OPERATION";
-	oss << "</file-compression>" << std::endl;
+	if (fileCompression_){
+		oss << Tabs("\t\t\t") << "<option>";
+		if (fileCompression_==IDENTITY) oss << "--file-identity";
+		else if (fileCompression_==GZIP) oss << "--file-gzip";
+		else if (fileCompression_==BZIP2) oss << "--file-bzip2";
+		else if (fileCompression_==LZIP) oss << "--file-lzip";
+		else throw(std::logic_error("XmltarOptions::toXMLString: unknown fileCompress"));
+		oss << "</option>" << std::endl;
+	}
 
-	oss << Tabs("\t\t\t") << "<file-encoding>" << std::endl;
-	if (encoding_==BASE16) oss << "--base16";
-	else if (encoding_==BASE64) oss << "--base64";
-	else oss << "UNKNOWN OPERATION";
-	oss << "</file-encoding>" << std::endl;
+	if (encoding_){
+		oss << Tabs("\t\t\t") << "<option>";
+		if (encoding_==BASE16) oss << "--base16";
+		else if (encoding_==BASE64) oss << "--base64";
+		else throw(std::logic_error("XmltarOptions::toXMLString: unknown encoding"));
+		oss << "</option>" << std::endl;
+	}
 
-	oss << Tabs("\t\t\t") << "<member-compression>" << std::endl;
-	if (archiveMemberCompress_==IDENTITY) oss << "--member-identity";
-	else if (archiveMemberCompress_==GZIP) oss << "--member-gzip";
-	else if (archiveMemberCompress_==BZIP2) oss << "--member-bzip2";
-	else if (archiveMemberCompress_==LZIP) oss << "--member-lzip";
-	else oss << "UNKNOWN OPERATION";
-	oss << "</member-compression>" << std::endl;
+	if (archiveMemberCompression_){
+		oss << Tabs("\t\t\t") << "<option>";
+		if (archiveMemberCompression_==IDENTITY) oss << "--member-identity";
+		else if (archiveMemberCompression_==GZIP) oss << "--member-gzip";
+		else if (archiveMemberCompression_==BZIP2) oss << "--member-bzip2";
+		else if (archiveMemberCompression_==LZIP) oss << "--member-lzip";
+		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveMemberCompress_"));
+		oss << "</option>" << std::endl;
+	}
 
-	oss << Tabs("\t\t\t") << "<archive-compression>" << std::endl;
-	if (archiveCompress_==IDENTITY) oss << "--archive-identity";
-	else if (archiveCompress_==GZIP) oss << "--archive-gzip";
-	else if (archiveCompress_==BZIP2) oss << "--archive-bzip2";
-	else if (archiveCompress_==LZIP) oss << "--archive-lzip";
-	else oss << "UNKNOWN OPERATION";
-	oss << "</archive-compression>" << std::endl;
+	if (archiveCompression_){
+		oss << Tabs("\t\t\t") << "<option>";
+		if (archiveCompression_==IDENTITY) oss << "--identity";
+		else if (archiveCompression_==GZIP) oss << "--gzip";
+		else if (archiveCompression_==BZIP2) oss << "--bzip2";
+		else if (archiveCompression_==LZIP) oss << "--lzip";
+		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveCompress_"));
+		oss << "</option>" << std::endl;
+	}
 
-	if (incremental_)
-		oss << Tabs("\t\t\t") << "<incremental>--incremental</incremental>" << std::endl;
+	if (tape_length_)
+		oss << Tabs("\t\t\t") << "<option>--tape-length=" << tape_length_.get() << "</option>" << std::endl;
+
+	if (stop_after_)
+		oss << Tabs("\t\t\t") << "<option>--stop-after=" << stop_after_.get() << "</option>" << std::endl;
+
+	if (listed_incremental_file_)
+		oss << Tabs("\t\t\t") << "<option>--listed-incremental=" << listed_incremental_file_.get().string() << "</option>" << std::endl;
 
 	if (compress_listed_incremental_file_)
-		oss << Tabs("\t\t\t") << "<compress-listed-incremental>--compress-listed-incremental</compress-listed-incremental>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--compress-listed-incremental</option>" << std::endl;
 
-	size_t tape_length_;
-	size_t stop_after_;
-	std::vector<boost::filesystem::path> source_files_;
-	boost::filesystem::path listed_incremental_file_;
-	boost::filesystem::path files_from_;
-	std::vector<boost::filesystem::path> exclude_files_;
-	std::string archiveMemberTag_;
-   	bool tabs_;
-   	bool newlines_;
+	if (files_from_)
+		oss << Tabs("\t\t\t") << "<option>--files-from=" << files_from_.get().string() << "</option>" << std::endl;
 
-	std::string base_xmltar_file_name_;							// xmltar_file;
-	unsigned int starting_sequence_number_;						// starting_volume;
+	if (exclude_files_)
+		for(auto & i : exclude_files_.get())
+			oss << Tabs("\t\t\t") << "<option>--exclude-files=" << i.string() << "</option>" << std::endl;
 
-	std::string current_xmltar_file_name_;
-	unsigned int current_sequence_number_;
+	if (archiveMemberTag_)
+		oss << Tabs("\t\t\t") << "<option>--archive-member-tag=" << archiveMemberTag_.get() << "</option>" << std::endl;
 
+	if (tabs_ && tabs_.get()==false)
+		oss << Tabs("\t\t\t") << "<option>--no-tabs</option>" << std::endl;
 
+	if (newlines_ && newlines_.get()==false)
+		oss << Tabs("\t\t\t") << "<option>--no-newlines</option>" << std::endl;
+
+	if (base_xmltar_file_name_)
+		oss << Tabs("\t\t\t") << "<option>--file=" << base_xmltar_file_name_.get() << "</option>" << std::endl;
+
+	if (starting_sequence_number_)
+		oss << Tabs("\t\t\t") << "<option>--starting-volume=" << starting_sequence_number_.get() << "</option>" << std::endl;
+
+	if (source_files_)
+		for(auto & i : source_files_.get())
+			oss << Tabs("\t\t\t") << "<option>" << i.string() << "</option>" << std::endl;
+
+	oss << Tabs("\t\t") << "</options>" << std::endl;
 
 	return oss.str();
 }

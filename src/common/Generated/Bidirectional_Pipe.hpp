@@ -92,12 +92,14 @@ public:
     bool Can_Write(void);
 
     void Write();
+    void QueueWrite(char const c);
     void QueueWrite(std::string const & data);
     std::string Read1(size_t n=PIPE_BUF);
     std::string Read2(size_t n=PIPE_BUF);
 
     void QueueWriteClose();
     bool ChildExitedAndAllPipesClosed();
+    int ExitStatus();
 };
 
 #endif /* Bidirectional_Pipe_hpp_ */

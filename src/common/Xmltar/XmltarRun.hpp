@@ -25,28 +25,24 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
-#include <iostream>
-#include <fstream>
-#include <memory>
+#include <queue>
+#include <algorithm>
+
 #include <boost/filesystem.hpp>
 
 #include "Options/XmltarOptions.hpp"
 #include "Meta_Data_Ext4.hpp"
 #include "Debug.hpp"
+#include "Utilities/PathCompare.hpp"
 
 class XmltarRun {
 private:
 	std::string version;
-public:
-	// options and arguments
-
     XmltarOptions options_;
+    PathCompare pathCompare;
+    std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
 
-	std::vector<boost::filesystem::path> file_stack;			// files waiting to be archived
-	std::map<boost::filesystem::path,meta_data_ext4> directory_map;
-
+public:
 	XmltarRun(int, char const *[]);
 
 	bool Exclude_File(std::string);

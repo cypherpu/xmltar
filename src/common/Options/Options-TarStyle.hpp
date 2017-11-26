@@ -24,6 +24,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 #include <map>
+#include <iostream>
 
 #include <boost/filesystem.hpp>
 

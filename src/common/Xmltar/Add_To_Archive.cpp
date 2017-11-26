@@ -57,7 +57,7 @@ void XmltarRun::Add_To_Archive(void){
     }
 
 	Incremental_File ifs;
-	if (options_.incremental_) ifs.Open(options_.listed_incremental_file_.get().string(),options_.compress_listed_incremental_file_.get());
+	if (false) ifs.Open(options_.listed_incremental_file_.get().string(),options_.compress_listed_incremental_file_.get());
 
 	while(options_.source_files_.get().size()!=0){
 	    boost::filesystem::path current_file(options_.source_files_.get().back());
@@ -70,7 +70,7 @@ void XmltarRun::Add_To_Archive(void){
 
         Archive_Member member(current_file, options_);
 
-		if (options_.incremental_)
+		if (false)
 			if (ifs.Is_Current(member))
 				continue;
 
@@ -79,7 +79,7 @@ void XmltarRun::Add_To_Archive(void){
 
 		volumes_completed=archive->Store_Member(member);
 
-		if (options_.incremental_)
+		if (false)
 			ifs.Update(member);
 
 		if (volumes_completed>=options_.stop_after_) break;
@@ -87,7 +87,7 @@ void XmltarRun::Add_To_Archive(void){
 
 	archive->Close(true);
 
-	if (options_.incremental_){
+	if (false){
 		ifs.Write();
 		ifs.Close();
 	}
