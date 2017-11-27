@@ -19,13 +19,8 @@ extern "C" {
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/XMLEscapeAttribute.hpp"
 
-std::string XmltarMember::Header(){
-    std::string s;
-
-	boost::filesystem::file_status f_stat;
-	boost::filesystem::file_type f_type;
-	struct stat stat_buf;
-	off_t file_size;
+XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, bool includeMetadata)
+	: options_(options), filepath_(filepath), includeMetadata_(includeMetadata) {
 
     f_stat=boost::filesystem::symlink_status(filepath_);
 
@@ -40,6 +35,10 @@ std::string XmltarMember::Header(){
 
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
+}
+
+std::string XmltarMember::Header(){
+    std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + XMLEscapeAttribute(filepath_.relative_path().string()) + "\">"+options_.Newline();
     if (!includeMetadata_){
@@ -76,8 +75,8 @@ std::string XmltarMember::Header(){
 
         s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+To_Octal_Int(stat_buf.st_mode)+"\"/>"+options_.Newline();
         s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+To_Local_Time(stat_buf.st_atime)+"\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + to_string(stat_buf.st_ctime) + "\" localtime=\""+To_Local_Time(stat_buf.st_ctime)+"\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + to_string(stat_buf.st_mtime) + "\" localtime=\""+To_Local_Time(stat_buf.st_mtime)+"\"/>"+options_.Newline();
+        s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+To_Local_Time(stat_buf.st_ctime)+"\"/>"+options_.Newline();
+        s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+To_Local_Time(stat_buf.st_mtime)+"\"/>"+options_.Newline();
 
         s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+To_Decimal_Int(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
         s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+To_Decimal_Int(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
@@ -92,7 +91,7 @@ std::string XmltarMember::Header(){
     switch(f_type){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
-            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+CompressionName(options_.fileCompression_);
+            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+CompressionName(options_.fileCompression_.get());
 
             if (options_.encoding_==XmltarOptions::BASE16) s+="\" encoding=\"base16";
             else if (options_.encoding_==XmltarOptions::BASE64) s+="\" encoding=\"base64";

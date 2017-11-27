@@ -14,10 +14,13 @@ class XmltarMember {
 	XmltarOptions const  & options_;
 	boost::filesystem::path const & filepath_;
 	bool includeMetadata_;
+	struct stat stat_buf;
+	boost::filesystem::file_status f_stat;
+	boost::filesystem::file_type f_type;
+	off_t file_size;
 
 public:
-	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, bool includeMetadata)
-		: options_(options), filepath_(filepath), includeMetadata_(includeMetadata) {}
+	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, bool includeMetadata);
 
 	std::string Header();
 	std::string Trailer();
