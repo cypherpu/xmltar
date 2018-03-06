@@ -19,9 +19,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "XmltarRun.hpp"
+#include "XmltarInvocation.hpp"
 
-bool XmltarRun::Matches_Archive_Member(std::string filename){
+bool XmltarInvocation::Matches_Archive_Member(std::string filename){
 	// if no files to be extracted were specified, extract all files
 	if (options_.source_files_.get().size()==0) return true;
 

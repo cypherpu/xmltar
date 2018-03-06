@@ -10,6 +10,10 @@
 
 #include "Options/XmltarOptions.hpp"
 
+extern "C" {
+#include <sys/stat.h>
+}
+
 class XmltarMember {
 	XmltarOptions const  & options_;
 	boost::filesystem::path const & filepath_;

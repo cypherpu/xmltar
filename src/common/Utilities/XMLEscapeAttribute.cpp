@@ -5,6 +5,8 @@
  *      Author: dbetz
  */
 
+#include <stdexcept>
+
 #include "XMLEscapeAttribute.hpp"
 
 struct EntityMap {

@@ -31,7 +31,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Archive_Member.hpp"
 #include "Conversions.hpp"
 #include "Incremental_File.hpp"
-#include "XmltarRun.hpp"
+#include "XmltarInvocation.hpp"
 
 extern "C" {
 #include <unistd.h>
@@ -44,7 +44,7 @@ extern "C" {
  * 2. Append, in which case bytes_already_written=the number of bytes already written by a previous invocation of xmltar
  */
 
-void XmltarRun::Add_To_Archive(void){
+void XmltarInvocation::Add_To_Archive(void){
     DEBUGCXX(debugcxx,"Xmltar::Add_To_Archive");
 	size_t volumes_completed(0);
 	int sequence_number(options_.starting_sequence_number_.get());

@@ -41,8 +41,19 @@ public:
 XmltarArchive::XmltarArchive(
 	XmltarOptions & opts,
 	std::string filename,
-	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived)
-	: options_(opts), filename_(filename), filesToBeArchived_(filesToBeArchived) {}
+	unsigned int volumeNumber,
+	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+	std::fpos position)
+	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
+{
+	if (options_.operation_.get()==XmltarOptions::Operation::CREATE){
+		std::ofstream ofs(filename_);
+		std::string compressedHeader=CompressArchive(Header(filename_,volumeNumber));
+		std::string minCompressedTrailer=CompressArchive(Trailer(0));
+
+
+	}
+}
 
 PartialFileRead XmltarArchive::create(unsigned int volumeNumber){
 	std::ofstream ofs(filename_);
@@ -201,19 +212,20 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	return IsPaddingTrailer(uncompressedContent);
 }
 
-std::string XmltarArchive::Compress(std::string s){
+std::string XmltarArchive::CompressArchive(std::string s){
 	std::string result;
 	Bidirectional_Pipe p;
 
 	p.Open(
-			CompressionCommand(options_.archiveMemberCompression_.get()),
-			CompressionArguments(options_.archiveMemberCompression_.get()));
+			CompressionCommand(options_.archiveCompression_.get()),
+			CompressionArguments(options_.archiveCompression_.get()));
 
 	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
 		p.QueueWrite(s);
 		p.QueueWriteClose();
 	}
 	while(!p.ChildExitedAndAllPipesClosed()){
+		if (p.Can_Write()) p.Write();
 		if (p.Can_Read1()) result+=p.Read1();
 		if (p.Can_Read2()) p.Read2();
 	}

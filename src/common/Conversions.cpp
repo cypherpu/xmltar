@@ -21,9 +21,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "boost/date_time/local_time_adjustor.hpp"
-#include "boost/date_time/c_local_time_adjustor.hpp"
 
 #include "Conversions.hpp"
 
@@ -38,22 +35,7 @@ int String_To_Integer(std::string s){
 	return result;
 }
 
-std::string To_Decimal_Int(int i){
-	std::ostringstream oss;
-
-	oss << std::dec << i;
-
-	return oss.str();
-}
-
-std::string To_Octal_Int(int i){
-	std::ostringstream oss;
-
-	oss << "0" << std::oct << i;
-
-	return oss.str();
-}
-
+#if 1
 std::string String_To_XML_Attribute_Value(std::string s){
 	std::string result;
 
@@ -115,10 +97,4 @@ std::string XML_Attribute_Value_To_String(std::string s){
 
 	return result;
 }
-
-std::string To_Local_Time(time_t t){
-	boost::posix_time::ptime pt=boost::posix_time::from_time_t(t);
-	boost::posix_time::ptime local_time = boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(pt);
-
-	return boost::posix_time::to_simple_string(local_time);
-}
+#endif

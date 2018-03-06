@@ -23,7 +23,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <boost/format.hpp>
 
-#include "common/Xmltar/XmltarRun.hpp"
+#include "common/Xmltar/XmltarInvocation.hpp"
 #include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
 
@@ -35,22 +35,22 @@ int main(int argc, char const *argv[])
 		result+=line;
 	}
 
-	XmltarRun xmltarRun(argc, argv);
+	XmltarInvocation xmltarInvocation(argc, argv);
 
 	if (false)
-		if (boost::filesystem::exists(xmltarRun.options_.listed_incremental_file_.get()))
-			Snapshot snapshot(xmltarRun.options_.listed_incremental_file_.get().string());
+		if (boost::filesystem::exists(xmltarInvocation.Options().listed_incremental_file_.get()))
+			Snapshot snapshot(xmltarInvocation.Options().listed_incremental_file_.get().string());
 		else {	// create snapshot file
-			if (xmltarRun.options_.verbosity_>=1)
-				std::cerr << "xmltar: creating snapshot file " << xmltarRun.options_.listed_incremental_file_.get() << std::endl;
+			if (xmltarInvocation.Options().verbosity_>=1)
+				std::cerr << "xmltar: creating snapshot file " << xmltarInvocation.Options().listed_incremental_file_.get() << std::endl;
 		}
 
 	try {
 	    DEBUGCXX(debugcxx,"main");
 
-		switch(xmltarRun.options_.operation_.get()){
-			case XmltarOptions::APPEND:
+		switch(xmltarInvocation.Options().operation_.get()){
 			case XmltarOptions::CREATE:
+			case XmltarOptions::APPEND:
 				//xmltar.Add_To_Archive();
 				break;
 			case XmltarOptions::EXTRACT:

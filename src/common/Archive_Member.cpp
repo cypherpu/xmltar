@@ -20,6 +20,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "Compression/Compression.hpp"
+#include "Utilities/ToDecimalInt.hpp"
+#include "Utilities/ToOctalInt.hpp"
+#include "Utilities/ToLocalTime.hpp"
+
 #include "Archive_Member.hpp"
 
 std::string Archive_Member::Generate_Metadata(){
@@ -55,17 +59,17 @@ std::string Archive_Member::Generate_Metadata(){
     struct passwd *pw=getpwuid(stat_buf.st_uid);
     struct group *g=getgrgid(stat_buf.st_gid);
 
-    s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+To_Octal_Int(stat_buf.st_mode)+"\"/>"+options_.Newline();
-    s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + To_Decimal_Int(stat_buf.st_atime) + "\" localtime=\""+To_Local_Time(stat_buf.st_atime)+"\"/>"+options_.Newline();
-    s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + To_Decimal_Int(stat_buf.st_ctime) + "\" localtime=\""+To_Local_Time(stat_buf.st_ctime)+"\"/>"+options_.Newline();
-    s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + To_Decimal_Int(stat_buf.st_mtime) + "\" localtime=\""+To_Local_Time(stat_buf.st_mtime)+"\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + ToDecimalInt(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + ToDecimalInt(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + ToDecimalInt(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
 
-    s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+To_Decimal_Int(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
-    s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+To_Decimal_Int(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
     if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
-        s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+To_Octal_Int(stat_buf.st_rdev)+"\"/>"+options_.Newline();
+        s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
     }
-    s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+To_Decimal_Int(stat_buf.st_size)+"\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
 
     s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 
@@ -94,7 +98,7 @@ std::string Archive_Member::Generate_Archive_Member_Header(){
             else if (options_.encoding_==XmltarOptions::BASE64) s+="\" encoding=\"base64";
             else throw "unrecognized encoding";
 
-            s+="\" total-size=\""+To_Decimal_Int(file_size)+"\" this-extent-start=\""+To_Decimal_Int(start_tell)+"\">"+options_.Newline();
+            s+="\" total-size=\""+ToDecimalInt(file_size)+"\" this-extent-start=\""+ToDecimalInt(start_tell)+"\">"+options_.Newline();
             break;
         case boost::filesystem::directory_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();

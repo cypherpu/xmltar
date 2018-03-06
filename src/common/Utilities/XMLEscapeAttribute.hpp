@@ -8,6 +8,8 @@
 #ifndef SRC_COMMON_UTILITIES_XMLESCAPEATTRIBUTE_HPP_
 #define SRC_COMMON_UTILITIES_XMLESCAPEATTRIBUTE_HPP_
 
+#include <string>
+
 std::string XMLEscapeAttribute(std::string const data);
 std::string XMLUnescapeAttribute(std::string const data);
 

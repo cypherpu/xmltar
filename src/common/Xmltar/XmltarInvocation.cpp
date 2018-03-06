@@ -19,6 +19,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "XmltarInvocation.hpp"
+
 #include <limits>
 
 #include <boost/format.hpp>
@@ -27,10 +29,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Options/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
-#include "Xmltar/XmltarRun.hpp"
 #include "Xmltar/XmltarArchive.hpp"
 
-XmltarRun::XmltarRun(int argc, char const *argv[])
+XmltarInvocation::XmltarInvocation(int argc, char const *argv[])
 	: version("Xmltar_0_0_1"), pathCompare(), filesToBeArchived_(pathCompare) {
 
 	options_.ProcessOptions(argc, argv);
@@ -73,11 +74,65 @@ XmltarRun::XmltarRun(int argc, char const *argv[])
 		}
 	}
 
-	Snapshot snapshot;
-	snapshot.options_=options_;
-	if (options_.listed_incremental_file_)
-		if (boost::filesystem::exists(options_.listed_incremental_file_.get()))
-			snapshot.Load(options_.listed_incremental_file_.get().string());
+	boost::optional<Snapshot> snapshot;
+	if (options_.listed_incremental_file_){
+		snapshot=Snapshot();
+		if (boost::filesystem::exists(options_.listed_incremental_file_.get())){
+			snapshot.get().
+					Load(options_.listed_incremental_file_.get().string());
+		}
+	}
+
+	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
+		if (options_.multi_volume_){
+			if (!options_.starting_sequence_number_){
+				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
+			}
+
+            if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
+            std::fpos position(0);
+            for(unsigned int i=0; i<options_.stop_after_.get(); ++i){
+                boost::format fmt(options_.base_xmltar_file_name_.get());
+                fmt % options_.starting_sequence_number_.get();
+                std::string filename=str(fmt);
+
+                XmltarArchive xmltarArchive(options_,filename, options_.starting_sequence_number_.get(), filesToBeArchived_, position);
+
+            	if (xmltarArchive.ranOutOfFiles()) break;
+            	if (xmltarArchive.ranOutOfSpace()){
+            		position=xmltarArchive.nextPosition();
+            	}
+            	else
+            		position=std::fpos(0);
+            }
+		}
+		else {
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), filesToBeArchived_,std::fpos(0));
+		}
+	}
+	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
+		if (options_.multi_volume_){
+			if (!options_.starting_sequence_number_){
+				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
+			}
+
+            if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
+            for(unsigned int i=0; i<options_.stop_after_.get(); ++i){
+                boost::format fmt(options_.base_xmltar_file_name_.get());
+                fmt % options_.starting_sequence_number_.get();
+                std::string filename=str(fmt);
+
+                XmltarArchive xmltarArchive(options_,filename, filesToBeArchived_);
+
+            	if (xmltarArchive.ranOutOfFiles()) break;
+            }
+		}
+		else {
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), filesToBeArchived_);
+		}
+	}
+
+#if 0
 	if (options_.multi_volume_){
 		if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
 			if (!options_.starting_sequence_number_){
@@ -126,4 +181,5 @@ XmltarRun::XmltarRun(int argc, char const *argv[])
         std::string filename=str(fmt);
 
 	}
+#endif
 }

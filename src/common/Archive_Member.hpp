@@ -41,7 +41,7 @@ extern "C" {
 }
 
 #include "Debug.hpp"
-#include "Xmltar/XmltarRun.hpp"
+#include "Xmltar/XmltarInvocation.hpp"
 #include "Conversions.hpp"
 
 class Archive_Member {

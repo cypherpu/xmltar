@@ -19,9 +19,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef Xmltar_hpp
+#ifndef COMMON_XMLTAR_XMLTARINVOCATION_HPP_
 
-#define Xmltar_hpp
+#define COMMON_XMLTAR_XMLTARINVOCATION_HPP_
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Debug.hpp"
 #include "Utilities/PathCompare.hpp"
 
-class XmltarRun {
+class XmltarInvocation {
 private:
 	std::string version;
     XmltarOptions options_;
@@ -43,12 +43,13 @@ private:
     std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
 
 public:
-	XmltarRun(int, char const *[]);
+    XmltarInvocation(int, char const *[]);
 
 	bool Exclude_File(std::string);
 	void Add_To_Archive(void);
 	void Extract(void);
 	bool Matches_Archive_Member(std::string);
+	XmltarOptions const & Options(){ return options_; }
 };
 
-#endif
+#endif // COMMON_XMLTAR_XMLTARINVOCATION_HPP_

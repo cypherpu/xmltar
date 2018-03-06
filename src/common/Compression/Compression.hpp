@@ -17,7 +17,7 @@ std::string HeaderMagicNumber(Compression compression, std::string identity);
 std::string TrailerMagicNumber(Compression compression);
 size_t WorstCaseCompression(size_t size, Compression compression);
 char const *CompressionCommand(Compression compression);
-char const *CompressionString(Compression compression);
+char const *CompressionName(Compression compression);
 std::vector<char const *> CompressionArguments(Compression compression);
 std::vector<char const *> DecompressionArguments(Compression compression);
 

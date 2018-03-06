@@ -5,6 +5,8 @@
  *      Author: dbetz
  */
 
+#include <stdexcept>
+
 char ToHexDigit(int i){
 	if (i>=0 && i<=9)
 		return i+'0';

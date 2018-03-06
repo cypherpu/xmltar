@@ -22,12 +22,16 @@ public:
 class XmltarArchive {
 	XmltarOptions options_;
 	std::string filename_;
+	unsigned int volumeNumber_;
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived_;
+	std::fpos position_;
 public:
 	XmltarArchive(
 		XmltarOptions & opts,
 		std::string filename,
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived);
+		unsigned int volumeNumber,
+		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+		std::fpos position);
 
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);
@@ -37,8 +41,8 @@ public:
 
 	bool static IsPaddingTrailer(std::string s);
 	bool IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::off_type offset);
-	std::string Compress(std::string compressedContent);
-	std::string Decompress(std::string compressedContent);
+	std::string CompressArchive(std::string compressedContent);
+	std::string DecompressArchive(std::string compressedContent);
 
 };
 

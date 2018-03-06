@@ -26,7 +26,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/spirit/include/qi.hpp>
 
 #include "Archive_Member.hpp"
-#include "Conversions.hpp"
+#include "Utilities/ToDecimalInt.hpp"
 
 std::string Archive::Generate_Archive_Header(void){
     std::string s;
@@ -38,7 +38,7 @@ std::string Archive::Generate_Archive_Header(void){
     if (options_.multi_volume_){
         s+=options_.Tabs("\t\t")+"<multi-volume>"+options_.Newline();
         s+=options_.Tabs("\t\t\t")+"<name-pattern>"+options_.base_xmltar_file_name_.get()+"</name-pattern>"+options_.Newline();
-        s+=options_.Tabs("\t\t\t")+"<sequence-number>"+To_Decimal_Int(archive_sequence_number)+"</sequence-number>"+options_.Newline();
+        s+=options_.Tabs("\t\t\t")+"<sequence-number>"+ToDecimalInt(archive_sequence_number)+"</sequence-number>"+options_.Newline();
         s+=options_.Tabs("\t\t")+"</multi-volume>"+options_.Newline();
     }
     s+=options_.Tabs("\t")+"</options>"+options_.Newline();
