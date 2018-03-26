@@ -8,6 +8,42 @@
 #include <stdexcept>
 
 #include "Compression/Compression.hpp"
+#include "Bidirectional_Pipe.hpp"
+
+std::string CompressorVersion(Compression compress){
+	std::string result1;
+	std::string result2;
+	Bidirectional_Pipe p;
+
+	p.Open(
+			CompressionCommand(compress),
+			std::vector<char const *>{CompressionName(compress),"--version"});
+
+	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
+		p.QueueWrite("");
+		p.QueueWriteClose();
+	}
+	while(!p.ChildExitedAndAllPipesClosed()){
+		if (p.Can_Write()) p.Write();
+		if (p.Can_Read1()) result1+=p.Read1();
+		if (p.Can_Read2()) result2+=p.Read2();
+	}
+
+	std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
+
+	if (result2=="") return result1;
+	else return result2;
+}
+
+bool CorrectCompressorVersion(Compression compress){
+	std::string compressorVersion=CompressorVersion(compress);
+	std::string expectedCompressorVersion=ExpectedCompressorVersionString(compress);
+
+	if (compressorVersion.compare(0,expectedCompressorVersion.size(),expectedCompressorVersion)==0)
+		return true;
+	else
+		return false;
+}
 
 std::string HeaderMagicNumber(Compression compression, std::string identity){
 	switch(compression){
@@ -107,6 +143,28 @@ char const *CompressionName(Compression compression){
 
 	return result;
 }
+std::string ExpectedCompressorVersionString(Compression compression){
+	std::string result;
+
+	switch(compression){
+	case IDENTITY:
+		result="cat (GNU coreutils) 8.27";
+		break;
+	case GZIP:
+		result="gzip 1.8";
+		break;
+	case BZIP2:
+		result="bzip2, a block-sorting file compressor.  Version 1.0.6, 6-Sept-2010.";
+		break;
+	case LZIP:
+		result="lzip 1.20";
+		break;
+	default:
+		throw std::invalid_argument("CompressionCommand: unknown compression");
+	}
+
+	return result;
+}
 
 std::vector<char const *> CompressionArguments(Compression compression){
 	std::vector<char const *> result;
@@ -149,6 +207,70 @@ std::vector<char const *> DecompressionArguments(Compression compression){
 		break;
 	default:
 		throw std::invalid_argument("CompressionCommand: unknown compression");
+	}
+
+	return result;
+}
+
+std::string MinimumCompressionString(Compression compression){
+	std::string result;
+
+	switch(compression){
+	case IDENTITY:
+		result="";
+		break;
+	case GZIP:
+		result="";
+		break;
+	case BZIP2:
+		result="0";
+		break;
+	case LZIP:
+		result="";
+		break;
+	default:
+		throw std::invalid_argument("CompressionCommand: unknown compression");
+	}
+
+	return result;
+}
+
+std::string CompressString(Compression compress, std::string const & s){
+	std::string result;
+	Bidirectional_Pipe p;
+
+	p.Open(
+			CompressionCommand(compress),
+			CompressionArguments(compress));
+
+	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
+		p.QueueWrite(s);
+		p.QueueWriteClose();
+	}
+	while(!p.ChildExitedAndAllPipesClosed()){
+		if (p.Can_Write()) p.Write();
+		if (p.Can_Read1()) result+=p.Read1();
+		if (p.Can_Read2()) p.Read2();
+	}
+
+	return result;
+}
+
+std::string DecompressString(Compression compress, std::string const & s){
+	std::string result;
+	Bidirectional_Pipe p;
+
+	p.Open(
+			CompressionCommand(compress),
+			DecompressionArguments(compress));
+
+	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
+		p.QueueWrite(s);
+		p.QueueWriteClose();
+	}
+	while(!p.ChildExitedAndAllPipesClosed()){
+		if (p.Can_Read1()) result+=p.Read1();
+		if (p.Can_Read2()) p.Read2();
 	}
 
 	return result;

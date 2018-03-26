@@ -43,7 +43,7 @@ private:
     std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
 
 public:
-    XmltarInvocation(int, char const *[]);
+    XmltarInvocation(XmltarOptions const & options);
 
 	bool Exclude_File(std::string);
 	void Add_To_Archive(void);

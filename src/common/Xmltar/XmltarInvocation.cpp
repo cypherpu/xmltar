@@ -25,19 +25,17 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/format.hpp>
 #include <boost/random.hpp>
+#include <stdexcept>
 
 #include "Options/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
 #include "Xmltar/XmltarArchive.hpp"
 
-XmltarInvocation::XmltarInvocation(int argc, char const *argv[])
-	: version("Xmltar_0_0_1"), pathCompare(), filesToBeArchived_(pathCompare) {
-
-	options_.ProcessOptions(argc, argv);
+XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
+	: version("Xmltar_0_0_1"), options_(options), pathCompare(), filesToBeArchived_(pathCompare) {
 
 	if (options_.verbosity_==3){
-		std::cerr << "Argc=" << argc << std::endl;
 		if (options_.operation_==XmltarOptions::APPEND) std::cerr << "Operation=APPEND" << std::endl;
 		if (options_.operation_==XmltarOptions::CREATE) std::cerr << "Operation=CREATE" << std::endl;
 		if (options_.operation_==XmltarOptions::LIST) std::cerr << "Operation=LIST" << std::endl;
@@ -90,24 +88,29 @@ XmltarInvocation::XmltarInvocation(int argc, char const *argv[])
 			}
 
             if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
-            std::fpos position(0);
-            for(unsigned int i=0; i<options_.stop_after_.get(); ++i){
+            std::streampos position(0);
+            size_t volumeNumber=options_.starting_sequence_number_.get();
+            for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
                 boost::format fmt(options_.base_xmltar_file_name_.get());
-                fmt % options_.starting_sequence_number_.get();
+                fmt % volumeNumber;
                 std::string filename=str(fmt);
 
-                XmltarArchive xmltarArchive(options_,filename, options_.starting_sequence_number_.get(), filesToBeArchived_, position);
+                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToBeArchived_, position);
+
+                // We return from XmltarArchive under 2 circumstances:
+                // 1. we ran out of files to archive
+                // 2. we ran out of space in the archive
 
             	if (xmltarArchive.ranOutOfFiles()) break;
-            	if (xmltarArchive.ranOutOfSpace()){
-            		position=xmltarArchive.nextPosition();
-            	}
             	else
-            		position=std::fpos(0);
+            		position=std::streampos(0);
             }
 		}
-		else {
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), filesToBeArchived_,std::fpos(0));
+		else {	// !options_.multi_volume_
+			if (!options_.base_xmltar_file_name_)
+				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
+
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToBeArchived_,std::streampos(0));
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
@@ -117,18 +120,19 @@ XmltarInvocation::XmltarInvocation(int argc, char const *argv[])
 			}
 
             if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
-            for(unsigned int i=0; i<options_.stop_after_.get(); ++i){
+            size_t volumeNumber=options_.starting_sequence_number_.get();
+            for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
                 boost::format fmt(options_.base_xmltar_file_name_.get());
-                fmt % options_.starting_sequence_number_.get();
+                fmt % volumeNumber;
                 std::string filename=str(fmt);
 
-                XmltarArchive xmltarArchive(options_,filename, filesToBeArchived_);
+                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToBeArchived_,std::streampos(0));
 
             	if (xmltarArchive.ranOutOfFiles()) break;
             }
 		}
 		else {
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), filesToBeArchived_);
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToBeArchived_, std::streampos(0));
 		}
 	}
 

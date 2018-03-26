@@ -26,16 +26,33 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "common/Xmltar/XmltarInvocation.hpp"
 #include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
+#include "Options/XmltarOptions.hpp"
+#include "common/Compression/Compression.hpp"
 
 int main(int argc, char const *argv[])
 {
+	if (!CorrectCompressorVersion(Compression::IDENTITY))
+		throw std::runtime_error("main: wrong version 'cat' command");
+
+	if (!CorrectCompressorVersion(Compression::GZIP))
+		throw std::runtime_error("main: wrong version 'gzip' command");
+
+	if (!CorrectCompressorVersion(Compression::BZIP2))
+		throw std::runtime_error("main: wrong version 'bzip2' command");
+
+	if (!CorrectCompressorVersion(Compression::LZIP))
+		throw std::runtime_error("main: wrong version 'lzip' command");
+
+	XmltarOptions options;
+	options.ProcessOptions(argc, argv);
+
+	XmltarInvocation xmltarInvocation(options);
+
 	std::string line, result;
 	std::ifstream ifs("snapshot-template.xml");
 	while(std::getline(ifs,line)){
 		result+=line;
 	}
-
-	XmltarInvocation xmltarInvocation(argc, argv);
 
 	if (false)
 		if (boost::filesystem::exists(xmltarInvocation.Options().listed_incremental_file_.get()))
@@ -47,6 +64,9 @@ int main(int argc, char const *argv[])
 
 	try {
 	    DEBUGCXX(debugcxx,"main");
+
+	    if (!xmltarInvocation.Options().operation_)
+	    	throw std::logic_error("xmltar: called without operation");
 
 		switch(xmltarInvocation.Options().operation_.get()){
 			case XmltarOptions::CREATE:
@@ -71,6 +91,10 @@ int main(int argc, char const *argv[])
 	}
 	catch (std::string & msg){
 		std::cerr << msg << std::endl;
+		exit(-1);
+	}
+	catch (std::exception & e){
+		std::cerr << e.what() << std::endl;
 		exit(-1);
 	}
 	catch (...){

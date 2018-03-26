@@ -356,8 +356,7 @@ public:
 		std::vector<std::string> left_over_args;
 
 		int next_arg=1;
-		if (argc<=1)
-			throw "called without options";
+		if (argc<=1) return left_over_args;
 
 		// look for old-style options first.  These are single letter options, not preceded by a "-", which are clustered
 		// together in one option group immediately following the tar command. if any of these options require arguments,

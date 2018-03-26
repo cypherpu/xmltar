@@ -13,12 +13,20 @@
 
 enum Compression { IDENTITY, GZIP, BZIP2, LZIP };
 
+std::string CompressorVersion(Compression compression);
+bool CorrectCompressorVersion(Compression compression);
 std::string HeaderMagicNumber(Compression compression, std::string identity);
 std::string TrailerMagicNumber(Compression compression);
 size_t WorstCaseCompression(size_t size, Compression compression);
 char const *CompressionCommand(Compression compression);
 char const *CompressionName(Compression compression);
+char const *CompressionVersionString(Compression compression);
+std::string ExpectedCompressorVersionString(Compression compression);
 std::vector<char const *> CompressionArguments(Compression compression);
 std::vector<char const *> DecompressionArguments(Compression compression);
+std::string MinimumCompressionString(Compression compression);
+std::string CompressString(Compression compression, std::string const & s);
+std::string DecompressString(Compression compression, std::string const & s);
+
 
 #endif /* SRC_COMMON_COMPRESSION_COMPRESSION_HPP_ */

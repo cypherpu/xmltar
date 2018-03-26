@@ -43,41 +43,44 @@ XmltarArchive::XmltarArchive(
 	std::string filename,
 	unsigned int volumeNumber,
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
-	std::fpos position)
+	std::streampos position)
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE){
 		std::ofstream ofs(filename_);
-		std::string compressedHeader=CompressArchive(Header(filename_,volumeNumber));
-		std::string minCompressedTrailer=CompressArchive(Trailer(0));
+		std::string compressedHeader=CompressedHeader(filename_,volumeNumber);
+		std::string minCompressedTrailer=CompressedTrailer(0);
 
-
+		while(filesToBeArchived.size()){
+			XmltarMember member(options_,filesToBeArchived_.top(),true);
+		}
 	}
 }
 
 PartialFileRead XmltarArchive::create(unsigned int volumeNumber){
-	std::ofstream ofs(filename_);
-
 	if (options_.multi_volume_ && options_.multi_volume_.get()){
 		if (!options_.tape_length_)
 			throw std::logic_error("XmltarArchive::create: must specify tape_length for multi-volume archive");
 
 		std::ofstream ofs(filename_);
-		std::string compressedHeader=Compress(Header(filename_,volumeNumber));
-		std::string minCompressedTrailer=Compress(Trailer(0));
+		std::string compressedHeader=CompressedHeader(filename_,volumeNumber);
+		std::string minCompressedTrailer=CompressedTrailer(0);
 
 		XmltarMember member(options_,filesToBeArchived_.top(),true);
 
 		std::string memberHeader=member.Header();
 		std::string memberTrailer=member.Trailer();
 
-		if (compressedHeader.size()+Compress(memberHeader+memberTrailer).size()+minCompressedTrailer.size())
+		if (compressedHeader.size()+CompressString(options_.archiveMemberCompression_.get(),memberHeader+memberTrailer).size()+minCompressedTrailer.size())
 				;
 
 		// write gzip Archive header
 
 		// while(maxLength(archiveHeader+memberHeader)<tapelength){
 		//		archive at least part of next volume
+	}
+	else {		// !(options_.multi_volume_ && options_.multi_volume_.get())
+
 	}
 }
 
@@ -207,50 +210,9 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	std::string compressedContent(	(std::istreambuf_iterator<char>(iofs)),
 									(std::istreambuf_iterator<char>()    ));
 
-	std::string uncompressedContent=Decompress(compressedContent);
+	std::string uncompressedContent=DecompressString(options_.archiveCompression_.get(),compressedContent);
 
 	return IsPaddingTrailer(uncompressedContent);
-}
-
-std::string XmltarArchive::CompressArchive(std::string s){
-	std::string result;
-	Bidirectional_Pipe p;
-
-	p.Open(
-			CompressionCommand(options_.archiveCompression_.get()),
-			CompressionArguments(options_.archiveCompression_.get()));
-
-	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-		p.QueueWrite(s);
-		p.QueueWriteClose();
-	}
-	while(!p.ChildExitedAndAllPipesClosed()){
-		if (p.Can_Write()) p.Write();
-		if (p.Can_Read1()) result+=p.Read1();
-		if (p.Can_Read2()) p.Read2();
-	}
-
-	return result;
-}
-
-std::string XmltarArchive::Decompress(std::string s){
-	std::string result;
-	Bidirectional_Pipe p;
-
-	p.Open(
-			CompressionCommand(options_.archiveMemberCompression_.get()),
-			DecompressionArguments(options_.archiveMemberCompression_.get()));
-
-	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-		p.QueueWrite(s);
-		p.QueueWriteClose();
-	}
-	while(!p.ChildExitedAndAllPipesClosed()){
-		if (p.Can_Read1()) result+=p.Read1();
-		if (p.Can_Read2()) p.Read2();
-	}
-
-	return result;
 }
 
 std::string XmltarArchive::Header(std::string filename, int archive_sequence_number){
@@ -264,7 +226,11 @@ std::string XmltarArchive::Header(std::string filename, int archive_sequence_num
     return s;
 }
 
-std::string XmltarArchive::Trailer(unsigned int padding){
+std::string XmltarArchive::CompressedHeader(std::string filename, int archive_sequence_number){
+	return CompressString(options_.archiveCompression_.get(),Header(filename, archive_sequence_number));
+}
+
+std::string XmltarArchive::TrailerBegin(){
 	NonDeterministicRNG nonDetRNG;
 	boost::random::uniform_int_distribution<> uniform(0,15);
 
@@ -272,12 +238,23 @@ std::string XmltarArchive::Trailer(unsigned int padding){
 		=options_.Tabs("\t")+"</members>"+options_.Newline()
 		+options_.Tabs("\t")+"<padding>";
 
-    for(int i=0; i<padding; ++i)
-    	s+=ToHexDigit(uniform(nonDetRNG));
+    return s;
+}
 
-    s
-		+="</padding>"+options_.Newline();
-    	 +"</xmltar>"+options_.Newline();
+std::string XmltarArchive::TrailerMiddle(unsigned int padding){
+	std::string s=MinimumCompressionString(options_.archiveCompression_.get());
 
     return s;
+}
+
+std::string XmltarArchive::TrailerEnd(){
+    std::string s="</padding>"+options_.Newline()+"</xmltar>"+options_.Newline();
+
+    return s;
+}
+
+std::string XmltarArchive::CompressedTrailer(unsigned int padding){
+	return CompressString(options_.archiveCompression_.get(),TrailerBegin())
+			+CompressString(options_.archiveCompression_.get(),TrailerMiddle(padding))
+			+CompressString(options_.archiveCompression_.get(),TrailerEnd());
 }
