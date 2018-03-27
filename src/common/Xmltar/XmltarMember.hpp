@@ -17,14 +17,14 @@ extern "C" {
 class XmltarMember {
 	XmltarOptions const  & options_;
 	boost::filesystem::path const & filepath_;
-	bool includeMetadata_;
+	std::ostream & os_;
 	struct stat stat_buf;
 	boost::filesystem::file_status f_stat;
 	boost::filesystem::file_type f_type;
 	off_t file_size;
 
 public:
-	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, bool includeMetadata);
+	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os);
 
 	std::string Header();
 	std::string Trailer();

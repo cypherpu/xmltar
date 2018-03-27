@@ -46,13 +46,14 @@ XmltarArchive::XmltarArchive(
 	std::streampos position)
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
 {
-	if (options_.operation_.get()==XmltarOptions::Operation::CREATE){
+	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !(options_.multi_volume_ && options_.multi_volume_.get())){
 		std::ofstream ofs(filename_);
-		std::string compressedHeader=CompressedHeader(filename_,volumeNumber);
-		std::string minCompressedTrailer=CompressedTrailer(0);
+		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
+		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
 
-		while(filesToBeArchived.size()){
-			XmltarMember member(options_,filesToBeArchived_.top(),true);
+		for( ; filesToBeArchived.size(); filesToBeArchived.pop()){
+			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
+			std::shared_ptr<XmltarMember> xmltarMember=std::make_shared<XmltarMember>(options_,filesToBeArchived_.top(),ofs);
 		}
 	}
 }
@@ -63,10 +64,10 @@ PartialFileRead XmltarArchive::create(unsigned int volumeNumber){
 			throw std::logic_error("XmltarArchive::create: must specify tape_length for multi-volume archive");
 
 		std::ofstream ofs(filename_);
-		std::string compressedHeader=CompressedHeader(filename_,volumeNumber);
-		std::string minCompressedTrailer=CompressedTrailer(0);
+		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
+		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
 
-		XmltarMember member(options_,filesToBeArchived_.top(),true);
+		XmltarMember member(options_,filesToBeArchived_.top(),ofs);
 
 		std::string memberHeader=member.Header();
 		std::string memberTrailer=member.Trailer();
@@ -215,7 +216,7 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	return IsPaddingTrailer(uncompressedContent);
 }
 
-std::string XmltarArchive::Header(std::string filename, int archive_sequence_number){
+std::string XmltarArchive::ArchiveHeader(std::string filename, int archive_sequence_number){
     std::string s;
 
     s+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"+options_.Newline();
@@ -226,11 +227,11 @@ std::string XmltarArchive::Header(std::string filename, int archive_sequence_num
     return s;
 }
 
-std::string XmltarArchive::CompressedHeader(std::string filename, int archive_sequence_number){
-	return CompressString(options_.archiveCompression_.get(),Header(filename, archive_sequence_number));
+std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int archive_sequence_number){
+	return CompressString(options_.archiveCompression_.get(),ArchiveHeader(filename, archive_sequence_number));
 }
 
-std::string XmltarArchive::TrailerBegin(){
+std::string XmltarArchive::ArchiveTrailerBegin(){
 	NonDeterministicRNG nonDetRNG;
 	boost::random::uniform_int_distribution<> uniform(0,15);
 
@@ -241,20 +242,20 @@ std::string XmltarArchive::TrailerBegin(){
     return s;
 }
 
-std::string XmltarArchive::TrailerMiddle(unsigned int padding){
+std::string XmltarArchive::ArchiveTrailerMiddle(unsigned int padding){
 	std::string s=MinimumCompressionString(options_.archiveCompression_.get());
 
     return s;
 }
 
-std::string XmltarArchive::TrailerEnd(){
+std::string XmltarArchive::ArchiveTrailerEnd(){
     std::string s="</padding>"+options_.Newline()+"</xmltar>"+options_.Newline();
 
     return s;
 }
 
-std::string XmltarArchive::CompressedTrailer(unsigned int padding){
-	return CompressString(options_.archiveCompression_.get(),TrailerBegin())
-			+CompressString(options_.archiveCompression_.get(),TrailerMiddle(padding))
-			+CompressString(options_.archiveCompression_.get(),TrailerEnd());
+std::string XmltarArchive::CompressedArchiveTrailer(unsigned int padding){
+	return CompressString(options_.archiveCompression_.get(),ArchiveTrailerBegin())
+			+CompressString(options_.archiveCompression_.get(),ArchiveTrailerMiddle(padding))
+			+CompressString(options_.archiveCompression_.get(),ArchiveTrailerEnd());
 }

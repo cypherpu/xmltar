@@ -22,8 +22,8 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, bool includeMetadata)
-	: options_(options), filepath_(filepath), includeMetadata_(includeMetadata) {
+XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os)
+	: options_(options), filepath_(filepath), os_(os) {
 
     f_stat=boost::filesystem::symlink_status(filepath_);
 
@@ -44,52 +44,50 @@ std::string XmltarMember::Header(){
     std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + XMLEscapeAttribute(filepath_.relative_path().string()) + "\">"+options_.Newline();
-    if (!includeMetadata_){
-        std::string s;
-        std::vector<std::pair<std::string,std::string> > attr_list;
 
-        ssize_t keylist_size=llistxattr(filepath_.string().c_str(),0,0);
-        std::unique_ptr<char[]> xattr(new char[keylist_size]);
+	std::vector<std::pair<std::string,std::string> > attr_list;
 
-        ssize_t keylist_end=llistxattr(filepath_.string().c_str(),xattr.get(),keylist_size);
-        if (keylist_end==-1)
-            throw "Archive_Member::Generate_Metadata: xattr list too small";
+	ssize_t keylist_size=llistxattr(filepath_.string().c_str(),0,0);
+	std::unique_ptr<char[]> xattr(new char[keylist_size]);
 
-        for(unsigned int i=0; i<keylist_end; ++i){
-            std::string key;
-            for( ; i<keylist_end && xattr[i]!='\0'; ++i)
-                key+=xattr[i];
-            ssize_t val_size=lgetxattr(filepath_.string().c_str(),key.c_str(),0,0);
-            std::unique_ptr<char[]> xattr_val(new char[val_size]);
-            if ((lgetxattr(filepath_.string().c_str(),key.c_str(),xattr_val.get(),val_size))==-1)
-                throw "Archive_Member::Generate_Metadata: xattr_val list too small";
-            attr_list.push_back(std::pair<std::string,std::string>(key,std::string(xattr_val.get(),val_size)));
-        };
+	ssize_t keylist_end=llistxattr(filepath_.string().c_str(),xattr.get(),keylist_size);
+	if (keylist_end==-1)
+		throw "Archive_Member::Generate_Metadata: xattr list too small";
 
-        s=s+options_.Tabs("\t\t\t")+"<meta-data>"+options_.Newline();
+	for(unsigned int i=0; i<keylist_end; ++i){
+		std::string key;
+		for( ; i<keylist_end && xattr[i]!='\0'; ++i)
+			key+=xattr[i];
+		ssize_t val_size=lgetxattr(filepath_.string().c_str(),key.c_str(),0,0);
+		std::unique_ptr<char[]> xattr_val(new char[val_size]);
+		if ((lgetxattr(filepath_.string().c_str(),key.c_str(),xattr_val.get(),val_size))==-1)
+			throw "Archive_Member::Generate_Metadata: xattr_val list too small";
+		attr_list.push_back(std::pair<std::string,std::string>(key,std::string(xattr_val.get(),val_size)));
+	};
 
-        for(unsigned int i=0; i<attr_list.size(); ++i)
-            s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
-                +XMLEscapeAttribute(attr_list[i].first)+"\" value=\""
-                +XMLEscapeAttribute(attr_list[i].second)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t")+"<meta-data>"+options_.Newline();
 
-        struct passwd *pw=getpwuid(stat_buf.st_uid);
-        struct group *g=getgrgid(stat_buf.st_gid);
+	for(unsigned int i=0; i<attr_list.size(); ++i)
+		s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
+			+XMLEscapeAttribute(attr_list[i].first)+"\" value=\""
+			+XMLEscapeAttribute(attr_list[i].second)+"\"/>"+options_.Newline();
 
-        s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
+	struct passwd *pw=getpwuid(stat_buf.st_uid);
+	struct group *g=getgrgid(stat_buf.st_gid);
 
-        s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
-        if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
-            s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
-        }
-        s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
 
-        s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
-    }
+	s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
+	if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
+		s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
+	}
+	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
+
+	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 
     int start_tell=0;
     switch(f_type){

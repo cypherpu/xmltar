@@ -36,13 +36,13 @@ public:
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);
 
-	std::string Header(std::string filename, int archive_sequence_number);
-	std::string TrailerBegin();
-	std::string TrailerMiddle(unsigned int padding);
-	std::string TrailerEnd();
+	std::string ArchiveHeader(std::string filename, int archive_sequence_number);
+	std::string ArchiveTrailerBegin();
+	std::string ArchiveTrailerMiddle(unsigned int padding);
+	std::string ArchiveTrailerEnd();
 
-	std::string CompressedHeader(std::string filename, int archive_sequence_number);
-	std::string CompressedTrailer(unsigned int padding);
+	std::string CompressedArchiveHeader(std::string filename, int archive_sequence_number);
+	std::string CompressedArchiveTrailer(unsigned int padding);
 
 	bool static IsPaddingTrailer(std::string s);
 	bool IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::off_type offset);
