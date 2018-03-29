@@ -46,7 +46,7 @@ XmltarArchive::XmltarArchive(
 	std::streampos position)
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
 {
-	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !(options_.multi_volume_ && options_.multi_volume_.get())){
+	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !options_.multi_volume_){
 		std::ofstream ofs(filename_);
 		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
