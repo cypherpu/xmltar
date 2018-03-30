@@ -33,7 +33,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchive.hpp"
 
 XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
-	: version("Xmltar_0_0_1"), options_(options), pathCompare(), filesToBeArchived_(pathCompare) {
+	: version("Xmltar_0_0_1"), options_(options), pathCompare() {
 
 	if (options_.verbosity_==3){
 		if (options_.operation_==XmltarOptions::APPEND) std::cerr << "Operation=APPEND" << std::endl;
@@ -57,10 +57,10 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
-	std::vector<boost::filesystem::path> filesToArchive;
+	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToArchive(pathCompare);
 	if (options_.source_files_)
 		for(auto & i : options_.source_files_.get())
-			filesToArchive.push_back(i);
+			filesToArchive.push(i);
 
 	if (options_.files_from_){
 		std::ifstream ifs(options_.files_from_.get().string());
@@ -68,7 +68,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (ifs){
 			std::string line;
 			while(std::getline(ifs,line))
-				filesToArchive.push_back(boost::filesystem::path(line));
+				filesToArchive.push(boost::filesystem::path(line));
 		}
 	}
 
@@ -95,7 +95,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 fmt % volumeNumber;
                 std::string filename=str(fmt);
 
-                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToBeArchived_, position);
+                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToArchive, position);
 
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
@@ -110,7 +110,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 			if (!options_.base_xmltar_file_name_)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToBeArchived_,std::streampos(0));
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToArchive,std::streampos(0));
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
@@ -126,13 +126,13 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 fmt % volumeNumber;
                 std::string filename=str(fmt);
 
-                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToBeArchived_,std::streampos(0));
+                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToArchive,std::streampos(0));
 
             	if (xmltarArchive.ranOutOfFiles()) break;
             }
 		}
 		else {
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToBeArchived_, std::streampos(0));
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToArchive, std::streampos(0));
 		}
 	}
 

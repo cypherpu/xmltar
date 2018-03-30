@@ -25,6 +25,7 @@ extern "C" {
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os)
 	: options_(options), filepath_(filepath), os_(os) {
 
+	std::cerr << "XmltarMember::XmltarMember: entering" << std::endl;
     f_stat=boost::filesystem::symlink_status(filepath_);
 
     if (!boost::filesystem::exists(f_stat))
@@ -38,6 +39,10 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
+
+    std::cerr << Header() << std::endl;
+
+	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
 std::string XmltarMember::Header(){

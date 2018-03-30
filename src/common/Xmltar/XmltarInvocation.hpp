@@ -40,7 +40,7 @@ private:
 	std::string version;
     XmltarOptions options_;
     PathCompare pathCompare;
-    std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
+    // std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
 
 public:
     XmltarInvocation(XmltarOptions const & options);

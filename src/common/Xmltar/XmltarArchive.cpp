@@ -5,6 +5,15 @@
  *      Author: dbetz
  */
 
+extern "C" {
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/xattr.h>
+#include <pwd.h>
+#include <grp.h>
+}
+
 #include <boost/circular_buffer.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -46,14 +55,39 @@ XmltarArchive::XmltarArchive(
 	std::streampos position)
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
 {
+	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !options_.multi_volume_){
 		std::ofstream ofs(filename_);
 		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
 
+		std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
 		for( ; filesToBeArchived.size(); filesToBeArchived.pop()){
 			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
-			std::shared_ptr<XmltarMember> xmltarMember=std::make_shared<XmltarMember>(options_,filesToBeArchived_.top(),ofs);
+
+			struct stat stat_buf;
+			boost::filesystem::file_status f_stat;
+			boost::filesystem::file_type f_type;
+			off_t file_size;
+
+			boost::filesystem::path const filepath=filesToBeArchived_.top();
+			f_stat=boost::filesystem::symlink_status(filepath);
+		    f_type=f_stat.type();
+
+		    if (boost::filesystem::is_regular(f_stat))
+		        file_size=boost::filesystem::file_size(filepath);
+		    else file_size=0;
+
+		    if (lstat(filepath.string().c_str(),&stat_buf)!=0)
+		        throw "Archive_Member:Archive_Member: cannot lstat file";
+
+		    if (boost::filesystem::is_directory(f_stat)){
+		    	for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+		    		filesToBeArchived.push(p);
+		    	}
+		    }
+
+			std::shared_ptr<XmltarMember> xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs);
 		}
 	}
 }
