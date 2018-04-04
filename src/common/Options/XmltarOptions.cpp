@@ -116,10 +116,10 @@ std::string XmltarOptions::toXMLString(){
 
 	if (fileCompression_){
 		oss << Tabs("\t\t\t") << "<option>";
-		if (fileCompression_==IDENTITY) oss << "--file-identity";
-		else if (fileCompression_==GZIP) oss << "--file-gzip";
-		else if (fileCompression_==BZIP2) oss << "--file-bzip2";
-		else if (fileCompression_==LZIP) oss << "--file-lzip";
+		if (fileCompression_==Compression::IDENTITY) oss << "--file-identity";
+		else if (fileCompression_==Compression::GZIP) oss << "--file-gzip";
+		else if (fileCompression_==Compression::BZIP2) oss << "--file-bzip2";
+		else if (fileCompression_==Compression::LZIP) oss << "--file-lzip";
 		else throw(std::logic_error("XmltarOptions::toXMLString: unknown fileCompress"));
 		oss << "</option>" << std::endl;
 	}
@@ -134,20 +134,20 @@ std::string XmltarOptions::toXMLString(){
 
 	if (archiveMemberCompression_){
 		oss << Tabs("\t\t\t") << "<option>";
-		if (archiveMemberCompression_==IDENTITY) oss << "--member-identity";
-		else if (archiveMemberCompression_==GZIP) oss << "--member-gzip";
-		else if (archiveMemberCompression_==BZIP2) oss << "--member-bzip2";
-		else if (archiveMemberCompression_==LZIP) oss << "--member-lzip";
+		if (archiveMemberCompression_==Compression::IDENTITY) oss << "--member-identity";
+		else if (archiveMemberCompression_==Compression::GZIP) oss << "--member-gzip";
+		else if (archiveMemberCompression_==Compression::BZIP2) oss << "--member-bzip2";
+		else if (archiveMemberCompression_==Compression::LZIP) oss << "--member-lzip";
 		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveMemberCompress_"));
 		oss << "</option>" << std::endl;
 	}
 
 	if (archiveCompression_){
 		oss << Tabs("\t\t\t") << "<option>";
-		if (archiveCompression_==IDENTITY) oss << "--identity";
-		else if (archiveCompression_==GZIP) oss << "--gzip";
-		else if (archiveCompression_==BZIP2) oss << "--bzip2";
-		else if (archiveCompression_==LZIP) oss << "--lzip";
+		if (archiveCompression_==Compression::IDENTITY) oss << "--identity";
+		else if (archiveCompression_==Compression::GZIP) oss << "--gzip";
+		else if (archiveCompression_==Compression::BZIP2) oss << "--bzip2";
+		else if (archiveCompression_==Compression::LZIP) oss << "--lzip";
 		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveCompress_"));
 		oss << "</option>" << std::endl;
 	}

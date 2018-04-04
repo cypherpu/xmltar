@@ -22,12 +22,15 @@ class XmltarMember {
 	boost::filesystem::file_status f_stat;
 	boost::filesystem::file_type f_type;
 	off_t file_size;
+	size_t spaceRemaining_;
 
 public:
-	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os);
+	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os, size_t spaceRemaining);
 
-	std::string Header();
-	std::string Trailer();
+	std::string MemberHeader();
+	std::string MemberTrailer();
+	std::string CompressedMemberHeader();
+	std::string CompressedMemberTrailer();
 };
 
 

@@ -47,13 +47,13 @@ bool CorrectCompressorVersion(Compression compress){
 
 std::string HeaderMagicNumber(Compression compression, std::string identity){
 	switch(compression){
-		case IDENTITY:
+		case Compression::IDENTITY:
 			return identity;
-		case GZIP:
+		case Compression::GZIP:
 			return std::string("\x1f\x8b");
-		case BZIP2:
+		case Compression::BZIP2:
 			return std::string("BZh");
-		case LZIP:
+		case Compression::LZIP:
 			return std::string("\x4c\x5a\x49\x50\x01");
 		default:
 			throw std::invalid_argument("XmltarOptions::HeaderMagicNumber: unrecognized Compression");
@@ -62,56 +62,75 @@ std::string HeaderMagicNumber(Compression compression, std::string identity){
 
 std::string TrailerMagicNumber(Compression compression){
 	switch(compression){
-		case IDENTITY:
+		case Compression::IDENTITY:
 			return std::string("</members");
-		case GZIP:
+		case Compression::GZIP:
 			return std::string("\x1f\x8b");
-		case BZIP2:
+		case Compression::BZIP2:
 			return std::string("BZh");
-		case LZIP:
+		case Compression::LZIP:
 			return std::string("LZIP\x01");
 		default:
 			throw std::invalid_argument("XmltarOptions::TrailerMagicNumber: unrecognized Compression");
 	}
 }
 
-size_t WorstCaseCompression(size_t size, Compression compression){
-	size_t result;
+size_t MaximumCompressedtextSizeGivenPlaintextSize(Compression compression, size_t plaintextSize){
+	size_t maximumCompressedtextSize;
 
 	switch(compression){
-	case IDENTITY:
-		result=size;
+	case Compression::IDENTITY:
+		maximumCompressedtextSize=plaintextSize;
 		break;
-	case GZIP:
-		result=size+(size>>8)+50;
+	case Compression::GZIP:
+		maximumCompressedtextSize=plaintextSize+(plaintextSize>>8)+50;
 		break;
-	case BZIP2:
-		result=(size<1000?(size+(size>>1)+80):(size+(size>>7)+550));
+	case Compression::BZIP2:
+		maximumCompressedtextSize=(plaintextSize<1000?(plaintextSize+(plaintextSize>>1)+80):(plaintextSize+(plaintextSize>>7)+550));
 		break;
-	case LZIP:
-		result=size+(size>>6)+70;
+	case Compression::LZIP:
+		maximumCompressedtextSize=plaintextSize+(plaintextSize>>6)+70;
 		break;
 	default:
-		throw std::invalid_argument("WorstCaseCompression: unknown compression");
+		throw std::invalid_argument("MaximumCompressedtextSizeGivenPlaintextSize: unknown compression");
 	}
 
-	return result;
+	return maximumCompressedtextSize;
+}
+
+size_t MinimumPlaintextSizeGivenCompressedtextSize(Compression compression, size_t compressedtextSize){
+	size_t 	lb=0,
+			ub=compressedtextSize;
+
+	while(MaximumCompressedtextSizeGivenPlaintextSize(compression, ub)<compressedtextSize)
+		ub+=compressedtextSize;
+
+	size_t mid=(lb+ub)/2;
+
+	while(lb!=ub){
+		if (MaximumCompressedtextSizeGivenPlaintextSize(compression, mid)<compressedtextSize)
+			lb=mid;
+		else
+			ub=mid;
+	}
+
+	return ub;
 }
 
 char const *CompressionCommand(Compression compression){
 	char const * result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result="/usr/bin/cat";
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result="/usr/bin/gzip";
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result="/usr/bin/bzip2";
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result="/usr/bin/lzip";
 		break;
 	default:
@@ -125,16 +144,16 @@ char const *CompressionName(Compression compression){
 	char const * result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result="identity";
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result="gzip";
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result="bzip2";
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result="lzip";
 		break;
 	default:
@@ -147,16 +166,16 @@ std::string ExpectedCompressorVersionString(Compression compression){
 	std::string result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result="cat (GNU coreutils) 8.27";
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result="gzip 1.8";
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result="bzip2, a block-sorting file compressor.  Version 1.0.6, 6-Sept-2010.";
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result="lzip 1.20";
 		break;
 	default:
@@ -170,16 +189,16 @@ std::vector<char const *> CompressionArguments(Compression compression){
 	std::vector<char const *> result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result=std::vector<char const *>({"cat"});
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result=std::vector<char const *>({"gzip","-fc"});
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result=std::vector<char const *>({"bzip2","-fc"});
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result=std::vector<char const *>({"lzip","-fc"});
 		break;
 	default:
@@ -193,16 +212,16 @@ std::vector<char const *> DecompressionArguments(Compression compression){
 	std::vector<char const *> result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result=std::vector<char const *>({"cat"});
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result=std::vector<char const *>({"gzip","-fcd"});
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result=std::vector<char const *>({"bzip2","-fcd"});
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result=std::vector<char const *>({"lzip","-fcd"});
 		break;
 	default:
@@ -216,16 +235,16 @@ std::string MinimumCompressionString(Compression compression){
 	std::string result;
 
 	switch(compression){
-	case IDENTITY:
+	case Compression::IDENTITY:
 		result="";
 		break;
-	case GZIP:
+	case Compression::GZIP:
 		result="";
 		break;
-	case BZIP2:
+	case Compression::BZIP2:
 		result="0";
 		break;
-	case LZIP:
+	case Compression::LZIP:
 		result="";
 		break;
 	default:

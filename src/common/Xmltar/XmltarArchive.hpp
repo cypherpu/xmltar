@@ -12,6 +12,7 @@
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
+#include "Xmltar/XmltarMember.hpp"
 
 class PartialFileRead {
 public:
@@ -24,14 +25,16 @@ class XmltarArchive {
 	std::string filename_;
 	unsigned int volumeNumber_;
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived_;
-	std::streampos position_;
+	std::shared_ptr<XmltarMember> nextMember_;
 public:
 	XmltarArchive(
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
-		std::streampos position);
+		std::priority_queue<boost::filesystem::path,
+		std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+		std::shared_ptr<XmltarMember> nextMember
+	);
 
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);

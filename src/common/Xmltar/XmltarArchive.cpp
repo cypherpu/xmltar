@@ -52,34 +52,24 @@ XmltarArchive::XmltarArchive(
 	std::string filename,
 	unsigned int volumeNumber,
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
-	std::streampos position)
-	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), position_(position)
+	std::shared_ptr<XmltarMember> nextMember
+)
+	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
 	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
+
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !options_.multi_volume_){
 		std::ofstream ofs(filename_);
 		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
 
 		std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
+		std::shared_ptr<XmltarMember> xmltarMember;
 		for( ; filesToBeArchived.size(); filesToBeArchived.pop()){
 			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
 
-			struct stat stat_buf;
-			boost::filesystem::file_status f_stat;
-			boost::filesystem::file_type f_type;
-			off_t file_size;
-
 			boost::filesystem::path const filepath=filesToBeArchived_.top();
-			f_stat=boost::filesystem::symlink_status(filepath);
-		    f_type=f_stat.type();
-
-		    if (boost::filesystem::is_regular(f_stat))
-		        file_size=boost::filesystem::file_size(filepath);
-		    else file_size=0;
-
-		    if (lstat(filepath.string().c_str(),&stat_buf)!=0)
-		        throw "Archive_Member:Archive_Member: cannot lstat file";
+			boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
 
 		    if (boost::filesystem::is_directory(f_stat)){
 		    	for(auto & p : boost::filesystem::directory_iterator(filepath) ){
@@ -87,7 +77,7 @@ XmltarArchive::XmltarArchive(
 		    	}
 		    }
 
-			std::shared_ptr<XmltarMember> xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs);
+			xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),std::numeric_limits<size_t>::max()));
 		}
 	}
 }
@@ -100,15 +90,15 @@ PartialFileRead XmltarArchive::create(unsigned int volumeNumber){
 		std::ofstream ofs(filename_);
 		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
-
-		XmltarMember member(options_,filesToBeArchived_.top(),ofs);
+/*
+		XmltarMember member(options_,filesToBeArchived_.top());
 
 		std::string memberHeader=member.Header();
 		std::string memberTrailer=member.Trailer();
 
 		if (compressedHeader.size()+CompressString(options_.archiveMemberCompression_.get(),memberHeader+memberTrailer).size()+minCompressedTrailer.size())
 				;
-
+*/
 		// write gzip Archive header
 
 		// while(maxLength(archiveHeader+memberHeader)<tapelength){
@@ -262,7 +252,13 @@ std::string XmltarArchive::ArchiveHeader(std::string filename, int archive_seque
 }
 
 std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int archive_sequence_number){
-	return CompressString(options_.archiveCompression_.get(),ArchiveHeader(filename, archive_sequence_number));
+	return CompressString(
+				options_.archiveCompression_.get(),
+				CompressString(
+						options_.archiveMemberCompression_.get(),
+						ArchiveHeader(filename, archive_sequence_number)
+				)
+			);
 }
 
 std::string XmltarArchive::ArchiveTrailerBegin(){
@@ -289,7 +285,25 @@ std::string XmltarArchive::ArchiveTrailerEnd(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int padding){
-	return CompressString(options_.archiveCompression_.get(),ArchiveTrailerBegin())
-			+CompressString(options_.archiveCompression_.get(),ArchiveTrailerMiddle(padding))
-			+CompressString(options_.archiveCompression_.get(),ArchiveTrailerEnd());
+	return CompressString(
+				options_.archiveCompression_.get(),
+				CompressString(
+								options_.archiveMemberCompression_.get(),
+								ArchiveTrailerBegin()
+				)
+			)
+			+CompressString(
+				options_.archiveCompression_.get(),
+				CompressString(
+								options_.archiveMemberCompression_.get(),
+								ArchiveTrailerMiddle(padding)
+				)
+			)
+			+CompressString(
+				options_.archiveCompression_.get(),
+				CompressString(
+								options_.archiveMemberCompression_.get(),
+								ArchiveTrailerEnd()
+				)
+			);
 }

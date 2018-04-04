@@ -88,10 +88,10 @@ std::string Archive_Member::Generate_Archive_Member_Header(){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
             s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\"";
-            if (options_.fileCompression_==IDENTITY) s+="identity";
-            else if (options_.fileCompression_==GZIP) s+="gzip";
-            else if (options_.fileCompression_==BZIP2) s+="bzip2";
-            else if (options_.fileCompression_==LZIP) s+="xz";
+            if (options_.fileCompression_==Compression::IDENTITY) s+="identity";
+            else if (options_.fileCompression_==Compression::GZIP) s+="gzip";
+            else if (options_.fileCompression_==Compression::BZIP2) s+="bzip2";
+            else if (options_.fileCompression_==Compression::LZIP) s+="xz";
             else throw "unrecognized precompress";
 
             if (options_.encoding_==XmltarOptions::BASE16) s+="\" encoding=\"base16";

@@ -21,9 +21,10 @@ extern "C" {
 #include "Utilities/ToLocalTime.hpp"
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
+#include "Compression/Compression.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os)
-	: options_(options), filepath_(filepath), os_(os) {
+XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os, size_t spaceRemaining)
+	: options_(options), filepath_(filepath), os_(os), spaceRemaining_(spaceRemaining) {
 
 	std::cerr << "XmltarMember::XmltarMember: entering" << std::endl;
     f_stat=boost::filesystem::symlink_status(filepath_);
@@ -40,12 +41,15 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
-    std::cerr << Header() << std::endl;
+    std::string compressedMemberHeader=CompressedMemberHeader();
+    std::string compressedMemberTrailer=CompressedMemberTrailer();
+
+    if (compressedMemberHeader.size()+MaximumCompressedtextSizeGivenPlaintextSize(options_.archiveMemberCompression_.get(),1)+compressedMemberTrailer.size()>spaceRemaining_) return;
 
 	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
-std::string XmltarMember::Header(){
+std::string XmltarMember::MemberHeader(){
     std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + XMLEscapeAttribute(filepath_.relative_path().string()) + "\">"+options_.Newline();
@@ -141,7 +145,7 @@ std::string XmltarMember::Header(){
     return s;
 }
 
-std::string XmltarMember::Trailer(){
+std::string XmltarMember::MemberTrailer(){
     std::string s;
 
     // only include a content section if the file is a regular file
@@ -155,4 +159,12 @@ std::string XmltarMember::Trailer(){
     s=s+options_.Tabs("\t\t")+"</file>"+options_.Newline();
 
     return s;
+}
+
+std::string XmltarMember::CompressedMemberHeader(){
+	return CompressString(options_.archiveMemberCompression_.get(),MemberHeader());
+}
+
+std::string XmltarMember::CompressedMemberTrailer(){
+	return CompressString(options_.archiveMemberCompression_.get(),MemberTrailer());
 }

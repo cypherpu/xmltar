@@ -11,13 +11,14 @@
 #include <string>
 #include <vector>
 
-enum Compression { IDENTITY, GZIP, BZIP2, LZIP };
+enum class Compression { IDENTITY, GZIP, BZIP2, LZIP };
 
 std::string CompressorVersion(Compression compression);
 bool CorrectCompressorVersion(Compression compression);
 std::string HeaderMagicNumber(Compression compression, std::string identity);
 std::string TrailerMagicNumber(Compression compression);
-size_t WorstCaseCompression(size_t size, Compression compression);
+size_t MaximumCompressedtextSizeGivenPlaintextSize(Compression compression, size_t plaintextSize);
+size_t MinimumPlaintextSizeGivenCompressedtextSize(Compression compression, size_t compressedtextSize);
 char const *CompressionCommand(Compression compression);
 char const *CompressionName(Compression compression);
 char const *CompressionVersionString(Compression compression);

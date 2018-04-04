@@ -60,7 +60,7 @@ public:
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
-		  fileCompression_(IDENTITY), encoding_(BASE16), archiveMemberCompression_(IDENTITY), archiveCompression_(IDENTITY),
+		  fileCompression_(Compression::IDENTITY), encoding_(BASE16), archiveMemberCompression_(Compression::IDENTITY), archiveCompression_(Compression::IDENTITY),
           tape_length_(), stop_after_(),
 		  source_files_(), listed_incremental_file_(), compress_listed_incremental_file_(),
 		  files_from_(), exclude_files_(),
