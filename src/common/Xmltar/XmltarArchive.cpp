@@ -58,28 +58,55 @@ XmltarArchive::XmltarArchive(
 {
 	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
 
-	if (options_.operation_.get()==XmltarOptions::Operation::CREATE && !options_.multi_volume_){
-		std::ofstream ofs(filename_);
-		std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
-		std::string minCompressedTrailer=CompressedArchiveTrailer(0);
+	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
+		if (options_.multi_volume_){
+			std::ofstream ofs(filename_);
+			std::string archiveHeader=ArchiveHeader(filename_,volumeNumber);
+			std::string archiveTrailer=ArchiveTrailer(0);
 
-		std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
-		std::shared_ptr<XmltarMember> xmltarMember;
-		for( ; filesToBeArchived.size(); filesToBeArchived.pop()){
-			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
+			std::vector<std::shared_ptr<XmltarMember>> members;
 
-			boost::filesystem::path const filepath=filesToBeArchived_.top();
-			boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
+			size_t remainingSize=options_.stop_after_;
+			for( ; filesToBeArchived.size()>0; ){
+				boost::filesystem::path const filepath=filesToBeArchived_.top();
+				filesToBeArchived.pop();
+				boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
 
-		    if (boost::filesystem::is_directory(f_stat)){
-		    	for(auto & p : boost::filesystem::directory_iterator(filepath) ){
-		    		filesToBeArchived.push(p);
-		    	}
-		    }
+				if (boost::filesystem::is_directory(f_stat)){
+					for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+						filesToBeArchived.push(p);
+					}
+				}
 
-			xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),std::numeric_limits<size_t>::max()));
+				std::shared_ptr<XmltarMember> tmp;
+				tmp=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),options_.stop_after_.get()));
+				//if (tmp.archivedSize()<remainingSize)
+				members.push_back(tmp);
+			}
 		}
-	}
+		else {
+			std::ofstream ofs(filename_);
+			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
+			std::string minCompressedTrailer=CompressedArchiveTrailer(0);
+
+			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
+			std::shared_ptr<XmltarMember> xmltarMember;
+			for( ; filesToBeArchived.size(); ){
+				std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
+
+				boost::filesystem::path const filepath=filesToBeArchived_.top();
+				filesToBeArchived.pop();
+				boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
+
+				if (boost::filesystem::is_directory(f_stat)){
+					for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+						filesToBeArchived.push(p);
+					}
+				}
+
+				xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),std::numeric_limits<size_t>::max()));
+			}
+		}
 }
 
 PartialFileRead XmltarArchive::create(unsigned int volumeNumber){
@@ -282,6 +309,10 @@ std::string XmltarArchive::ArchiveTrailerEnd(){
     std::string s="</padding>"+options_.Newline()+"</xmltar>"+options_.Newline();
 
     return s;
+}
+
+std::string XmltarArchive::ArchiveTrailer(unsigned int padding){
+	return ArchiveTrailerBegin()+ArchiveTrailerMiddle(padding)+ArchiveTrailerEnd();
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int padding){

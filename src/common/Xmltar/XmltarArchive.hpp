@@ -43,6 +43,7 @@ public:
 	std::string ArchiveTrailerBegin();
 	std::string ArchiveTrailerMiddle(unsigned int padding);
 	std::string ArchiveTrailerEnd();
+	std::string ArchiveTrailer(unsigned int padding);
 
 	std::string CompressedArchiveHeader(std::string filename, int archive_sequence_number);
 	std::string CompressedArchiveTrailer(unsigned int padding);

@@ -34,6 +34,7 @@ file(GLOB SOURCES
 	src/common/Generated/*.[ch]pp
 	src/common/Options/*.[ch]pp
 	src/common/Snapshot/*.[ch]pp
+	src/common/Transform/*.[ch]pp
 	src/common/Utilities/*.[ch]pp
 	src/common/Xmltar/*.[ch]pp
 )

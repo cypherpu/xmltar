@@ -20,14 +20,15 @@ public:
 	virtual std::string TrailerMagicNumber()=0;
 	virtual size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize)=0;
 	virtual size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
-	virtual char const *CompressionCommand();
-	virtual char const *CompressionName();
-	virtual std::vector<char const *> CompressionArguments();
-	virtual std::vector<char const *> DecompressionArguments();
-	virtual std::string MinimumCompressionString();
+	virtual char const *CompressionCommand()=0;
+	virtual char const *CompressionName()=0;
+	virtual std::vector<char const *> CompressionArguments()=0;
+	virtual std::vector<char const *> DecompressionArguments()=0;
+	virtual std::vector<char const *> VersionArguments()=0;
+	virtual std::string MinimumCompressionString()=0;
 	virtual std::string CompressString(std::string const & s);
 	virtual std::string DecompressString(std::string const & s);
-	virtual Transform *clone()=0
+	virtual Transform *clone()=0;
 
 	virtual ~Transform();
 };

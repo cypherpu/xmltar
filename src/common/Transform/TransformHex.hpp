@@ -11,23 +11,28 @@
 #include "Transform/Transform.hpp"
 
 class TransformHex  : public Transform {
-	// std::string ActualCompressorVersionString();							use default
+public:
+	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "xxd V1.10 27oct98 by Juergen Weigert"; }
-	std::string GetCompressorVersion();
-	std::string HeaderMagicNumber(std::string identity);
-	std::string TrailerMagicNumber();
-	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize);
-	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
-	char const *CompressionCommand();
-	char const *CompressionName();
-	std::vector<char const *> CompressionArguments();
-	std::vector<char const *> DecompressionArguments();
-	std::string MinimumCompressionString();
-	std::string CompressString(std::string const & s);
-	std::string DecompressString(std::string const & s);
-	Transform *clone();
+	// std::string CorrectCompressorVersion();
+	std::string HeaderMagicNumber(std::string identity){ return ""; }
+	std::string TrailerMagicNumber(){ return ""; }
+	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
+		// return 1+(2*plaintextSize-1)/60+2*plaintextSize;
+		return (60+2*plaintextSize-1)/60+2*plaintextSize;
+	}
+	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	char const *CompressionCommand(){ return "/usr/bin/xxd"; }
+	char const *CompressionName(){ return "xxd"; }
+	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"xxd","-ps"}); }
+	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"xxd","-ps","-r"}); }
+	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"xxd","-v"}); }
+	std::string MinimumCompressionString(){ return ""; }
+	// std::string CompressString(std::string const & s);
+	// std::string DecompressString(std::string const & s);
+	Transform *clone(){ return new TransformHex; }
 
-	~TransformHex();
+	~TransformHex(){}
 };
 
 #endif /* SRC_COMMON_TRANSFORM_TRANSFORMHEX_HPP_ */
