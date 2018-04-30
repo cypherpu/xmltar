@@ -8,9 +8,10 @@
 #ifndef SRC_COMMON_TRANSFORM_TRANSFORMBZIP2_HPP_
 #define SRC_COMMON_TRANSFORM_TRANSFORMBZIP2_HPP_
 
-#include "Transform/Transform.hpp"
+#include "Transform/TransformProcess.hpp"
 
-class TransformBzip2 {
+class TransformBzip2 : public TransformProcess {
+public:
 	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "bzip2, a block-sorting file compressor.  Version 1.0.6, 6-Sept-2010."; }
 	// bool CorrectCompressorVersion();
@@ -32,7 +33,7 @@ class TransformBzip2 {
 		return new TransformBzip2();
 	}
 
-	~TransformGzip(){}
+	~TransformBzip2(){}
 };
 
 #endif /* SRC_COMMON_TRANSFORM_TRANSFORMBZIP2_HPP_ */

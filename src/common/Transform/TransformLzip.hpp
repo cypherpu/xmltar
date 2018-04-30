@@ -8,9 +8,9 @@
 #ifndef SRC_COMMON_TRANSFORM_TRANSFORMLZIP_HPP_
 #define SRC_COMMON_TRANSFORM_TRANSFORMLZIP_HPP_
 
-#include "Transform/Transform.hpp"
+#include "Transform/TransformProcess.hpp"
 
-class TransformLzip {
+class TransformLzip : public TransformProcess {
 	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "lzip 1.20"; }
 	// bool CorrectCompressorVersion();

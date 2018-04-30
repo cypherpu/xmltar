@@ -8,9 +8,9 @@
 #ifndef SRC_COMMON_TRANSFORM_TRANSFORMHEX_HPP_
 #define SRC_COMMON_TRANSFORM_TRANSFORMHEX_HPP_
 
-#include "Transform/Transform.hpp"
+#include "Transform/TransformProcess.hpp"
 
-class TransformHex  : public Transform {
+class TransformHex  : public TransformProcess {
 public:
 	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "xxd V1.10 27oct98 by Juergen Weigert"; }

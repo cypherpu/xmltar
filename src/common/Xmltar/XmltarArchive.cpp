@@ -26,6 +26,8 @@ extern "C" {
 #include "Utilities/ToHexDigit.hpp"
 #include "Bidirectional_Pipe.hpp"
 
+#include "Transform/TransformIdentity.hpp"
+
 class NonDeterministicRNG : public boost::random::random_device {
 public:
 	NonDeterministicRNG()
@@ -58,15 +60,34 @@ XmltarArchive::XmltarArchive(
 {
 	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
 
+	std::shared_ptr<Transform> archiveCompression(new TransformIdentity);
+
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
 		if (options_.multi_volume_){
 			std::ofstream ofs(filename_);
-			std::string archiveHeader=ArchiveHeader(filename_,volumeNumber);
-			std::string archiveTrailer=ArchiveTrailer(0);
+			std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,volumeNumber);
+			std::string compressedArchiveTrailer=CompressedArchiveTrailer(0);
 
+			// check to see if nextMember is not empty.
+			// If not, start with nextMember
+
+			size_t currentArchiveSize=compressedArchiveHeader.size()+compressedArchiveTrailer.size();
 			std::vector<std::shared_ptr<XmltarMember>> members;
 
-			size_t remainingSize=options_.stop_after_;
+			if (nextMember_){
+				// We haven't completely archived the last file
+				// We have 2 possibilities:
+				// 1. The remainder of the file will completely fit within this archive.
+				// 2. The remainder of the file may not completely fit within this archive.
+				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MemberSize()+currentArchiveSize)<options_.tape_length_)
+					members.push_back(nextMember_);
+				else {
+					for( ; !nextMember_.get()->completed() && options_.tape_length_.get()-currentArchiveSize>0; ){
+						currentArchiveSize+=nextMember_.get()->writeNBytes(archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-currentArchiveSize));
+					}
+				}
+			}
+
 			for( ; filesToBeArchived.size()>0; ){
 				boost::filesystem::path const filepath=filesToBeArchived_.top();
 				filesToBeArchived.pop();
@@ -80,8 +101,11 @@ XmltarArchive::XmltarArchive(
 
 				std::shared_ptr<XmltarMember> tmp;
 				tmp=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),options_.stop_after_.get()));
-				//if (tmp.archivedSize()<remainingSize)
-				members.push_back(tmp);
+				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(tmp.get()->MemberSize()+currentArchiveSize)<options_.tape_length_)
+					members.push_back(tmp);
+				else {
+					// compress what we have so far
+				}
 			}
 		}
 		else {

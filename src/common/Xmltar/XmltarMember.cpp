@@ -22,9 +22,10 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Compression/Compression.hpp"
+#include "Transform/TransformHex.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath, std::ostream & os, size_t spaceRemaining)
-	: options_(options), filepath_(filepath), os_(os), spaceRemaining_(spaceRemaining) {
+XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
+	: options_(options), filepath_(filepath), nextByte_(0) {
 
 	std::cerr << "XmltarMember::XmltarMember: entering" << std::endl;
     f_stat=boost::filesystem::symlink_status(filepath_);
@@ -41,12 +42,17 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
-    std::string compressedMemberHeader=CompressedMemberHeader();
-    std::string compressedMemberTrailer=CompressedMemberTrailer();
-
-    if (compressedMemberHeader.size()+MaximumCompressedtextSizeGivenPlaintextSize(options_.archiveMemberCompression_.get(),1)+compressedMemberTrailer.size()>spaceRemaining_) return;
+    encoding_.reset(new TransformHex);
 
 	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
+}
+
+size_t XmltarMember::write(size_t n, std::ostream & os){
+	return 0;
+}
+
+size_t XmltarMember::MemberSize(){
+	return memberHeader_.size()+encoding_.get()->MaximumCompressedtextSizeGivenPlaintextSize(file_size)+memberTrailer_.size();
 }
 
 std::string XmltarMember::MemberHeader(){
