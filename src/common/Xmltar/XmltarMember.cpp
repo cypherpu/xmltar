@@ -42,17 +42,34 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
+    precompression_.reset(new TransformHex);
     encoding_.reset(new TransformHex);
+    memberCompression_.reset(new TransformHex);
 
 	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
-size_t XmltarMember::write(size_t n, std::ostream & os){
+size_t XmltarMember::write(std::shared_ptr<Transform> & archiveCompression, std::ostream & ofs, size_t n){
+	int i=
+			memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(n);
+
 	return 0;
 }
 
+size_t XmltarMember::MaximumSize(size_t n){
+	return
+			memberCompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(
+				memberHeader_.size()
+				+encoding_.get()->MaximumCompressedtextSizeGivenPlaintextSize(
+						precompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(n)
+					)
+				+memberTrailer_.size()
+			);
+
+}
+
 size_t XmltarMember::MemberSize(){
-	return memberHeader_.size()+encoding_.get()->MaximumCompressedtextSizeGivenPlaintextSize(file_size)+memberTrailer_.size();
+	return MaximumSize(file_size);
 }
 
 std::string XmltarMember::MemberHeader(){
@@ -173,4 +190,15 @@ std::string XmltarMember::CompressedMemberHeader(){
 
 std::string XmltarMember::CompressedMemberTrailer(){
 	return CompressString(options_.archiveMemberCompression_.get(),MemberTrailer());
+}
+
+size_t XmltarMember::MinimumSize(){
+	return
+			memberCompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(
+				memberHeader_.size()
+				+encoding_.get()->MaximumCompressedtextSizeGivenPlaintextSize(
+						precompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(1)
+					)
+				+memberTrailer_.size()
+			);
 }

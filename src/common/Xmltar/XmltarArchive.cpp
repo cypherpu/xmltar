@@ -68,19 +68,17 @@ XmltarArchive::XmltarArchive(
 			std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string compressedArchiveTrailer=CompressedArchiveTrailer(0);
 
-			// check to see if nextMember is not empty.
-			// If not, start with nextMember
-
 			size_t currentArchiveSize=compressedArchiveHeader.size()+compressedArchiveTrailer.size();
-			std::vector<std::shared_ptr<XmltarMember>> members;
 
 			if (nextMember_){
-				// We haven't completely archived the last file
-				// We have 2 possibilities:
-				// 1. The remainder of the file will completely fit within this archive.
-				// 2. The remainder of the file may not completely fit within this archive.
-				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MemberSize()+currentArchiveSize)<options_.tape_length_)
-					members.push_back(nextMember_);
+				// pathological case: the archive is too small to guarantee that we can archive even 1 character
+				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MinimumSize())+currentArchiveSize>options_.tape_length_)
+					throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
+
+				nextMember_->write(archiveCompression,ofs,1);
+
+				if (archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_-currentArchiveSize))
+					;
 				else {
 					for( ; !nextMember_.get()->completed() && options_.tape_length_.get()-currentArchiveSize>0; ){
 						currentArchiveSize+=nextMember_.get()->writeNBytes(archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-currentArchiveSize));

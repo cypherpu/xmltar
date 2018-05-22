@@ -24,20 +24,24 @@ class XmltarMember {
 	off_t file_size;
 	std::string memberHeader_;
 	std::string memberTrailer_;
+	std::unique_ptr<Transform> precompression_;
 	std::unique_ptr<Transform> encoding_;
+	std::unique_ptr<Transform> memberCompression_;
 	size_t nextByte_;
 
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
 	bool completed(){ return nextByte_>=file_size; }
-	size_t writeNBytes(size_t n);
+	size_t write(std::shared_ptr<Transform> & archiveCompression, std::ostream & ofs, size_t n);
 
 	size_t MemberSize();
 	std::string MemberHeader();
 	std::string MemberTrailer();
 	std::string CompressedMemberHeader();
 	std::string CompressedMemberTrailer();
+	size_t MinimumSize();
+	size_t MaximumSize(size_t n);
 };
 
 

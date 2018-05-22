@@ -74,6 +74,9 @@ void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> 
     }
     else if (child_pid_>0){
         long int old_flags;
+
+        // In the parent,
+        //		we don't want to read the child:stdin
         if (close(tmp0[0])<0)
             throw "Bidirectional_Pipe::Bidirectional_Pipe: unable to close(tmp0[0])";
 #if 1
@@ -88,6 +91,7 @@ void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> 
             throw "Bidirectional_Pipe::Bidirectional_Pipe: unable to ::fcntl(tmp0[1],F_SETFD,old_flags | FD_CLOEXEC)";
         parent_to_child_stdin_=tmp0[1];
 
+        //		we don't want to write the child:stdout
         if (close(tmp1[1])<0)
             throw "Bidirectional_Pipe::Bidirectional_Pipe: unable to close(tmp1[1])";
         if ((old_flags=::fcntl(tmp1[0],F_GETFD))<0)
@@ -96,6 +100,7 @@ void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> 
             throw "Bidirectional_Pipe::Bidirectional_Pipe: unable to ::fcntl(tmp1[0],F_SETFD,old_flags | FD_CLOEXEC)";
         child_stdout_to_parent_=tmp1[0];
 
+        //		we don't want to write the child:stderr
         if (close(tmp2[1])<0)
             throw "Bidirectional_Pipe::Bidirectional_Pipe: unable to close(tmp2[1])";
         if ((old_flags=::fcntl(tmp2[0],F_GETFD))<0)
@@ -179,7 +184,7 @@ void Bidirectional_Pipe::Select_Helper(struct timeval *pt){
     for( ; ; )
         if (select(nfds,&readfds,&writefds,NULL,pt)<0)
             if (errno==EINTR){
-                std::cerr << DEBUGCXXTAB(debugcxx) << "Bidirectional_Pipe::get_state: select: EINTR" << std::endl;
+                // std::cerr << DEBUGCXXTAB(debugcxx) << "Bidirectional_Pipe::get_state: select: EINTR" << std::endl;
                 continue;
             }
             else {
@@ -333,10 +338,17 @@ void Bidirectional_Pipe::Write(){
     ssize_t result=::write(parent_to_child_stdin_,writeBuffer_.data(),writeBuffer_.length());
 
     if (result<0)
-    	throw "Bidirectional_Pipe::Write: write error";
-
-    write_count+=result;
-    writeBuffer_=writeBuffer_.substr(result);
+    	if (errno==EAGAIN){
+    		// write is non-blocking but pipe is full
+    	}
+    	else {
+			std::cerr << strerror(errno) << std::endl;
+			throw "Bidirectional_Pipe::Write: write error";
+    	}
+    else {
+		write_count+=result;
+		writeBuffer_=writeBuffer_.substr(result);
+    }
 
     if (writeBuffer_.length()==0 && writeCloseWhenEmpty_){
     	// std::cerr << "Bidirectional_Pipe::Write: closing write" << std::endl;
@@ -351,6 +363,12 @@ void Bidirectional_Pipe::QueueWrite(char const c){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
     writeBuffer_.push_back(c);
+}
+
+void Bidirectional_Pipe::QueueWrite(char const *c, int n){
+    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
+
+    writeBuffer_+=std::string(c,n);
 }
 
 void Bidirectional_Pipe::QueueWrite(std::string const & data){

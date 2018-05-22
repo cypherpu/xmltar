@@ -93,6 +93,7 @@ public:
 
     void Write();
     void QueueWrite(char const c);
+    void QueueWrite(char const *c, int n);
     void QueueWrite(std::string const & data);
     std::string Read1(size_t n=PIPE_BUF);
     std::string Read2(size_t n=PIPE_BUF);
