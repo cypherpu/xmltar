@@ -44,16 +44,23 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 
     precompression_.reset(new TransformHex);
     encoding_.reset(new TransformHex);
+
+    memberHeader_=MemberHeader();
+    memberTrailer_=MemberTrailer();
+
     memberCompression_.reset(new TransformHex);
 
 	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
-size_t XmltarMember::write(std::shared_ptr<Transform> & archiveCompression, std::ostream & ofs, size_t n){
-	int i=
-			memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(n);
+std::tuple<size_t,std::shared_ptr<Transform> >
+XmltarMember::write(size_t remainingArchiveSize, std::shared_ptr<Transform> archiveCompression, std::ostream & ofs){
+	// estimate how much of this file we can compress
+	int i=memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(remainingArchiveSize-memberHeader_.size()-memberTrailer_.size());
 
-	return 0;
+	if (i>file_size-nextByte_)
+
+	return std::make_pair(remainingArchiveSize,archiveCompression);
 }
 
 size_t XmltarMember::MaximumSize(size_t n){

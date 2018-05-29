@@ -68,20 +68,22 @@ XmltarArchive::XmltarArchive(
 			std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string compressedArchiveTrailer=CompressedArchiveTrailer(0);
 
-			size_t currentArchiveSize=compressedArchiveHeader.size()+compressedArchiveTrailer.size();
+			if (options_.tape_length_.get()<compressedArchiveHeader.size()+compressedArchiveTrailer.size())
+				throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold header and trailer of archive member");
+			size_t remainingArchiveSize=options_.tape_length_.get()-compressedArchiveHeader.size()-compressedArchiveTrailer.size();
 
 			if (nextMember_){
 				// pathological case: the archive is too small to guarantee that we can archive even 1 character
-				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MinimumSize())+currentArchiveSize>options_.tape_length_)
+				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MinimumSize())>remainingArchiveSize)
 					throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
 
-				nextMember_->write(archiveCompression,ofs,1);
+				std::tie(remainingArchiveSize,archiveCompression)=nextMember_->write(remainingArchiveSize,archiveCompression,ofs);
 
-				if (archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_-currentArchiveSize))
+				if (archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-remainingArchiveSize))
 					;
 				else {
-					for( ; !nextMember_.get()->completed() && options_.tape_length_.get()-currentArchiveSize>0; ){
-						currentArchiveSize+=nextMember_.get()->writeNBytes(archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-currentArchiveSize));
+					for( ; !nextMember_.get()->completed() && options_.tape_length_.get()-remainingArchiveSize>0; ){
+						remainingArchiveSize+=nextMember_.get()->writeNBytes(archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-currentArchiveSize));
 					}
 				}
 			}
