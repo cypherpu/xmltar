@@ -33,7 +33,7 @@ public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
 	bool completed(){ return nextByte_>=file_size; }
-	std::tuple<size_t,std::shared_ptr<Transform> > write(size_t remainingArchiveSize, std::shared_ptr<Transform> archiveCompression, std::ostream & ofs);
+	std::tuple<size_t,size_t,std::shared_ptr<Transform> > write(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, std::ostream & ofs);
 
 	size_t MemberSize();
 	std::string MemberHeader();

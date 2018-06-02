@@ -37,9 +37,11 @@ public:
 
 	void OpenCompression();
 	void OpenDecompression();
-	void Write(std::string & input);
+	void Write(std::string const & input);
 	std::string Read();
 	std::string Close();
+	size_t WriteCount();
+	size_t ReadCount();
 
 	virtual ~TransformProcess();
 };

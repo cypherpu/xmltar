@@ -15,6 +15,8 @@
 class TransformIdentity : public Transform {
 public:
 	std::string data_;
+	size_t read_count;
+	size_t write_count;
 
 	std::string ActualCompressorVersionString(){ return "Identity"; }
 	std::string ExpectedCompressorVersionString(){ return "Identity"; }
@@ -37,10 +39,14 @@ public:
 
 	void OpenCompression(){ if (data_!="") throw std::logic_error("TransformIdentity::OpenCompression: data_ not empty"); }
 	void OpenDecompression(){ if (data_!="") throw std::logic_error("TransformIdentity::OpenDecompression: data_ not empty"); }
-	void Write(std::string & input){ data_+=input; }
-	std::string Read(){ std::string tmp; std::swap(tmp,data_); return tmp; }
-	std::string Close(){ std::string tmp; std::swap(tmp,data_); return tmp; }
+	void Write(std::string const & input){ data_+=input; write_count+=input.size(); }
+	std::string Read(){ std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
+	std::string Close(){ std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
+	size_t ReadCount(){ return read_count; }
+	size_t WriteCount(){ return write_count; }
 
+	TransformIdentity()
+		: read_count(0), write_count(0) {}
 	~TransformIdentity(){}
 };
 

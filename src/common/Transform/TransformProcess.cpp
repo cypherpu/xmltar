@@ -137,7 +137,7 @@ void TransformProcess::OpenDecompression(){
 			DecompressionArguments());
 }
 
-void TransformProcess::Write(std::string & input){
+void TransformProcess::Write(std::string const & input){
 	if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
 		pipe_.QueueWrite(input);
 
@@ -147,6 +147,7 @@ std::string TransformProcess::Read(){
 	std::string result;
 
 	for(;;){
+		if (pipe_.Can_Write()) pipe_.Write();
 		if (pipe_.Can_Read1()) result+=pipe_.Read1();
 		else if (pipe_.Can_Read2()) pipe_.Read2();
 		else break;
@@ -162,6 +163,7 @@ std::string TransformProcess::Close(){
 		pipe_.QueueWriteClose();
 	}
 	while(!pipe_.ChildExitedAndAllPipesClosed()){
+		if (pipe_.Can_Write()) p.Write();
 		if (pipe_.Can_Read1()) result+=pipe_.Read1();
 		if (pipe_.Can_Read2()) pipe_.Read2();
 	}
@@ -169,4 +171,11 @@ std::string TransformProcess::Close(){
 	return result;
 }
 
+size_t TransformProcess::WriteCount(){
+	return pipe_.Write_Count();
+}
+
+size_t TransformProcess::ReadCount(){
+	return pipe_.Read1_Count();
+}
 Transform::~Transform(){}

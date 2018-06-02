@@ -70,22 +70,17 @@ XmltarArchive::XmltarArchive(
 
 			if (options_.tape_length_.get()<compressedArchiveHeader.size()+compressedArchiveTrailer.size())
 				throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold header and trailer of archive member");
-			size_t remainingArchiveSize=options_.tape_length_.get()-compressedArchiveHeader.size()-compressedArchiveTrailer.size();
 
+			size_t committedBytes=compressedArchiveHeader.size()+compressedArchiveTrailer.size();
+			size_t pendingBytes=0;
+
+			archiveCompression.get()->OpenCompression();
 			if (nextMember_){
-				// pathological case: the archive is too small to guarantee that we can archive even 1 character
-				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MinimumSize())>remainingArchiveSize)
+				if (archiveCompression.get()->MaximumCompressedtextSizeGivenPlaintextSize(nextMember_.get()->MinimumSize())+committedBytes+pendingBytes>options_.tape_length_.get())
 					throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
 
-				std::tie(remainingArchiveSize,archiveCompression)=nextMember_->write(remainingArchiveSize,archiveCompression,ofs);
-
-				if (archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-remainingArchiveSize))
-					;
-				else {
-					for( ; !nextMember_.get()->completed() && options_.tape_length_.get()-remainingArchiveSize>0; ){
-						remainingArchiveSize+=nextMember_.get()->writeNBytes(archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-currentArchiveSize));
-					}
-				}
+				std::tie(committedBytes,pendingBytes,archiveCompression)
+					=nextMember_->write(committedBytes,pendingBytes,archiveCompression,ofs);
 			}
 
 			for( ; filesToBeArchived.size()>0; ){
