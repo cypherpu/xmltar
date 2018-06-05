@@ -33,7 +33,7 @@ public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
 	bool completed(){ return nextByte_>=file_size; }
-	std::tuple<size_t,size_t,std::shared_ptr<Transform> > write(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, std::ostream & ofs);
+	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
 	size_t MemberSize();
 	std::string MemberHeader();
@@ -42,6 +42,8 @@ public:
 	std::string CompressedMemberTrailer();
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	bool IsComplete(){ return nextByte_==file_size; }
 };
 
 

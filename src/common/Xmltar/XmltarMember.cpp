@@ -53,38 +53,26 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
-std::tuple<size_t,size_t,std::shared_ptr<Transform> >
-XmltarMember::write(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, std::ostream & ofs){
+void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 	std::ifstream ifs(filepath_.string());
 	ifs.seekg(nextByte_);
 
-	// estimate how much of this file we can compress
-	int i=encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-			memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-					options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
-
+	size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
+	precompression_.get()->OpenCompression();
 	encoding_.get()->OpenCompression();
 	memberCompression_.get()->OpenCompression();
 	char buf[1024];
-	while(nextByte_<file_size){
-		for( ; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
-			ifs.read(buf,sizeof(buf));
-			encoding_.get()->Write(std::string(buf,ifs.gcount()));
-			memberCompression_.get()->Write(encoding_.get()->Read());
-			archiveCompression.get()->Write(memberCompression_.get()->Read());
-			ofs << archiveCompression.get()->Read();
-		}
-		memberCompression_.get()->Write(encoding_.get()->Close());
-		archiveCompression.get()->Write(memberCompression_.get()->Close());
-		committedBytes+=0;
-		pendingBytes=0;
-		if (nextByte_<file_size){
-			ofs << archiveCompression.get()->Close();
-			archiveCompression.reset(archiveCompression.get()->clone());
-		}
-	}
 
-	return std::make_tuple(committedBytes,pendingBytes,archiveCompression);
+	for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
+		ifs.read(buf,std::min((size_t)i,sizeof(buf)));
+		precompression_.get()->Write(std::string(buf,ifs.gcount()));
+		encoding_.get()->Write(precompression_.get()->Read());
+		memberCompression_.get()->Write(encoding_.get()->Read());
+		archiveCompression.get()->Write(memberCompression_.get()->Read());
+		ofs << archiveCompression.get()->Read();
+	}
+	encoding_.get()->Write(precompression_.get()->Close());
+	memberCompression_.get()->Write(encoding_.get()->Close());
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
@@ -232,4 +220,15 @@ size_t XmltarMember::MinimumSize(){
 					)
 				+memberTrailer_.size()
 			);
+}
+
+size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	size_t numberOfFileBytesThatCanBeArchived
+		=	precompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
+				encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
+					memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
+						archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(
+							options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))));
+
+	return numberOfFileBytesThatCanBeArchived;
 }

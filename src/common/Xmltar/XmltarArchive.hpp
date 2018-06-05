@@ -56,6 +56,20 @@ public:
 	bool ranOutOfSpace(){
 
 	}
+
+	std::shared_ptr<XmltarMember> NextMember(){
+		boost::filesystem::path const filepath=filesToBeArchived_.top();
+		filesToBeArchived_.pop();
+		boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
+
+		if (boost::filesystem::is_directory(f_stat)){
+			for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+				filesToBeArchived_.push(p);
+			}
+		}
+
+		return std::make_shared<XmltarMember>(options_,filepath);
+	}
 };
 
 
