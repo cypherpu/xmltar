@@ -25,6 +25,8 @@ class TransformGzip {
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"gzip","-fc"}); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"gzip","-fcd"}); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"gzip","--version"}); }
+	virtual size_t EmptyCompressedSize(){ return 20; }
+	virtual size_t MinimumUsableCompressedSize(){ return 20; }
 	std::string MinimumCompressionString(){ return ""; }
 	// std::string CompressString(std::string const & s);		use default
 	// std::string DecompressString(std::string const & s);		use default

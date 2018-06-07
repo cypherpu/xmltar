@@ -92,9 +92,14 @@ XmltarArchive::XmltarArchive(
 						numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 						if (numberOfFileBytesThatCanBeArchived==0){
 							if (committedBytes+compressedArchiveTrailer<=options_.tape_length_.get()){
-								while(committedBytes+compressedArchiveTrailer+archiveCompression+archiveCompression-><options_.tape_length_.get()){
-									// add empty archives to the end
+								while(committedBytes+compressedArchiveTrailer+
+
+										archiveCompression->EmptyCompressedSize()>options_.tape_length_.get()){
+									std::string tmp=archiveCompression->CompressString("");
+									ofs << tmp;
+									committedBytes+=tmp.size();
 								}
+
 							}
 							else
 								throw std::logic_error("XmltarARchive::XmltarArchive: overflow");

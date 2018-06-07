@@ -30,6 +30,8 @@ public:
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>(); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>(); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>(); }
+	size_t EmptyCompressedSize(){ return 0; }
+	size_t MinimumUsableCompressedSize(){ return 0; }
 	std::string MinimumCompressionString(){ return ""; }
 	std::string CompressString(std::string const & s){ return s; }
 	std::string DecompressString(std::string const & s){ return s; }

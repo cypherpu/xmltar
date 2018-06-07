@@ -27,6 +27,8 @@ public:
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"xxd","-ps"}); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"xxd","-ps","-r"}); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"xxd","-v"}); }
+	size_t EmptyCompressedSize(){ throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
+	size_t MinimumUsableCompressedSize(){ throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
 	std::string MinimumCompressionString(){ return ""; }
 	// std::string CompressString(std::string const & s);
 	// std::string DecompressString(std::string const & s);

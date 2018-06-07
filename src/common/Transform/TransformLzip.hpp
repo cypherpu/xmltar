@@ -25,6 +25,8 @@ class TransformLzip : public TransformProcess {
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"lzip","-fc"}); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"lzip","-fcd"}); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"lzip","--version"}); }
+	size_t EmptyCompressedSize(){ return 36; }
+	size_t MinimumUsableCompressedSize(){ return 36; }
 	std::string MinimumCompressionString(){ return ""; }
 	// std::string CompressString(std::string const & s);		use default
 	// std::string DecompressString(std::string const & s);		use default

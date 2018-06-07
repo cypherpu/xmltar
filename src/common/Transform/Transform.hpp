@@ -25,6 +25,8 @@ public:
 	virtual std::vector<char const *> CompressionArguments()=0;
 	virtual std::vector<char const *> DecompressionArguments()=0;
 	virtual std::vector<char const *> VersionArguments()=0;
+	virtual size_t EmptyCompressedSize()=0;
+	virtual size_t MinimumUsableCompressedSize()=0;
 	virtual std::string MinimumCompressionString()=0;
 	virtual std::string CompressString(std::string const & s)=0;
 	virtual std::string DecompressString(std::string const & s)=0;

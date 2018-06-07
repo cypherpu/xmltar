@@ -26,6 +26,8 @@ public:
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"bzip2","-fc"}); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"bzip2","-fcd"}); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"bzip2","--version"}); }
+	size_t EmptyCompressedSize(){ return 14; }
+	size_t MinimumUsableCompressedSize(){ return 37; }
 	std::string MinimumCompressionString(){ return "0"; }
 	// std::string CompressString(std::string const & s);		use default
 	// std::string DecompressString(std::string const & s);		use default
