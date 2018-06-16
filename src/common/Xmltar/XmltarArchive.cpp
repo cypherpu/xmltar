@@ -91,9 +91,8 @@ XmltarArchive::XmltarArchive(
 						pendingBytes=compressedArchiveTrailer.size();
 						numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 						if (numberOfFileBytesThatCanBeArchived==0){
-							if (committedBytes+compressedArchiveTrailer<=options_.tape_length_.get()){
-								while(committedBytes+compressedArchiveTrailer+
-
+							if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
+								while(committedBytes+compressedArchiveTrailer.size()+
 										archiveCompression->EmptyCompressedSize()>options_.tape_length_.get()){
 									std::string tmp=archiveCompression->CompressString("");
 									ofs << tmp;
