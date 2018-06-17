@@ -133,13 +133,14 @@ XmltarArchive::XmltarArchive(
 					}
 				}
 
-				xmltarMember=std::make_shared<XmltarMember>(options_,filepath,ofs,MinimumPlaintextSizeGivenCompressedtextSize(options_.archiveCompression_.get(),std::numeric_limits<size_t>::max()));
+				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
 			}
 		}
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)
 {
+#if 0
 	// we have to back-track to find the end of the last member in the archive
 	boost::format fmt(options_.base_xmltar_file_name_.get());
 	fmt % volumeNumber;
@@ -221,6 +222,7 @@ PartialFileRead XmltarArchive::append(unsigned int volumeNumber)
 
 		// we have found the trailer and the stream is positioned to overwrite the old trailer
 	}
+#endif
 }
 
 bool XmltarArchive::IsPaddingTrailer(std::string s){

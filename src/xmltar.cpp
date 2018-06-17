@@ -27,21 +27,30 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Options/XmltarOptions.hpp"
-#include "common/Compression/Compression.hpp"
+
+#include "Transform/TransformIdentity.hpp"
+#include "Transform/TransformGzip.hpp"
+#include "Transform/TransformBzip2.hpp"
+#include "Transform/TransformLzip.hpp"
 
 int main(int argc, char const *argv[])
 {
 	try {
-		if (!CorrectCompressorVersion(Compression::IDENTITY))
+		TransformIdentity transformIdentity;
+		TransformGzip transformGzip;
+		TransformBzip2 transformBzip2;
+		TransformLzip transformLzip;
+
+		if (!transformIdentity.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'cat' command");
 
-		if (!CorrectCompressorVersion(Compression::GZIP))
+		if (!transformGzip.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'gzip' command");
 
-		if (!CorrectCompressorVersion(Compression::BZIP2))
+		if (!transformBzip2.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'bzip2' command");
 
-		if (!CorrectCompressorVersion(Compression::LZIP))
+		if (!transformLzip.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'lzip' command");
 
 		XmltarOptions options;

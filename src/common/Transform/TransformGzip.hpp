@@ -8,9 +8,10 @@
 #ifndef SRC_COMMON_TRANSFORM_TRANSFORMGZIP_HPP_
 #define SRC_COMMON_TRANSFORM_TRANSFORMGZIP_HPP_
 
-#include "Transform/Transform.hpp"
+#include "Transform/TransformProcess.hpp"
 
-class TransformGzip {
+class TransformGzip : public TransformProcess {
+public:
 	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "gzip 1.8"; }
 	// bool CorrectCompressorVersion();
@@ -22,7 +23,7 @@ class TransformGzip {
 	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
 	char const *CompressionCommand(){ return "/usr/bin/gzip"; }
 	char const *CompressionName(){ return "gzip"; }
-	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"gzip","-fc"}); }
+	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"gzip","-fnc"}); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>({"gzip","-fcd"}); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>({"gzip","--version"}); }
 	virtual size_t EmptyCompressedSize(){ return 20; }

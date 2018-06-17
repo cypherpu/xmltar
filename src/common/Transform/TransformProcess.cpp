@@ -27,7 +27,7 @@ std::string TransformProcess::ActualCompressorVersionString(){
 		if (p.Can_Read2()) result2+=p.Read2();
 	}
 
-	std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
+	// std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
 
 	if (result2=="") return result1;
 	else return result2;
@@ -163,7 +163,7 @@ std::string TransformProcess::Close(){
 		pipe_.QueueWriteClose();
 	}
 	while(!pipe_.ChildExitedAndAllPipesClosed()){
-		if (pipe_.Can_Write()) p.Write();
+		if (pipe_.Can_Write()) pipe_.Write();
 		if (pipe_.Can_Read1()) result+=pipe_.Read1();
 		if (pipe_.Can_Read2()) pipe_.Read2();
 	}
@@ -178,4 +178,5 @@ size_t TransformProcess::WriteCount(){
 size_t TransformProcess::ReadCount(){
 	return pipe_.Read1_Count();
 }
-Transform::~Transform(){}
+
+TransformProcess::~TransformProcess(){}

@@ -11,6 +11,7 @@
 #include "Transform/TransformProcess.hpp"
 
 class TransformLzip : public TransformProcess {
+public:
 	// std::string ActualCompressorVersionString();
 	std::string ExpectedCompressorVersionString(){ return "lzip 1.20"; }
 	// bool CorrectCompressorVersion();

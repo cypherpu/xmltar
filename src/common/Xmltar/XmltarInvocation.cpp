@@ -61,8 +61,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	if (options_.source_files_)
 		for(auto & i : options_.source_files_.get())
 			filesToArchive.push(i);
-
-	if (options_.files_from_){
+	else if (options_.files_from_){
 		std::ifstream ifs(options_.files_from_.get().string());
 
 		if (ifs){
@@ -73,6 +72,8 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
 	}
+	else
+		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 	boost::optional<Snapshot> snapshot;
 	if (options_.listed_incremental_file_){
@@ -85,9 +86,8 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
 		if (options_.multi_volume_){
-			if (!options_.starting_sequence_number_){
+			if (!options_.starting_sequence_number_)
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
-			}
 
             if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
             size_t volumeNumber=options_.starting_sequence_number_.get();
