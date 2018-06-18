@@ -25,32 +25,32 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Increment_Value(verbosity_));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, Compression::IDENTITY));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformIdentity));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, Compression::GZIP));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformGzip));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-bzip2","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, Compression::BZIP2));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformBzip2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-lzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, Compression::LZIP));
+			p.Assign_Value(fileCompression_,  (Transform *) new TransformLzip));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
-			p.Assign_Value(encoding_,XmltarOptions::BASE16));
+			p.Assign_Value(encoding_,(Transform *) new TransformHex));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base64","base64 encode files before archiving",
-			p.Assign_Value(encoding_,XmltarOptions::BASE64));
+			p.Assign_Value(encoding_,(Transform *) new TransformHex));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, Compression::GZIP));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformGzip));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-bzip2","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, Compression::BZIP2));
+			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformBzip2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-lzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, Compression::LZIP));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformLzip));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompression_, Compression::GZIP));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformGzip));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--bzip2","compress archive",
-			p.Assign_Value(archiveCompression_, Compression::BZIP2));
+			p.Assign_Value(archiveCompression_, (Transform *) new TransformBzip2));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--lzip","compress archive",
-			p.Assign_Value(archiveCompression_, Compression::LZIP));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformLzip));
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
@@ -114,43 +114,10 @@ std::string XmltarOptions::toXMLString(){
 	if(multi_volume_)
 		oss << Tabs("\t\t\t") << "<option>--multi-volume</option>" << std::endl;
 
-	if (fileCompression_){
-		oss << Tabs("\t\t\t") << "<option>";
-		if (fileCompression_==Compression::IDENTITY) oss << "--file-identity";
-		else if (fileCompression_==Compression::GZIP) oss << "--file-gzip";
-		else if (fileCompression_==Compression::BZIP2) oss << "--file-bzip2";
-		else if (fileCompression_==Compression::LZIP) oss << "--file-lzip";
-		else throw(std::logic_error("XmltarOptions::toXMLString: unknown fileCompress"));
-		oss << "</option>" << std::endl;
-	}
-
-	if (encoding_){
-		oss << Tabs("\t\t\t") << "<option>";
-		if (encoding_==BASE16) oss << "--base16";
-		else if (encoding_==BASE64) oss << "--base64";
-		else throw(std::logic_error("XmltarOptions::toXMLString: unknown encoding"));
-		oss << "</option>" << std::endl;
-	}
-
-	if (archiveMemberCompression_){
-		oss << Tabs("\t\t\t") << "<option>";
-		if (archiveMemberCompression_==Compression::IDENTITY) oss << "--member-identity";
-		else if (archiveMemberCompression_==Compression::GZIP) oss << "--member-gzip";
-		else if (archiveMemberCompression_==Compression::BZIP2) oss << "--member-bzip2";
-		else if (archiveMemberCompression_==Compression::LZIP) oss << "--member-lzip";
-		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveMemberCompress_"));
-		oss << "</option>" << std::endl;
-	}
-
-	if (archiveCompression_){
-		oss << Tabs("\t\t\t") << "<option>";
-		if (archiveCompression_==Compression::IDENTITY) oss << "--identity";
-		else if (archiveCompression_==Compression::GZIP) oss << "--gzip";
-		else if (archiveCompression_==Compression::BZIP2) oss << "--bzip2";
-		else if (archiveCompression_==Compression::LZIP) oss << "--lzip";
-		else throw(std::logic_error("XmltarOptions::toXMLString: unknown archiveCompress_"));
-		oss << "</option>" << std::endl;
-	}
+	oss << Tabs("\t\t\t") << "<option>--file-" << fileCompression_.get()->CompressionName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--" << encoding_.get()->CompressionName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--member-" << archiveMemberCompression_.get()->CompressionName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--" << archiveCompression_.get()->CompressionName() << "</option>" << std::endl;
 
 	if (tape_length_)
 		oss << Tabs("\t\t\t") << "<option>--tape-length=" << tape_length_.get() << "</option>" << std::endl;

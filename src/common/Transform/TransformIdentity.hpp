@@ -18,15 +18,15 @@ public:
 	size_t read_count;
 	size_t write_count;
 
-	std::string ActualCompressorVersionString(){ return "Identity"; }
-	std::string ExpectedCompressorVersionString(){ return "Identity"; }
+	std::string ActualCompressorVersionString(){ return "identity"; }
+	std::string ExpectedCompressorVersionString(){ return "identity"; }
 	bool CorrectCompressorVersion(){ return true; }
 	std::string HeaderMagicNumber(std::string identity){ return ""; }
 	std::string TrailerMagicNumber(){ return ""; }
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){ return plaintextSize; }
 	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){ return compressedtextSize; }
-	char const *CompressionCommand(){ return "Identity"; }
-	char const *CompressionName(){ return "Identity"; }
+	char const *CompressionCommand(){ return "identity"; }
+	char const *CompressionName(){ return "identity"; }
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>(); }
 	std::vector<char const *> DecompressionArguments(){ return std::vector<char const *>(); }
 	std::vector<char const *> VersionArguments(){ return std::vector<char const *>(); }

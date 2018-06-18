@@ -21,7 +21,6 @@ extern "C" {
 #include "Utilities/ToLocalTime.hpp"
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
-#include "Compression/Compression.hpp"
 #include "Transform/TransformHex.hpp"
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
@@ -144,11 +143,9 @@ std::string XmltarMember::MemberHeader(){
     switch(f_type){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
-            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+CompressionName(options_.fileCompression_.get());
+            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
 
-            if (options_.encoding_==XmltarOptions::BASE16) s+="\" encoding=\"base16";
-            else if (options_.encoding_==XmltarOptions::BASE64) s+="\" encoding=\"base64";
-            else throw "unrecognized encoding";
+            s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName() + "\"";
 
             s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(start_tell)+"\">"+options_.Newline();
             break;
@@ -204,11 +201,11 @@ std::string XmltarMember::MemberTrailer(){
 }
 
 std::string XmltarMember::CompressedMemberHeader(){
-	return CompressString(options_.archiveMemberCompression_.get(),MemberHeader());
+	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
 }
 
 std::string XmltarMember::CompressedMemberTrailer(){
-	return CompressString(options_.archiveMemberCompression_.get(),MemberTrailer());
+	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
 }
 
 size_t XmltarMember::MinimumSize(){

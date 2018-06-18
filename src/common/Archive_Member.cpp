@@ -19,7 +19,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "Compression/Compression.hpp"
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Utilities/ToLocalTime.hpp"
@@ -88,15 +87,9 @@ std::string Archive_Member::Generate_Archive_Member_Header(){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
             s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\"";
-            if (options_.fileCompression_==Compression::IDENTITY) s+="identity";
-            else if (options_.fileCompression_==Compression::GZIP) s+="gzip";
-            else if (options_.fileCompression_==Compression::BZIP2) s+="bzip2";
-            else if (options_.fileCompression_==Compression::LZIP) s+="xz";
-            else throw "unrecognized precompress";
+            s+=options_.fileCompression_.get()->CompressionName();
 
-            if (options_.encoding_==XmltarOptions::BASE16) s+="\" encoding=\"base16";
-            else if (options_.encoding_==XmltarOptions::BASE64) s+="\" encoding=\"base64";
-            else throw "unrecognized encoding";
+            s=s+"\" encoding=\""+options_.encoding_.get()->CompressionName();
 
             s+="\" total-size=\""+ToDecimalInt(file_size)+"\" this-extent-start=\""+ToDecimalInt(start_tell)+"\">"+options_.Newline();
             break;

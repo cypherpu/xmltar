@@ -60,10 +60,13 @@ XmltarArchive::XmltarArchive(
 {
 	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
 
-	std::shared_ptr<Transform> archiveCompression(new TransformIdentity);
+	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
 		if (options_.multi_volume_){
+			if (!options_.tape_length_)
+				throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
+
 			std::ofstream ofs(filename_);
 			std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string compressedArchiveTrailer=CompressedArchiveTrailer(0);
@@ -266,7 +269,11 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	std::string compressedContent(	(std::istreambuf_iterator<char>(iofs)),
 									(std::istreambuf_iterator<char>()    ));
 
-	std::string uncompressedContent=DecompressString(options_.archiveCompression_.get(),compressedContent);
+	std::string uncompressedContent=options_.archiveCompression_.get()->DecompressString(
+										options_.archiveMemberCompression_.get()->DecompressString(
+											compressedContent
+										)
+									);
 
 	return IsPaddingTrailer(uncompressedContent);
 }
@@ -283,10 +290,8 @@ std::string XmltarArchive::ArchiveHeader(std::string filename, int archive_seque
 }
 
 std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int archive_sequence_number){
-	return CompressString(
-				options_.archiveCompression_.get(),
-				CompressString(
-						options_.archiveMemberCompression_.get(),
+	return options_.archiveCompression_.get()->CompressString(
+				options_.archiveMemberCompression_.get()->CompressString(
 						ArchiveHeader(filename, archive_sequence_number)
 				)
 			);
@@ -304,7 +309,7 @@ std::string XmltarArchive::ArchiveTrailerBegin(){
 }
 
 std::string XmltarArchive::ArchiveTrailerMiddle(unsigned int padding){
-	std::string s=MinimumCompressionString(options_.archiveCompression_.get());
+	std::string s=options_.archiveCompression_.get()->MinimumCompressionString();
 
     return s;
 }
@@ -320,24 +325,18 @@ std::string XmltarArchive::ArchiveTrailer(unsigned int padding){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int padding){
-	return CompressString(
-				options_.archiveCompression_.get(),
-				CompressString(
-								options_.archiveMemberCompression_.get(),
+	return options_.archiveCompression_.get()->CompressString(
+				options_.archiveMemberCompression_.get()->CompressString(
 								ArchiveTrailerBegin()
 				)
 			)
-			+CompressString(
-				options_.archiveCompression_.get(),
-				CompressString(
-								options_.archiveMemberCompression_.get(),
+			+options_.archiveCompression_.get()->CompressString(
+				options_.archiveMemberCompression_.get()->CompressString(
 								ArchiveTrailerMiddle(padding)
 				)
 			)
-			+CompressString(
-				options_.archiveCompression_.get(),
-				CompressString(
-								options_.archiveMemberCompression_.get(),
+			+options_.archiveCompression_.get()->CompressString(
+				options_.archiveMemberCompression_.get()->CompressString(
 								ArchiveTrailerEnd()
 				)
 			);

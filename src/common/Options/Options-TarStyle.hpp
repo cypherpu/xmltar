@@ -49,7 +49,9 @@ public:
 	void Do_Action(std::string s){
 		std::istringstream iss(s);
 		iss >> destination;
-		if (!iss.eof()) throw "unused characters in option";
+		if (!iss.eof()){
+			throw std::runtime_error("Parse_Opts::Action_Assign_Args::1: unused characters in option \""+s+"\"");
+		}
 	}
 };
 
@@ -67,10 +69,26 @@ public:
 		T t;
 		iss >> t;
 		destination=t;
-		if (!iss.eof()) throw "unused characters in option";
+		if (!iss.eof()){
+			throw std::runtime_error("Parse_Opts::Action_Assign_Args_Optional::2: unused characters in option \""+s+"\"");
+		}
 	}
 };
-
+#if 0
+/*
+ * assign to a shared_ptr
+ */
+template <typename T> class Action_Assign_Args_Shared_Ptr : public Action {
+	std::shared_ptr<T>& destination;
+public:
+	Action_Assign_Args_Shared_Ptr(std::shared_ptr<T>& dest)
+		: destination(dest) { }
+	~Action_Assign_Args_Shared_Ptr(void) { }
+	void Do_Action(T *val){
+		destination.reset(val);
+	}
+};
+#endif
 /*
  * we need a template specialization for std::string args, to handle
  * the case in which the argument might contain a filename
@@ -130,6 +148,22 @@ public:
 
 	void Do_Action(std::string s){
 		destination=value;
+	}
+};
+
+/*
+ * assign a pre-selected value
+ */
+template <typename T> class Action_Assign_Value_Shared_Ptr : public Action {
+	std::shared_ptr<T>& destination;
+	T *value;
+public:
+	Action_Assign_Value_Shared_Ptr(std::shared_ptr<T>& dest, T *val)
+		: destination(dest), value(val) { }
+	~Action_Assign_Value_Shared_Ptr(void){ }
+
+	void Do_Action(std::string s){
+		destination.reset(value);
 	}
 };
 
@@ -257,7 +291,13 @@ public:
 
 		return tmp;
 	}
+#if 0
+	template <typename T> Action_Assign_Args_Shared_Ptr<T> *Assign_Args(std::shared_ptr<T>& dest){
+		Action_Assign_Args_Shared_Ptr<T> *tmp=new Action_Assign_Args_Shared_Ptr<T>(dest);
 
+		return tmp;
+	}
+#endif
 	template <typename T> Action_Assign_Value<T> *Assign_Value(T& dest, T val){
 		Action_Assign_Value<T> *tmp = new Action_Assign_Value<T>(dest,val);
 
@@ -266,6 +306,12 @@ public:
 
 	template <typename T> Action_Assign_Value_Optional<T> *Assign_Value(boost::optional<T> & dest, T val){
 		Action_Assign_Value_Optional<T> *tmp = new Action_Assign_Value_Optional<T>(dest,val);
+
+		return tmp;
+	}
+
+	template <typename T> Action_Assign_Value_Shared_Ptr<T> *Assign_Value(std::shared_ptr<T> & dest, T *val){
+		Action_Assign_Value_Shared_Ptr<T> *tmp = new Action_Assign_Value_Shared_Ptr<T>(dest,val);
 
 		return tmp;
 	}
@@ -391,6 +437,7 @@ public:
 		//	follows the option, or are separated by white space
 
 		for( ; next_arg<argc && argv[next_arg][0]=='-'; ++next_arg){
+			std::cerr << "Option_Parser::Parse: \"" << argv[next_arg] << "\"" << std::endl;
 			if (argv[next_arg][1]=='-'){							// long option: argument space-separated or '=' separated
 				std::string tmp=std::string(argv[next_arg]);
 				std::string opt, arg;
@@ -401,6 +448,7 @@ public:
 					arg=tmp.substr(i+1);
 				}
 				else {
+					std::cerr << "No equals" << std::endl;
 					opt=tmp;
 
 					if (long_forms.find(opt)==long_forms.end()){
@@ -411,13 +459,15 @@ public:
 
 					if (long_forms.find(opt)->second->number_of_arguments==ARGS_0)
 						arg=opt;
-					else if (long_forms.find(opt)->second->number_of_arguments==ARGS_1)
+					else if (long_forms.find(opt)->second->number_of_arguments==ARGS_1){
 						if (++next_arg>=argc)
 							throw "long option requires argument";
 						else {
 							opt=tmp;
 							arg=argv[next_arg];
 						}
+						std::cerr << "OptionParser::Parse: opt=" << opt << " arg=" << arg << std::endl;
+					}
 					else throw "number of arguments>1 not supported";
 				}
 

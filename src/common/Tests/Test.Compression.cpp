@@ -7,7 +7,6 @@
 
 #include <gmock/gmock.h>
 
-#include "Compression/Compression.hpp"
 #include "Generated/Bidirectional_Pipe.hpp"
 #include "Transform/TransformHex.hpp"
 

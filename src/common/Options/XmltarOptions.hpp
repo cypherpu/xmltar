@@ -27,8 +27,13 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/optional.hpp>
 
-#include "Compression/Compression.hpp"
 #include "Options/Options-TarStyle.hpp"
+#include "Transform/Transform.hpp"
+#include "Transform/TransformIdentity.hpp"
+#include "Transform/TransformGzip.hpp"
+#include "Transform/TransformBzip2.hpp"
+#include "Transform/TransformLzip.hpp"
+#include "Transform/TransformHex.hpp"
 
 class XmltarOptions {
 public:
@@ -38,10 +43,10 @@ public:
 	boost::optional<Operation> operation_;
 	boost::optional<int> verbosity_;
 	boost::optional<bool> multi_volume_;
-	boost::optional<Compression> fileCompression_;
-	boost::optional<Encoding> encoding_;
-	boost::optional<Compression> archiveMemberCompression_;
-	boost::optional<Compression> archiveCompression_;
+	std::shared_ptr<Transform> fileCompression_;
+	std::shared_ptr<Transform> encoding_;
+	std::shared_ptr<Transform> archiveMemberCompression_;
+	std::shared_ptr<Transform> archiveCompression_;
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<boost::filesystem::path> listed_incremental_file_;
@@ -60,7 +65,10 @@ public:
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
-		  fileCompression_(Compression::IDENTITY), encoding_(BASE16), archiveMemberCompression_(Compression::IDENTITY), archiveCompression_(Compression::IDENTITY),
+		  fileCompression_(new TransformIdentity),
+		  encoding_(new TransformHex),
+		  archiveMemberCompression_(new TransformIdentity),
+		  archiveCompression_(new TransformIdentity),
           tape_length_(), stop_after_(),
 		  source_files_(), listed_incremental_file_(), compress_listed_incremental_file_(),
 		  files_from_(), exclude_files_(),
