@@ -16,7 +16,7 @@ TEST(XmltarTest,CompressGzip)
 	std::string compressedCleartext;
 	std::string retrievedCleartext;
 	{
-		Bidirectional_Pipe p(CompressionCommand(Compression::GZIP),CompressionArguments(Compression::GZIP));
+		Bidirectional_Pipe p("/usr/bin/gzip",std::vector<char const *>{"gzip","-nc"});
 
 		if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
 			p.QueueWrite(cleartext);
@@ -29,7 +29,7 @@ TEST(XmltarTest,CompressGzip)
 		ASSERT_EQ(p.ExitStatus(),0);
 	}
 	{
-		Bidirectional_Pipe p(CompressionCommand(Compression::GZIP),DecompressionArguments(Compression::GZIP));
+		Bidirectional_Pipe p("/usr/bin/gzip",std::vector<char const *>{"gzip","-dnc"});
 
 		if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
 			p.QueueWrite(compressedCleartext);
@@ -53,7 +53,7 @@ TEST(XmltarTest,CompressHex)
 		//std::cerr << "\"" << cleartext << "\"" << std::endl;
 		std::string compressedtext=transformHex.CompressString(cleartext);
 		//std::cerr << "\"" << compressedtext << "\"" << std::endl;
-		std::cerr << transformHex.MaximumCompressedtextSizeGivenPlaintextSize(cleartext.size()) << " " << compressedtext.size() << std::endl;
+		//std::cerr << transformHex.MaximumCompressedtextSizeGivenPlaintextSize(cleartext.size()) << " " << compressedtext.size() << std::endl;
 
 		ASSERT_TRUE(transformHex.MaximumCompressedtextSizeGivenPlaintextSize(cleartext.size())==compressedtext.size());
 	}

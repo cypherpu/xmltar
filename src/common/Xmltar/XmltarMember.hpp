@@ -42,7 +42,7 @@ public:
 	std::string CompressedMemberTrailer();
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
-	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, bool includeMemberHeader);
 	bool IsComplete(){ return nextByte_==file_size; }
 };
 

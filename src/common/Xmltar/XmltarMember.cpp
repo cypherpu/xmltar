@@ -56,22 +56,31 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 	std::ifstream ifs(filepath_.string());
 	ifs.seekg(nextByte_);
 
+	std::shared_ptr<Transform> precompression(precompression_->clone());
+	int precompression_;
+
+	std::shared_ptr<Transform> memberCompression(memberCompression_->clone());
+	int memberCompression_;
+
+	std::shared_ptr<Transform> encoding(encoding_->clone());
+	int encoding_;
+
 	size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
-	precompression_.get()->OpenCompression();
-	encoding_.get()->OpenCompression();
-	memberCompression_.get()->OpenCompression();
+	precompression.get()->OpenCompression();
+	encoding.get()->OpenCompression();
+	memberCompression.get()->OpenCompression();
 	char buf[1024];
 
 	for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 		ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-		precompression_.get()->Write(std::string(buf,ifs.gcount()));
-		encoding_.get()->Write(precompression_.get()->Read());
-		memberCompression_.get()->Write(encoding_.get()->Read());
-		archiveCompression.get()->Write(memberCompression_.get()->Read());
+		precompression.get()->Write(std::string(buf,ifs.gcount()));
+		encoding.get()->Write(precompression.get()->Read());
+		memberCompression.get()->Write(encoding.get()->Read());
+		archiveCompression.get()->Write(memberCompression.get()->Read());
 		ofs << archiveCompression.get()->Read();
 	}
-	encoding_.get()->Write(precompression_.get()->Close());
-	memberCompression_.get()->Write(encoding_.get()->Close());
+	encoding.get()->Write(precompression.get()->Close());
+	memberCompression.get()->Write(encoding.get()->Close());
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
@@ -219,13 +228,13 @@ size_t XmltarMember::MinimumSize(){
 			);
 }
 
-size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression,bool includeMemberHeader){
 	size_t numberOfFileBytesThatCanBeArchived
 		=	precompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
 				encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
 					memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
 						archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-							options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))));
+							options_.tape_length_.get()-committedBytes-pendingBytes-(includeMemberHeader?memberHeader_.size():0)-memberTrailer_.size()))));
 
 	return numberOfFileBytesThatCanBeArchived;
 }

@@ -83,8 +83,9 @@ XmltarArchive::XmltarArchive(
 			if (!filesToBeArchived.empty() && !nextMember_)
 				nextMember_=NextMember();
 
+			bool includeMemberHeader=true;
 			for(bool firstPass=true; nextMember_; firstPass=false){
-				size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+				size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
 				if (numberOfFileBytesThatCanBeArchived==0)
 					if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
@@ -92,7 +93,7 @@ XmltarArchive::XmltarArchive(
 						ofs << archiveCompression.get()->Close();
 						committedBytes=archiveCompression.get()->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
-						numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+						numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
 						if (numberOfFileBytesThatCanBeArchived==0){
 							if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
 								while(committedBytes+compressedArchiveTrailer.size()+
@@ -112,8 +113,9 @@ XmltarArchive::XmltarArchive(
 
 				nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
 				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount());
-				if (nextMember_->IsComplete())
+				if (nextMember_->IsComplete()){
 					nextMember_=NextMember();
+				}
 			}
 		}
 		else {
