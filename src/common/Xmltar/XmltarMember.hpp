@@ -17,7 +17,7 @@ extern "C" {
 
 class XmltarMember {
 	XmltarOptions const  & options_;
-	boost::filesystem::path const & filepath_;
+	boost::filesystem::path const filepath_;
 	struct stat stat_buf;
 	boost::filesystem::file_status f_stat;
 	boost::filesystem::file_type f_type;
@@ -43,7 +43,10 @@ public:
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
 	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, bool includeMemberHeader);
+	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool IsComplete(){ return nextByte_==file_size; }
+	boost::filesystem::path filepath(){ return filepath_; }
+	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
 };
 
 

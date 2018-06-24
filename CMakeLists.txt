@@ -30,7 +30,6 @@ src/common/Xmltar
 
 file(GLOB SOURCES 
 	src/common/*.[ch]pp
-	src/common/Compression/*.[ch]pp
 	src/common/Generated/*.[ch]pp
 	src/common/Options/*.[ch]pp
 	src/common/Snapshot/*.[ch]pp

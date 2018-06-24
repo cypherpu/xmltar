@@ -85,36 +85,59 @@ XmltarArchive::XmltarArchive(
 
 			bool includeMemberHeader=true;
 			for(bool firstPass=true; nextMember_; firstPass=false){
-				size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
-				if (numberOfFileBytesThatCanBeArchived==0)
-					if (firstPass)
-						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
-					else {	// close off this archiveCompression to free up space
-						ofs << archiveCompression.get()->Close();
-						committedBytes=archiveCompression.get()->ReadCount();
-						pendingBytes=compressedArchiveTrailer.size();
-						numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
-						if (numberOfFileBytesThatCanBeArchived==0){
-							if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
-								while(committedBytes+compressedArchiveTrailer.size()+
-										archiveCompression->EmptyCompressedSize()>options_.tape_length_.get()){
-									std::string tmp=archiveCompression->CompressString("");
-									ofs << tmp;
-									committedBytes+=tmp.size();
-								}
+				if (nextMember_->isDirectory()){
+					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
+						archiveCompression->Write(
+							options_.archiveMemberCompression_->CompressString(
+								nextMember_->MemberHeader()+nextMember_->MemberTrailer()
+							)
+						);
+						nextMember_=NextMember();
+						includeMemberHeader=true;
+					}
+					else if (firstPass)
+						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+					else {
+						ofs << archiveCompression->Close();
+						ofs.flush();
+					}
+				}
+				else {
+					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
+					std::cerr << "XmltarArchive: archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
+					if (numberOfFileBytesThatCanBeArchived==0)
+						if (firstPass)
+							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
+						else {	// close off this archiveCompression to free up space
+							ofs << archiveCompression.get()->Close();
+							committedBytes=archiveCompression.get()->ReadCount();
+							pendingBytes=compressedArchiveTrailer.size();
+							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression,includeMemberHeader);
+							if (numberOfFileBytesThatCanBeArchived==0){
+								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
+									while(committedBytes+compressedArchiveTrailer.size()+
+											archiveCompression->EmptyCompressedSize()>options_.tape_length_.get()){
+										std::string tmp=archiveCompression->CompressString("");
+										ofs << tmp;
+										committedBytes+=tmp.size();
+									}
 
+								}
+								else
+									throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 							}
 							else
-								throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
+								archiveCompression.reset(archiveCompression.get()->clone());
 						}
-						else
-							archiveCompression.reset(archiveCompression.get()->clone());
-					}
 
-				nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
-				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount());
-				if (nextMember_->IsComplete()){
-					nextMember_=NextMember();
+					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
+					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount());
+					if (nextMember_->IsComplete()){
+						nextMember_=NextMember();
+						includeMemberHeader=true;
+					}
+					else
+						includeMemberHeader=true;
 				}
 			}
 		}
