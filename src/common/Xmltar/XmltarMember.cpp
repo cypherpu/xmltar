@@ -26,7 +26,6 @@ extern "C" {
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0) {
 
-	std::cerr << "XmltarMember::XmltarMember: entering" << std::endl;
     f_stat=boost::filesystem::symlink_status(filepath_);
 
     if (!boost::filesystem::exists(f_stat))
@@ -48,8 +47,6 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     memberTrailer_=MemberTrailer();
 
     memberCompression_.reset(new TransformHex);
-
-	std::cerr << "XmltarMember::XmltarMember: leaving" << std::endl;
 }
 
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
@@ -57,30 +54,25 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 	ifs.seekg(nextByte_);
 
 	std::shared_ptr<Transform> precompression(precompression_->clone());
-	int precompression_;
-
 	std::shared_ptr<Transform> memberCompression(memberCompression_->clone());
-	int memberCompression_;
-
 	std::shared_ptr<Transform> encoding(encoding_->clone());
-	int encoding_;
 
 	size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
-	precompression.get()->OpenCompression();
-	encoding.get()->OpenCompression();
-	memberCompression.get()->OpenCompression();
+	precompression->OpenCompression();
+	encoding->OpenCompression();
+	memberCompression->OpenCompression();
 	char buf[1024];
 
 	for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 		ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-		precompression.get()->Write(std::string(buf,ifs.gcount()));
-		encoding.get()->Write(precompression.get()->Read());
-		memberCompression.get()->Write(encoding.get()->Read());
-		archiveCompression.get()->Write(memberCompression.get()->Read());
-		ofs << archiveCompression.get()->Read();
+		precompression->Write(std::string(buf,ifs.gcount()));
+		encoding->Write(precompression->Read());
+		memberCompression->Write(encoding->Read());
+		archiveCompression->Write(memberCompression->Read());
+		ofs << archiveCompression->Read();
 	}
-	encoding.get()->Write(precompression.get()->Close());
-	memberCompression.get()->Write(encoding.get()->Close());
+	encoding->Write(precompression->Close());
+	memberCompression->Write(encoding->Close());
 }
 
 size_t XmltarMember::MaximumSize(size_t n){

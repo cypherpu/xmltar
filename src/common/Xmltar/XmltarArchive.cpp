@@ -58,8 +58,6 @@ XmltarArchive::XmltarArchive(
 )
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
-	std::cerr << "XmltarArchive::XmltarArchive: " << options_.operation_.get() << "==" << XmltarOptions::Operation::CREATE << " " << !options_.multi_volume_ << std::endl;
-
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
@@ -75,8 +73,12 @@ XmltarArchive::XmltarArchive(
 				throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold header and trailer of archive member");
 
 			ofs << compressedArchiveHeader;
+			ofs.flush(); // DEBUG
 			size_t committedBytes=compressedArchiveHeader.size();
 			size_t pendingBytes=compressedArchiveTrailer.size();
+
+			std::cerr << "compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
+			std::cerr << "compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
 
 			archiveCompression.get()->OpenCompression();
 
@@ -85,15 +87,20 @@ XmltarArchive::XmltarArchive(
 
 			bool includeMemberHeader=true;
 			for(bool firstPass=true; nextMember_; firstPass=false){
+				std::cerr << "committedBytes=" << committedBytes << std::endl;
+				std::cerr << "pendingBytes=  " << pendingBytes << std::endl;
+				std::cerr << "file=" << nextMember_->filepath() << std::endl;
+
 				if (nextMember_->isDirectory()){
 					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
-						archiveCompression->Write(
-							options_.archiveMemberCompression_->CompressString(
-								nextMember_->MemberHeader()+nextMember_->MemberTrailer()
-							)
-						);
+						std::string compressedDirectoryMember
+							= options_.archiveMemberCompression_->CompressString(
+									nextMember_->MemberHeader()+nextMember_->MemberTrailer()
+								);
+						archiveCompression->Write(compressedDirectoryMember);
 						nextMember_=NextMember();
 						includeMemberHeader=true;
+						pendingBytes+=compressedDirectoryMember.size();
 					}
 					else if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
@@ -139,6 +146,11 @@ XmltarArchive::XmltarArchive(
 					else
 						includeMemberHeader=true;
 				}
+
+				if (nextMember_->filepath().string()=="src/common"){
+					ofs << archiveCompression->Close(); ofs.flush(); exit(0); // DEBUG
+				}
+
 			}
 		}
 		else {

@@ -68,7 +68,6 @@ public:
 			}
 		}
 
-		std::cerr << "XmltarArchive::NextMember: path=" << filepath << std::endl;
 		return std::make_shared<XmltarMember>(options_,filepath);
 	}
 };

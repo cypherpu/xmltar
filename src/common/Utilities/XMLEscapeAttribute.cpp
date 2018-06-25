@@ -20,7 +20,8 @@ EntityMap entities[]
 	{ '\"',	"&quot;" },
 	{ '\'',	"&apos;" },
 	{ '<',	"&lt;" },
-	{ '>',	"&gt;" }
+	{ '>',	"&gt;" },
+	{ '\x00',	"&#00;" },
 };
 
 std::string XMLEscapeAttribute(std::string const data) {
@@ -33,6 +34,7 @@ std::string XMLEscapeAttribute(std::string const data) {
             case '\'': buffer.append("&apos;");      break;
             case '<':  buffer.append("&lt;");        break;
             case '>':  buffer.append("&gt;");        break;
+            case '\x00':  buffer.append("&#00;");        break;
             default:   buffer.append(&data[i], 1); break;
         }
     }

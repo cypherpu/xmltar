@@ -437,7 +437,6 @@ public:
 		//	follows the option, or are separated by white space
 
 		for( ; next_arg<argc && argv[next_arg][0]=='-'; ++next_arg){
-			std::cerr << "Option_Parser::Parse: \"" << argv[next_arg] << "\"" << std::endl;
 			if (argv[next_arg][1]=='-'){							// long option: argument space-separated or '=' separated
 				std::string tmp=std::string(argv[next_arg]);
 				std::string opt, arg;
@@ -448,13 +447,12 @@ public:
 					arg=tmp.substr(i+1);
 				}
 				else {
-					std::cerr << "No equals" << std::endl;
 					opt=tmp;
 
 					if (long_forms.find(opt)==long_forms.end()){
 						for(std::map<std::string,Option *>::iterator j=long_forms.begin(); j!=long_forms.end(); ++j)
 							std::cerr << "longform[" << j->first << "]=" << j->second << std::endl;
-						throw "unknown options 1 \""+opt+"\"";
+						throw std::invalid_argument("unknown options 1 \""+opt+"\"");
 					}
 
 					if (long_forms.find(opt)->second->number_of_arguments==ARGS_0)
@@ -466,7 +464,6 @@ public:
 							opt=tmp;
 							arg=argv[next_arg];
 						}
-						std::cerr << "OptionParser::Parse: opt=" << opt << " arg=" << arg << std::endl;
 					}
 					else throw "number of arguments>1 not supported";
 				}
