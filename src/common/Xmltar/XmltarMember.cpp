@@ -221,6 +221,13 @@ size_t XmltarMember::MinimumSize(){
 }
 
 size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression,bool includeMemberHeader){
+
+	size_t archiveBytes=options_.tape_length_.get()-committedBytes-pendingBytes-(includeMemberHeader?memberHeader_.size():0)-memberTrailer_.size();
+	size_t compressedArchiveBytes=archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
+	size_t compressedMemberBytes=memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(compressedArchiveBytes);
+	size_t encodedMemberBytes=encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(compressedMemberBytes);
+	size_t precompressedBytes=precompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
+
 	size_t numberOfFileBytesThatCanBeArchived
 		=	precompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
 				encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
