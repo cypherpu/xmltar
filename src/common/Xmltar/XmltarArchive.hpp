@@ -43,10 +43,10 @@ public:
 	std::string ArchiveTrailerBegin();
 	std::string ArchiveTrailerMiddle(unsigned int padding);
 	std::string ArchiveTrailerEnd();
-	std::string ArchiveTrailer(unsigned int padding);
 
 	std::string CompressedArchiveHeader(std::string filename, int archive_sequence_number);
-	std::string CompressedArchiveTrailer(unsigned int padding);
+	std::string CompressedArchiveTrailer();
+	std::string CompressedArchiveTrailer(unsigned int desiredLength);
 
 	bool static IsPaddingTrailer(std::string s);
 	bool IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::off_type offset);

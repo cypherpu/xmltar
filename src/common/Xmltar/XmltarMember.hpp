@@ -24,9 +24,6 @@ class XmltarMember {
 	off_t file_size;
 	std::string memberHeader_;
 	std::string memberTrailer_;
-	std::unique_ptr<Transform> precompression_;
-	std::unique_ptr<Transform> encoding_;
-	std::unique_ptr<Transform> memberCompression_;
 	size_t nextByte_;
 
 public:
@@ -42,7 +39,7 @@ public:
 	std::string CompressedMemberTrailer();
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
-	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression, bool includeMemberHeader);
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool IsComplete(){ return nextByte_==file_size; }
 	boost::filesystem::path filepath(){ return filepath_; }

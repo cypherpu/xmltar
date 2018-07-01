@@ -10,7 +10,8 @@
 
 #include <map>
 
-extern std::map<char const *, std::map<char const *, std::map<int,std::tuple<int,int>>>>
+extern char const random_hex[];
+extern std::map<std::string, std::map<std::string, std::map<int,std::tuple<int,int>>>>
 dMap;
 
 #endif /* SRC_COMMON_TRANSFORM_DMAP_HPP_ */
