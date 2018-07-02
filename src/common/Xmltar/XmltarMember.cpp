@@ -15,6 +15,7 @@ extern "C" {
 #include <pwd.h>
 #include <grp.h>
 }
+#include <boost/lexical_cast.hpp>
 
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/XMLEscapeAttribute.hpp"
@@ -58,23 +59,30 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		memberCompression->OpenCompression();
 		char buf[1024];
 
+		std::cerr << "memberHeader_=" << memberHeader_.size() << std::endl;
 		memberCompression->Write(memberHeader_);
 
+		std::string encoded, tmp;
 		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
 			std::cerr << "XmltarMember::Write: read " << ifs.gcount() << " bytes" << std::endl;
 			precompression->Write(std::string(buf,ifs.gcount()));
 			encoding->Write(precompression->Read());
-			memberCompression->Write(encoding->Read());
+			tmp=encoding->Read();
+			encoded+=tmp;
+			memberCompression->Write(tmp);
 			archiveCompression->Write(memberCompression->Read());
 			ofs << archiveCompression->Read();
 		}
 
 		encoding->Write(precompression->Close());
-		memberCompression->Write(encoding->Close());
+		tmp=encoding->Close();
+		encoded+=tmp;
+		memberCompression->Write(tmp);
 		memberCompression->Write(memberTrailer_);
 		archiveCompression->Write(memberCompression->Close());
 
+		std::cerr << tmp << std::endl;
 		std::cerr << "XmltarMember::write: precompression->ReadCount=" << precompression->ReadCount() << std::endl;
 		std::cerr << "XmltarMember::write: precompression->WriteCount=" << precompression->WriteCount() << std::endl;
 		std::cerr << "XmltarMember::write: encoding->ReadCount=" << encoding->ReadCount() << std::endl;
@@ -148,7 +156,6 @@ std::string XmltarMember::MemberHeader(){
 
 	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 
-    int start_tell=0;
     switch(f_type){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
@@ -156,7 +163,7 @@ std::string XmltarMember::MemberHeader(){
 
             s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName();
 
-            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(start_tell)+"\">"+options_.Newline();
+            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(nextByte_)+"\">"+options_.Newline();
             break;
         case boost::filesystem::directory_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
@@ -230,9 +237,11 @@ size_t XmltarMember::MinimumSize(){
 
 size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 
+	if (options_.tape_length_.get()<committedBytes+pendingBytes)
+		throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");
+
 	size_t archiveBytes=options_.tape_length_.get()-committedBytes-pendingBytes;
 	size_t uncompressedArchiveBytes=archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
-	std::cerr << "archiveMemberCompression_ name=" << options_.archiveMemberCompression_->CompressionName() << std::endl;
 	size_t uncompressedMemberBytes=options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes);
 	size_t encodedMemberBytes;
 	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedMemberBytes)
@@ -241,11 +250,11 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 		encodedMemberBytes=options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedMemberBytes-memberHeader_.size()-memberTrailer_.size());
 	size_t precompressedBytes=options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
 
-	std::cerr << "archiveBytes=" << archiveBytes << std::endl;
-	std::cerr << "uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
-	std::cerr << "uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
-	std::cerr << "encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
-	std::cerr << "precompressedBytes=" << precompressedBytes << std::endl;
+	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: archiveBytes=" << archiveBytes << std::endl;
+	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
+	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
+	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
+	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: precompressedBytes=" << precompressedBytes << std::endl;
 
 	return precompressedBytes;
 #if 0

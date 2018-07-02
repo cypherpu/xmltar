@@ -75,7 +75,19 @@ size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t comp
 			plaintextSizeLB=mid;
 	}
 
-	return plaintextSizeUB;
+	std::cerr << "TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize=" << compressedtextSize
+			  << " plaintextSizeUB=" << plaintextSizeUB
+			  << " MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)=" << MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)
+			  << std::endl;
+
+	size_t result;
+
+	if (MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)<compressedtextSize)
+		result=plaintextSizeUB;
+	else
+		result=plaintextSizeLB;
+
+	return result;
 }
 
 // char const *TransformProcess::CompressionCommand();

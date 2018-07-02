@@ -55,7 +55,7 @@ XmltarArchive::XmltarArchive(
 	std::string filename,
 	unsigned int volumeNumber,
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
-	std::shared_ptr<XmltarMember> nextMember
+	std::shared_ptr<XmltarMember> & nextMember
 )
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
@@ -139,6 +139,8 @@ XmltarArchive::XmltarArchive(
 					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 					if (nextMember_->IsComplete())
 						nextMember_=NextMember();
+					else
+						nextMember_->RecalculateMemberHeader();
 				}
 
 				//if (nextMember_->filepath().string()=="src/common"){

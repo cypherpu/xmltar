@@ -44,6 +44,8 @@ public:
 	bool IsComplete(){ return nextByte_==file_size; }
 	boost::filesystem::path filepath(){ return filepath_; }
 	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
+	size_t NextByte(){ return nextByte_; }
+	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
 };
 
 

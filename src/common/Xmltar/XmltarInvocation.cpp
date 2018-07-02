@@ -98,8 +98,9 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 fmt % volumeNumber;
                 std::string filename=str(fmt);
 
+                std::cerr << "***************** " << (nextMember?nextMember->NextByte():0) << std::endl;
                 XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToArchive, nextMember);
-                std::cerr << "*****************" << std::endl;
+                std::cerr << "***************** " << (nextMember?nextMember->NextByte():0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
