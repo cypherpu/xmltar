@@ -21,6 +21,7 @@ set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random b
 include_directories(
 src/
 src/common/
+src/common/Debug
 src/common/Generated
 src/common/Include
 src/common/Snapshot
@@ -30,6 +31,7 @@ src/common/Xmltar
 
 file(GLOB SOURCES 
 	src/common/*.[ch]pp
+	src/common/Debug/*.[ch]pp
 	src/common/Generated/*.[ch]pp
 	src/common/Options/*.[ch]pp
 	src/common/Snapshot/*.[ch]pp

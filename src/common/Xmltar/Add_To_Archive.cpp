@@ -45,7 +45,6 @@ extern "C" {
  */
 
 void XmltarInvocation::Add_To_Archive(void){
-    DEBUGCXX(debugcxx,"Xmltar::Add_To_Archive");
 	size_t volumes_completed(0);
 	int sequence_number(options_.starting_sequence_number_.get());
 

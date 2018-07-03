@@ -26,7 +26,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Archive_Member.hpp"
 
 std::string Archive_Member::Generate_Metadata(){
-    DEBUGCXX(debugcxx,"Archive_Member::Generate_Metadata");
     std::string s;
     std::vector<std::pair<std::string,std::string> > attr_list;
 
@@ -76,7 +75,6 @@ std::string Archive_Member::Generate_Metadata(){
 }
 
 std::string Archive_Member::Generate_Archive_Member_Header(){
-    DEBUGCXX(debugcxx,"Archive_Member::Generate_Header");
     std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + String_To_XML_Attribute_Value(file_path.relative_path().string()) + "\">"+options_.Newline();
@@ -129,7 +127,6 @@ std::string Archive_Member::Generate_Archive_Member_Header(){
 }
 
 std::string Archive_Member::Generate_Archive_Member_Trailer(void){
-    DEBUGCXX(debugcxx,"Archive_Member::Generate_Trailer");
     std::string s;
 
     // only include a content section if the file is a regular file
@@ -149,7 +146,6 @@ Archive_Member::Archive_Member(boost::filesystem::path& fpath, const XmltarOptio
     :   options_(opt), file_path(fpath), start_tell(0), metadata_written(false),
         is_attached(false), is_empty(false)
 {
-    DEBUGCXX(debugcxx,"Archive_Member::Archive_Member");
 
     f_stat=boost::filesystem::symlink_status(file_path);
 
@@ -177,7 +173,6 @@ Archive_Member::Archive_Member(boost::filesystem::path& fpath, const XmltarOptio
 }
 
 void Archive_Member::Write(size_t n){
-    DEBUGCXX(debugcxx,"Archive_Member::Write");
 
     if (n>file_size-start_tell) n=file_size-start_tell;
 

@@ -5,6 +5,8 @@
  *      Author: dbetz
  */
 
+#include <iostream>
+
 #include "Generated/Bidirectional_Pipe.hpp"
 #include "Transform/TransformProcess.hpp"
 

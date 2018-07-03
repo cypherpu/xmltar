@@ -31,7 +31,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 
-#include "Debug.hpp"
+#include "Include/Debug.hpp"
 
 class Bidirectional_Pipe {
 public:

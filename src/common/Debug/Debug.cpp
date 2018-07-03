@@ -19,22 +19,19 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#if 0
+#include <iostream>
 
-#include <stdlib.h>
-#include "Debug.hpp"
+#include "Debug/Debug.hpp"
 
 int Debug::depth=0;
 
-void Terminate(std::ostream& os){
-    os << "Terminated" << std::endl;
-    exit(-1);
+Debug::Debug(char const *msg)
+	: msg_(msg){
+	std::cerr << std::string(depth,'\t') << msg_ << ": entering" << std::endl;
+	depth++;
 }
 
-void Terminate(const char *msg){
-    std::cerr << msg << std::endl;
-    std::cerr << "Terminated" << std::endl;
-    exit(-1);
+Debug::~Debug(){
+	depth--;
+	std::cerr << std::string(depth,'\t') << msg_ << ": leaving" << std::endl;
 }
-
-#endif

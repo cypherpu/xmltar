@@ -54,7 +54,6 @@ class Archive {
 	public:
 		Archive(const XmltarOptions&, int);
 		~Archive(void){
-		    DEBUGCXX(debugcxx,"Archive::~Archive");
 		}
 		size_t Store_Member(Archive_Member& am);
 

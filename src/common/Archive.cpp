@@ -77,7 +77,6 @@ std::string Archive::Encode_String(std::string s){
 }
 
 std::string Archive::Generate_Archive_Trailer(bool last_volume, int target_size){       // TODO: Encode_String is called twice for each Generate_Archive_Trailer
-    DEBUGCXX(debugcxx,"Archive::Archive_Trailer");
     int padding;
     std::string result;
     std::string null_result=Encode_String(Generate_Archive_Trailer_Plaintext(last_volume, 0));
@@ -227,7 +226,6 @@ size_t Archive::Store_Member(Archive_Member& member){
 Archive::Archive(const XmltarOptions& options, int sequence_number)
     : options_(options), archive_sequence_number(sequence_number), volumes_written(0)
 {
-    DEBUGCXX(debugcxx,"Archive::Archive");
 
     Initialize();
 }
@@ -238,7 +236,6 @@ void Archive::Attach()
 }
 
 bool Archive::Has_Space_For_N_Bytes_Of_Member(Archive_Member& am, size_t n, bool include_member_header){
-    DEBUGCXX(debugcxx,"Archive::Has_Space_For_N_Bytes_Of_Member");
 
     bool result;
 
@@ -246,7 +243,6 @@ bool Archive::Has_Space_For_N_Bytes_Of_Member(Archive_Member& am, size_t n, bool
 }
 
 size_t Archive::Find_Maximum_Writable_Size(Archive_Member *am, bool include_member_header){
-    DEBUGCXX(debugcxx,"Archive::Find_Maximum_Writable_Size");
     unsigned int lb(0), ub(am->File_Size());
 
     for( ; ; ){
@@ -276,7 +272,6 @@ size_t Archive::Find_Maximum_Writable_Size(Archive_Member *am, bool include_memb
  *          otherwise am is not open/attached
  */
 bool Archive::Has_Space_For_Part_Of_Member(Archive_Member* am, bool include_member_header){
-    DEBUGCXX(debugcxx,"Archive::Has_Space_For_Part_Of_Member");
     bool result;
 
     if (options_.multi_volume_){
@@ -315,7 +310,6 @@ bool Archive::Has_Space_For_Part_Of_Member(Archive_Member* am, bool include_memb
  */
 
 void Archive::Store_Part_Of_Member(Archive_Member *am){
-    DEBUGCXX(debugcxx,"Archive::Store_Part_Of_Member");
     if (am->Is_Regular()){
         size_t writable_size=Find_Maximum_Writable_Size(am,false);
         am->Write(writable_size);
@@ -331,7 +325,6 @@ void Archive::Store_Part_Of_Member(Archive_Member *am){
 }
 
 size_t Archive::Size(void){
-    DEBUGCXX(debugcxx,"Archive::Size");
 
     size_t result;
     result+=archive_trailer.size();
@@ -340,7 +333,6 @@ size_t Archive::Size(void){
 }
 
 void Archive::Close(bool last_volume){
-    DEBUGCXX(debugcxx,"Archive::Close");
     Close_Transitbuf();
 
     //archive_trailer=Generate_Archive_Trailer(last_volume,options_.tape_length-last_flush_position-post->encoded_length(0));

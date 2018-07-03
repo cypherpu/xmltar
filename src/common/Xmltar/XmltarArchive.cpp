@@ -124,8 +124,9 @@ XmltarArchive::XmltarArchive(
 							if (numberOfFileBytesThatCanBeArchived==0){
 								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
 									std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-									std::cerr << "tmp=" << tmp.size() << std::endl;
+									std::cerr << "tmp.size()=" << tmp.size() << std::endl;
 									ofs << tmp;
+									exit(0);	// DEBUG
 									return;
 								}
 								else
@@ -376,12 +377,6 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 				)
 			);
 
-	std::cerr << "0 dMap offset=" << std::get<0>(dMap["identity"]["identity"][1]) << std::endl;
-	std::cerr << "0 dMap length=" << std::get<1>(dMap["identity"]["identity"][1]) << std::endl;
-
-	std::cerr << "1 dMap offset=" << std::get<0>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second) << std::endl;
-	std::cerr << "1 dMap length=" << std::get<1>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second) << std::endl;
-
 	std::string minimumString(
 		reinterpret_cast<char const *>(random_hex)+std::get<0>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second),
 		std::get<1>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second));
@@ -418,9 +413,6 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 		throw std::logic_error("XmltarArchive::CompressedArchiveTrailer: desiredLength<compressedArchiveTrailerBegin.size()+compressedArchiveTrailerEnd.size()");
 
 	desiredLength-=compressedArchiveTrailerBegin.size()+compressedArchiveTrailerEnd.size();
-
-	std::cerr << "dMap offset=" << std::get<0>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second) << std::endl;
-	std::cerr << "dMap length=" << std::get<1>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second) << std::endl;
 
 	std::string minimumString(
 		reinterpret_cast<char const *>(random_hex)+std::get<0>(dMap[options_.archiveCompression_->CompressionName()][options_.archiveMemberCompression_->CompressionName()].begin()->second),

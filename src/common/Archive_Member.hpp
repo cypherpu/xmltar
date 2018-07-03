@@ -77,14 +77,12 @@ class Archive_Member {
 		Archive_Member(boost::filesystem::path& fpath, const XmltarOptions& opt);
 
 		~Archive_Member(void){
-			DEBUGCXX(debugcxx,"Archive_Member::~Archive_Member");
 			ifs.close();
 		}
 
 		bool Is_Attached(void){ return is_attached; }
 
 		bool Is_Empty(void){
-			DEBUGCXX(debugcxx,"Archive_Member::Is_Empty");
 
 			return is_empty;
 		}
