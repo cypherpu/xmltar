@@ -58,6 +58,10 @@ public:
 	}
 
 	std::shared_ptr<XmltarMember> NextMember(){
+		if (filesToBeArchived_.empty()){
+			return std::shared_ptr<XmltarMember>();
+		}
+
 		boost::filesystem::path const filepath=filesToBeArchived_.top();
 		filesToBeArchived_.pop();
 		boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);

@@ -158,12 +158,18 @@ void TransformProcess::Write(std::string const & input){
 std::string TransformProcess::Read(){
 	std::string result;
 
+	std::cerr << "TransformProcess::Read: entering" << std::endl;
 	for(;;){
+		pipe_.Select_Nonblocking();
+		std::cerr << "TransformProcess::Read: pipe_.Can_Write()=" << pipe_.Can_Write()
+				<< " pipe_.Can_Read1()=" << pipe_.Can_Read1()
+				<< " pipe_.Can_Read2()=" << pipe_.Can_Read2() << std::endl;
 		if (pipe_.Can_Write()) pipe_.Write();
 		if (pipe_.Can_Read1()) result+=pipe_.Read1();
 		else if (pipe_.Can_Read2()) pipe_.Read2();
 		else break;
 	}
+	std::cerr << "TransformProcess::Read: leaving" << std::endl;
 
 	return result;
 }

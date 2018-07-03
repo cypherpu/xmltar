@@ -143,11 +143,22 @@ XmltarArchive::XmltarArchive(
 						nextMember_->RecalculateMemberHeader();
 				}
 
-				//if (nextMember_->filepath().string()=="src/common"){
-				//	ofs << archiveCompression->Close(); ofs.flush(); exit(0); // DEBUG
-				//}
-
 			}
+
+			ofs << archiveCompression->Close();
+			committedBytes=compressedArchiveHeader.size()+archiveCompression->ReadCount();
+			pendingBytes=compressedArchiveTrailer.size();
+			std::cerr << "committedBytes=" << committedBytes << std::endl;
+			std::cerr << "pendingBytes=" << pendingBytes << std::endl;
+
+			if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
+				std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+				std::cerr << "tmp=" << tmp.size() << std::endl;
+				ofs << tmp;
+				return;
+			}
+			else
+				throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 		}
 		else {
 			std::ofstream ofs(filename_);
