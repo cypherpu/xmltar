@@ -23,15 +23,26 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Debug/Debug.hpp"
 
+namespace betz {
+
 int Debug::depth=0;
+int Debug::spaces=4;
 
 Debug::Debug(char const *msg)
 	: msg_(msg){
-	std::cerr << std::string(depth,'\t') << msg_ << ": entering" << std::endl;
+	std::cerr << std::string(depth*spaces,' ') << msg_ << ": entering" << std::endl;
 	depth++;
 }
 
 Debug::~Debug(){
 	depth--;
-	std::cerr << std::string(depth,'\t') << msg_ << ": leaving" << std::endl;
+	std::cerr << std::string(depth*spaces,' ') << msg_ << ": leaving" << std::endl;
 }
+
+std::ostream & operator<<(std::ostream & os, Debug const & dbg){
+	os << std::string(Debug::depth*Debug::spaces,' ') << dbg.msg_;
+
+	return os;
+}
+
+}	//betz

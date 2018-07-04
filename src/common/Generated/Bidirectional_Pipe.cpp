@@ -25,7 +25,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <string.h>
 
-#include "Debug.hpp"
+#include "Include/Debug.hpp"
 
 void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> argv){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Init");

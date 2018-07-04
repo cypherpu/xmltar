@@ -9,6 +9,7 @@
 
 #include "Generated/Bidirectional_Pipe.hpp"
 #include "Transform/TransformProcess.hpp"
+#include "Debug/Debug.hpp"
 
 std::string TransformProcess::ActualCompressorVersionString(){
 	std::string result1;
@@ -52,6 +53,8 @@ bool TransformProcess::CorrectCompressorVersion(){
 // size_t TransformProcess::MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize);
 
 size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+	betz::Debug dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
+
 	size_t 	plaintextSizeLB=0,
 			plaintextSizeUB=compressedtextSize;
 
@@ -77,7 +80,7 @@ size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t comp
 			plaintextSizeLB=mid;
 	}
 
-	std::cerr << "TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize=" << compressedtextSize
+	std::cerr << dbg << ": compressedtextSize=" << compressedtextSize
 			  << " plaintextSizeUB=" << plaintextSizeUB
 			  << " MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)=" << MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)
 			  << std::endl;
@@ -160,18 +163,13 @@ void TransformProcess::Write(std::string const & input){
 std::string TransformProcess::Read(){
 	std::string result;
 
-	std::cerr << "TransformProcess::Read: entering" << std::endl;
 	for(;;){
 		pipe_.Select_Nonblocking();
-		std::cerr << "TransformProcess::Read: pipe_.Can_Write()=" << pipe_.Can_Write()
-				<< " pipe_.Can_Read1()=" << pipe_.Can_Read1()
-				<< " pipe_.Can_Read2()=" << pipe_.Can_Read2() << std::endl;
 		if (pipe_.Can_Write()) pipe_.Write();
 		if (pipe_.Can_Read1()) result+=pipe_.Read1();
 		else if (pipe_.Can_Read2()) pipe_.Read2();
 		else break;
 	}
-	std::cerr << "TransformProcess::Read: leaving" << std::endl;
 
 	return result;
 }

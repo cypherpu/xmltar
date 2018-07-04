@@ -29,6 +29,8 @@ extern "C" {
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/DMap.hpp"
 
+#include "Debug/Debug.hpp"
+
 class NonDeterministicRNG : public boost::random::random_device {
 public:
 	NonDeterministicRNG()
@@ -59,6 +61,7 @@ XmltarArchive::XmltarArchive(
 )
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
+	betz::Debug dbg("XmltarArchive::XmltarArchive");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
@@ -77,8 +80,8 @@ XmltarArchive::XmltarArchive(
 			size_t committedBytes=compressedArchiveHeader.size();
 			size_t pendingBytes=compressedArchiveTrailer.size();
 
-			std::cerr << "compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
-			std::cerr << "compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
+			std::cerr << dbg << "::compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
+			std::cerr << dbg << "::compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
 
 			archiveCompression.get()->OpenCompression();
 
@@ -86,9 +89,9 @@ XmltarArchive::XmltarArchive(
 				nextMember_=NextMember();
 
 			for(bool firstPass=true; nextMember_; firstPass=false){
-				std::cerr << "committedBytes=" << committedBytes << std::endl;
-				std::cerr << "pendingBytes=  " << pendingBytes << std::endl;
-				std::cerr << "file=" << nextMember_->filepath() << std::endl;
+				std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
+				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;
+				std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
 				if (nextMember_->isDirectory()){
 					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
@@ -109,7 +112,7 @@ XmltarArchive::XmltarArchive(
 				}
 				else {
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
-					std::cerr << "XmltarArchive: archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
+					std::cerr << dbg << "XmltarArchive: archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0)
 						if (firstPass)
 							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
@@ -118,13 +121,13 @@ XmltarArchive::XmltarArchive(
 							committedBytes=compressedArchiveHeader.size()+archiveCompression->ReadCount();
 							pendingBytes=compressedArchiveTrailer.size();
 							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
-							std::cerr << "committedBytes=" << committedBytes << std::endl;
-							std::cerr << "pendingBytes=" << pendingBytes << std::endl;
-							std::cerr << "numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
+							std::cerr << dbg << "committedBytes=" << committedBytes << std::endl;
+							std::cerr << dbg << "pendingBytes=" << pendingBytes << std::endl;
+							std::cerr << dbg << "numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 							if (numberOfFileBytesThatCanBeArchived==0){
 								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
 									std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-									std::cerr << "tmp.size()=" << tmp.size() << std::endl;
+									std::cerr << dbg << "tmp.size()=" << tmp.size() << std::endl;
 									ofs << tmp;
 									exit(0);	// DEBUG
 									return;
@@ -149,12 +152,12 @@ XmltarArchive::XmltarArchive(
 			ofs << archiveCompression->Close();
 			committedBytes=compressedArchiveHeader.size()+archiveCompression->ReadCount();
 			pendingBytes=compressedArchiveTrailer.size();
-			std::cerr << "committedBytes=" << committedBytes << std::endl;
-			std::cerr << "pendingBytes=" << pendingBytes << std::endl;
+			std::cerr << dbg << "committedBytes=" << committedBytes << std::endl;
+			std::cerr << dbg << "pendingBytes=" << pendingBytes << std::endl;
 
 			if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
 				std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-				std::cerr << "tmp=" << tmp.size() << std::endl;
+				std::cerr << dbg << "tmp=" << tmp.size() << std::endl;
 				ofs << tmp;
 				return;
 			}
@@ -166,10 +169,10 @@ XmltarArchive::XmltarArchive(
 			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string minCompressedTrailer=CompressedArchiveTrailer();
 
-			std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
+			std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
 			std::shared_ptr<XmltarMember> xmltarMember;
 			for( ; filesToBeArchived.size(); ){
-				std::cerr << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
+				std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
 
 				boost::filesystem::path const filepath=filesToBeArchived_.top();
 				filesToBeArchived.pop();

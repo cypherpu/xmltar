@@ -23,9 +23,11 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Transform/TransformHex.hpp"
+#include "Debug/Debug.hpp"
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0) {
+	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=boost::filesystem::symlink_status(filepath_);
 
@@ -46,6 +48,7 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 }
 
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+		betz::Debug dbg("XmltarMember::write");
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
@@ -59,48 +62,36 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		memberCompression->OpenCompression();
 		char buf[1024];
 
-		std::cerr << "memberHeader_=" << memberHeader_.size() << std::endl;
+		std::cerr << dbg << "memberHeader_=" << memberHeader_.size() << std::endl;
 		memberCompression->Write(memberHeader_);
 
 		std::string encoded, tmp;
 		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-			std::cerr << "XmltarMember::Write: read " << ifs.gcount() << " bytes" << std::endl;
+			std::cerr << dbg << "XmltarMember::Write: read " << ifs.gcount() << " bytes" << std::endl;
 			precompression->Write(std::string(buf,ifs.gcount()));
-			std::cerr << "XmltarMember::write: -5" << std::endl;
 			encoding->Write(precompression->Read());
-			std::cerr << "XmltarMember::write: -4" << std::endl;
 			tmp=encoding->Read();
-			std::cerr << "XmltarMember::write: -3.5" << std::endl;
 			encoded+=tmp;
-			std::cerr << "XmltarMember::write: -3" << std::endl;
 			memberCompression->Write(tmp);
-			std::cerr << "XmltarMember::write: -2" << std::endl;
 			archiveCompression->Write(memberCompression->Read());
-			std::cerr << "XmltarMember::write: -1" << std::endl;
 			ofs << archiveCompression->Read();
-			std::cerr << "XmltarMember::write: 0" << std::endl;
 		}
 
-		std::cerr << "XmltarMember::write: 1" << std::endl;
 		encoding->Write(precompression->Close());
-		std::cerr << "XmltarMember::write: 2" << std::endl;
 		tmp=encoding->Close();
-		std::cerr << "XmltarMember::write: 3" << std::endl;
 		encoded+=tmp;
 		memberCompression->Write(tmp);
-		std::cerr << "XmltarMember::write: 4" << std::endl;
 		memberCompression->Write(memberTrailer_);
-		std::cerr << "XmltarMember::write: 5" << std::endl;
 		archiveCompression->Write(memberCompression->Close());
 
 		// std::cerr << tmp << std::endl;
-		std::cerr << "XmltarMember::write: precompression->ReadCount=" << precompression->ReadCount() << std::endl;
-		std::cerr << "XmltarMember::write: precompression->WriteCount=" << precompression->WriteCount() << std::endl;
-		std::cerr << "XmltarMember::write: encoding->ReadCount=" << encoding->ReadCount() << std::endl;
-		std::cerr << "XmltarMember::write: encoding->WriteCount=" << encoding->WriteCount() << std::endl;
-		std::cerr << "XmltarMember::write: memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
-		std::cerr << "XmltarMember::write: memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: precompression->ReadCount=" << precompression->ReadCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: precompression->WriteCount=" << precompression->WriteCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: encoding->ReadCount=" << encoding->ReadCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: encoding->WriteCount=" << encoding->WriteCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
+		std::cerr << dbg << "XmltarMember::write: memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
@@ -248,6 +239,7 @@ size_t XmltarMember::MinimumSize(){
 }
 
 size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	betz::Debug dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
 		throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");
@@ -262,11 +254,11 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 		encodedMemberBytes=options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedMemberBytes-memberHeader_.size()-memberTrailer_.size());
 	size_t precompressedBytes=options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
 
-	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: archiveBytes=" << archiveBytes << std::endl;
-	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
-	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
-	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
-	std::cerr << "XmltarMember::NumberOfFileBytesThatCanBeArchived: precompressedBytes=" << precompressedBytes << std::endl;
+	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
+	std::cerr << dbg << ": uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
+	std::cerr << dbg << ": uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
+	std::cerr << dbg << ": encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
+	std::cerr << dbg << ": precompressedBytes=" << precompressedBytes << std::endl;
 
 	return precompressedBytes;
 #if 0
