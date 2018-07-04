@@ -62,13 +62,13 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		memberCompression->OpenCompression();
 		char buf[1024];
 
-		std::cerr << dbg << "memberHeader_=" << memberHeader_.size() << std::endl;
+		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
 		memberCompression->Write(memberHeader_);
 
 		std::string encoded, tmp;
 		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-			std::cerr << dbg << "XmltarMember::Write: read " << ifs.gcount() << " bytes" << std::endl;
+			std::cerr << dbg << ": read " << ifs.gcount() << " bytes" << std::endl;
 			precompression->Write(std::string(buf,ifs.gcount()));
 			encoding->Write(precompression->Read());
 			tmp=encoding->Read();
@@ -78,20 +78,29 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 			ofs << archiveCompression->Read();
 		}
 
+		std::cerr << dbg << ": finished loop" << std::endl;
 		encoding->Write(precompression->Close());
+		std::cerr << dbg << ": 1" << std::endl;
 		tmp=encoding->Close();
+		std::cerr << dbg << ": 2" << std::endl;
 		encoded+=tmp;
 		memberCompression->Write(tmp);
+		std::cerr << dbg << ": 3" << std::endl;
 		memberCompression->Write(memberTrailer_);
-		archiveCompression->Write(memberCompression->Close());
+		std::cerr << dbg << ": 4" << std::endl;
+		std::string tmp2=memberCompression->Close();
+		std::cerr << dbg << ": 4.5" << std::endl;
+		archiveCompression->Write(tmp);
+		std::cerr << dbg << ": 5" << std::endl;
 
 		// std::cerr << tmp << std::endl;
-		std::cerr << dbg << "XmltarMember::write: precompression->ReadCount=" << precompression->ReadCount() << std::endl;
-		std::cerr << dbg << "XmltarMember::write: precompression->WriteCount=" << precompression->WriteCount() << std::endl;
-		std::cerr << dbg << "XmltarMember::write: encoding->ReadCount=" << encoding->ReadCount() << std::endl;
-		std::cerr << dbg << "XmltarMember::write: encoding->WriteCount=" << encoding->WriteCount() << std::endl;
-		std::cerr << dbg << "XmltarMember::write: memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
-		std::cerr << dbg << "XmltarMember::write: memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
+		std::cerr << dbg << ": 6" << std::endl;
+		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;
+		std::cerr << dbg << ": encoding->ReadCount=" << encoding->ReadCount() << std::endl;
+		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
+		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
+		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
@@ -274,6 +283,8 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 }
 
 bool XmltarMember::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
+
 	size_t numberOfFileBytesThatCanBeArchived
 		=	options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
 				archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(

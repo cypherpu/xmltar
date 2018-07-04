@@ -41,6 +41,7 @@ public:
 	std::string Read();
 	std::string Close();
 	size_t WriteCount();
+	size_t QueuedWriteCount();
 	size_t ReadCount();
 
 	virtual ~TransformProcess();

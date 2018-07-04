@@ -83,31 +83,49 @@ XmltarArchive::XmltarArchive(
 			std::cerr << dbg << "::compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
 			std::cerr << dbg << "::compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
 
-			archiveCompression.get()->OpenCompression();
+			archiveCompression->OpenCompression();
 
 			if (!filesToBeArchived.empty() && !nextMember_)
 				nextMember_=NextMember();
 
 			for(bool firstPass=true; nextMember_; firstPass=false){
+				std::cerr << dbg << ": ##########" << std::endl;
 				std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
 				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;
 				std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
 				if (nextMember_->isDirectory()){
 					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
+						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 						std::string compressedDirectoryMember
 							= options_.archiveMemberCompression_->CompressString(
-									nextMember_->MemberHeader()+nextMember_->MemberTrailer()
+									tmp
 								);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
 						archiveCompression->Write(compressedDirectoryMember);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
 						nextMember_=NextMember();
-						pendingBytes+=compressedDirectoryMember.size();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 					}
 					else if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
 						ofs << archiveCompression->Close();
 						ofs.flush();
+						committedBytes+=archiveCompression->ReadCount();
+						pendingBytes=compressedArchiveTrailer.size();
+						if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
+							archiveCompression.reset(archiveCompression->clone());
+							archiveCompression->OpenCompression();
+						}
+						else {
+							std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
+							ofs << tmp;
+							ofs.flush();
+							return;
+						}
 					}
 				}
 				else {
@@ -136,12 +154,14 @@ XmltarArchive::XmltarArchive(
 								else
 									throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 							}
-							else
-								archiveCompression.reset(archiveCompression.get()->clone());
+							else {
+								archiveCompression.reset(archiveCompression->clone());
+								archiveCompression->OpenCompression();
+							}
 						}
 
 					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
-					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
+					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
 					if (nextMember_->IsComplete())
 						nextMember_=NextMember();
 					else
@@ -151,14 +171,14 @@ XmltarArchive::XmltarArchive(
 			}
 
 			ofs << archiveCompression->Close();
-			committedBytes=compressedArchiveHeader.size()+archiveCompression->ReadCount();
+			committedBytes+=archiveCompression->ReadCount();
 			pendingBytes=compressedArchiveTrailer.size();
-			std::cerr << dbg << "committedBytes=" << committedBytes << std::endl;
-			std::cerr << dbg << "pendingBytes=" << pendingBytes << std::endl;
+			std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
+			std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 
 			if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
 				std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-				std::cerr << dbg << "tmp=" << tmp.size() << std::endl;
+				std::cerr << dbg << ": tmp=" << tmp.size() << std::endl;
 				ofs << tmp;
 				return;
 			}

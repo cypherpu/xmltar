@@ -19,7 +19,7 @@ public:
 	virtual std::string HeaderMagicNumber(std::string identity)=0;
 	virtual std::string TrailerMagicNumber()=0;
 	virtual size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize)=0;
-	virtual size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	virtual size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize)=0;
 	virtual char const *CompressionCommand()=0;
 	virtual char const *CompressionName()=0;
 	virtual std::vector<char const *> CompressionArguments()=0;
@@ -38,6 +38,7 @@ public:
 	virtual std::string Read()=0;
 	virtual std::string Close()=0;
 	virtual size_t WriteCount()=0;
+	virtual size_t QueuedWriteCount()=0;
 	virtual size_t ReadCount()=0;
 
 	virtual ~Transform();

@@ -46,6 +46,7 @@ public:
 	std::string Close(){ std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
 	size_t ReadCount(){ return read_count; }
 	size_t WriteCount(){ return write_count; }
+	size_t QueuedWriteCount(){ return write_count; }
 
 	TransformIdentity()
 		: read_count(0), write_count(0) {}

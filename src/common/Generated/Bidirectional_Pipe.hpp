@@ -53,6 +53,8 @@ public: // protected:
     size_t read1_count;
     size_t read2_count;
     size_t write_count;
+    size_t queued_write_count;
+
     static const size_t pipe_buf_size=PIPE_BUF;
     std::vector<char const *> saved_args;
 
@@ -84,6 +86,7 @@ public:
 
     size_t Read1_Count(void){ return read1_count; }
     size_t Write_Count(void){ return write_count; }
+    size_t Queued_Write_Count(void){ return queued_write_count; }
 
     void Print_Args(void);
 

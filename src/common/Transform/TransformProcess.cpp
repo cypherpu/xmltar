@@ -52,19 +52,32 @@ bool TransformProcess::CorrectCompressorVersion(){
 // std::string TransformProcess::TrailerMagicNumber();
 // size_t TransformProcess::MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize);
 
-size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){	//FIXME - duplicated in Transform.cpp
 	betz::Debug dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
 
 	size_t 	plaintextSizeLB=0,
 			plaintextSizeUB=compressedtextSize;
 
-	if (compressedtextSize<MaximumCompressedtextSizeGivenPlaintextSize(0))
-			throw std::invalid_argument("Transform::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize too small");
+	if (compressedtextSize<MaximumCompressedtextSizeGivenPlaintextSize(0)){
+		return 0;
+
+		std::cerr << dbg << "compressedtextSize=" << compressedtextSize << " < MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
+		throw std::invalid_argument("Transform::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize too small");
+	}
+
+	//std::cerr << dbg << "compressedtextSize=" << compressedtextSize << " < MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
+	//std::cerr << dbg << ": plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
+
+	//std::cerr << dbg << ": 1" << std::endl;
 
 	while(MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)<compressedtextSize)
 		plaintextSizeUB+=compressedtextSize;
 
+	//std::cerr << dbg << ": 2" << std::endl;
+
 	while(plaintextSizeUB-plaintextSizeLB>1){
+		//std::cerr << dbg << ": plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
+
 		// mid is always strictly less than plaintextSizeUB
 
 		size_t mid=(plaintextSizeLB+plaintextSizeUB)/2;
@@ -191,6 +204,10 @@ std::string TransformProcess::Close(){
 
 size_t TransformProcess::WriteCount(){
 	return pipe_.Write_Count();
+}
+
+size_t TransformProcess::QueuedWriteCount(){
+	return pipe_.Queued_Write_Count();
 }
 
 size_t TransformProcess::ReadCount(){

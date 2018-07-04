@@ -127,6 +127,7 @@ void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> 
     read1_count=0;
     read2_count=0;
     write_count=0;
+    queued_write_count=0;
 
     read1DescriptorState_=DescriptorState::OPENED;
     read2DescriptorState_=DescriptorState::OPENED;
@@ -141,8 +142,10 @@ void Bidirectional_Pipe::Set_Child_Status(void){
     int status;
     int waitpid_result=waitpid(child_pid_,&status,WNOHANG);
 
-    if (waitpid_result<0)
+    if (waitpid_result<0){
+    	std::cerr << sys_errlist[errno] << std::endl;
         throw "Bidirectional_Pipe::Set_Child_Status: unable to waitpid";
+    }
     else if (waitpid_result==0) return;
     else if (waitpid_result==child_pid_){
     	//std::cerr << " EXITED ";
@@ -242,7 +245,7 @@ void Bidirectional_Pipe::Select_Blocking(unsigned int microseconds){
 
 Bidirectional_Pipe::Bidirectional_Pipe(void)
     : parent_to_child_stdin_(-1), child_stdout_to_parent_(-1), child_stderr_to_parent_(-1),
-	  childState_(ChildState::NOT_STARTED), read1_count(0), write_count(0),
+	  childState_(ChildState::NOT_STARTED), read1_count(0), read2_count(0), write_count(0), queued_write_count(0),
 	  read1DescriptorState_(DescriptorState::NOT_OPENED), read2DescriptorState_(DescriptorState::NOT_OPENED), writeDescriptorState_(DescriptorState::NOT_OPENED),
 	  writeCloseWhenEmpty_(false){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Bidirectional_Pipe()");
@@ -363,18 +366,21 @@ void Bidirectional_Pipe::QueueWrite(char const c){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
     writeBuffer_.push_back(c);
+    queued_write_count+=1;
 }
 
 void Bidirectional_Pipe::QueueWrite(char const *c, int n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
     writeBuffer_+=std::string(c,n);
+    queued_write_count+=n;
 }
 
 void Bidirectional_Pipe::QueueWrite(std::string const & data){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
     writeBuffer_+=data;
+    queued_write_count+=data.size();
 }
 
 std::string Bidirectional_Pipe::Read1(size_t n){
