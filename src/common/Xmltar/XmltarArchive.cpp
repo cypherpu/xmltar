@@ -128,7 +128,41 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 				}
-				else {
+				if (nextMember_->isSymLink()){
+					if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
+						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+						std::string compressedDirectoryMember
+							= options_.archiveMemberCompression_->CompressString(
+									tmp
+								);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						archiveCompression->Write(compressedDirectoryMember);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						nextMember_=NextMember();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+					}
+					else if (firstPass)
+						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+					else {
+						ofs << archiveCompression->Close();
+						ofs.flush();
+						committedBytes+=archiveCompression->ReadCount();
+						pendingBytes=compressedArchiveTrailer.size();
+						if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
+							archiveCompression.reset(archiveCompression->clone());
+							archiveCompression->OpenCompression();
+						}
+						else {
+							std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
+							ofs << tmp;
+							ofs.flush();
+							return;
+						}
+					}
+				}
+				if (nextMember_->isRegularFile()){
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << "XmltarArchive: archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0)

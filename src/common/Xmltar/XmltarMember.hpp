@@ -41,9 +41,12 @@ public:
 	size_t MaximumSize(size_t n);
 	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool IsComplete(){ return nextByte_==file_size; }
 	boost::filesystem::path filepath(){ return filepath_; }
 	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
+	bool isSymLink(){ return f_type==boost::filesystem::file_type::symlink_file; }
+	bool isRegularFile(){ return f_type==boost::filesystem::file_type::regular_file; }
 	size_t NextByte(){ return nextByte_; }
 	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
 };

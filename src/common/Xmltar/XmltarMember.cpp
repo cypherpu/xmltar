@@ -73,6 +73,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 			encoding->Write(precompression->Read());
 			tmp=encoding->Read();
 			encoded+=tmp;
+			std::cerr << "tmp=" << tmp << std::endl;
 			memberCompression->Write(tmp);
 			archiveCompression->Write(memberCompression->Read());
 			ofs << archiveCompression->Read();
@@ -283,6 +284,17 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 }
 
 bool XmltarMember::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
+
+	size_t numberOfFileBytesThatCanBeArchived
+		=	options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
+				archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(
+					options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
+
+	return numberOfFileBytesThatCanBeArchived;
+}
+
+bool XmltarMember::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived

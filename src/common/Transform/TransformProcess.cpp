@@ -168,7 +168,7 @@ void TransformProcess::OpenDecompression(){
 }
 
 void TransformProcess::Write(std::string const & input){
-	if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
+	// if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
 		pipe_.QueueWrite(input);
 
 }
