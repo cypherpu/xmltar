@@ -46,7 +46,7 @@ file(GLOB TEST_SOURCES
 )
 
 file(GLOB BIDIRECTIONAL_PIPE
-	../Compression/src/common/Bidirectional_Pipe/Bidirectional_Pipe.[ch]pp
+	../Bidirectional_Pipe/src/common/Bidirectional_Pipe/Bidirectional_Pipe.[ch]pp
 )
 
 ADD_CUSTOM_COMMAND(
