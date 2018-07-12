@@ -23,7 +23,7 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Transform/TransformHex.hpp"
-#include "Debug/Debug.hpp"
+#include "../Debug2/Debug2.hpp"
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0) {
@@ -48,7 +48,7 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 }
 
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
-		betz::Debug dbg("XmltarMember::write");
+		betz::Debug2 dbg("XmltarMember::write");
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
@@ -249,7 +249,7 @@ size_t XmltarMember::MinimumSize(){
 }
 
 size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
-	betz::Debug dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
+	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
 		throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");

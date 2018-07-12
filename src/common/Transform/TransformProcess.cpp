@@ -9,7 +9,8 @@
 
 #include "Generated/Bidirectional_Pipe.hpp"
 #include "Transform/TransformProcess.hpp"
-#include "Debug/Debug.hpp"
+
+#include "../Debug2/Debug2.hpp"
 
 std::string TransformProcess::ActualCompressorVersionString(){
 	std::string result1;
@@ -53,7 +54,7 @@ bool TransformProcess::CorrectCompressorVersion(){
 // size_t TransformProcess::MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize);
 
 size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){	//FIXME - duplicated in Transform.cpp
-	betz::Debug dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
+	betz::Debug2 dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
 
 	size_t 	plaintextSizeLB=0,
 			plaintextSizeUB=compressedtextSize;

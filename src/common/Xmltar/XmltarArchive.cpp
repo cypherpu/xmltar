@@ -1,3 +1,4 @@
+
 /*
  * XmltarArchive.cpp
  *
@@ -29,7 +30,7 @@ extern "C" {
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/DMap.hpp"
 
-#include "Debug/Debug.hpp"
+#include "../Debug2/Debug2.hpp"
 
 class NonDeterministicRNG : public boost::random::random_device {
 public:
@@ -61,7 +62,7 @@ XmltarArchive::XmltarArchive(
 )
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
-	betz::Debug dbg("XmltarArchive::XmltarArchive");
+	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
@@ -450,7 +451,7 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
-	betz::Debug dbg("XmltarArchive::CompressedArchiveTrailer");
+	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
 
 	std::cerr << dbg << ": archiveCompression=" << options_.archiveCompression_->CompressionName() << std::endl;
 	std::cerr << dbg << ": archiveMemberCompression=" << options_.archiveMemberCompression_->CompressionName() << std::endl;

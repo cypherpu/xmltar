@@ -26,7 +26,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/scoped_ptr.hpp>
 
-#include "Debug.hpp"
+#include "Debug2/Debug2.hpp"
 #include "Xmltar/XmltarInvocation.hpp"
 
 class Archive_Member;

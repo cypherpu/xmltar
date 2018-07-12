@@ -1,26 +1,68 @@
 /*
- * Debug.hpp
- *
- *  Created on: Jul 3, 2018
- *      Author: dbetz
- */
 
-#ifndef SRC_COMMON_DEBUG_HPP_
-#define SRC_COMMON_DEBUG_HPP_
+Copyright 2010 by David A. Betz
 
-namespace betz {
+This file is part of xmltar.
+
+xmltar is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+xmltar is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+#ifndef Debug_hpp_
+#define Debug_hpp_
+
+#include <iostream>
+
+#ifdef BETZ_DEBUG
 
 class Debug {
+	const char *module_name_;
 	static int depth;
-	static int spaces;
-	char const *msg_;
 public:
-	Debug(char const *msg);
-	~Debug();
-
-	friend std::ostream & operator<<(std::ostream & os, Debug const & dbg);
+	Debug(void){
+		throw "Debug::Debug: called without module name argument";
+	}
+	Debug(const char *module_name)
+		: module_name_(module_name) {
+	    for(size_t i=0; i<depth; ++i)
+	        std::cerr << "    ";
+		std::cerr << module_name_ << ": entering" << std::endl;
+		++depth;
+	}
+	~Debug(){
+        --depth;
+        for(size_t i=0; i<depth; ++i)
+            std::cerr << "    ";
+		std::cerr << module_name_ << ": leaving" << std::endl;
+	}
+	std::string Tab(void){
+	    return std::string(4*depth,' ');
+	}
 };
 
-}	// betz
+void Terminate(std::ostream&);
+void Terminate(const char *);
 
-#endif /* SRC_COMMON_DEBUG_HPP_ */
+#define DEBUGCXX(x,y)	Debug x(y);
+#define DEBUGCXXTAB(x)  x.Tab()
+
+#else
+#define DEBUGCXX(x,y)	;
+#define DEBUGCXXTAB(x)  ""
+#define Terminate(x)    throw x
+#endif
+
+#define THROW throw
+
+#endif /* Debug_hpp_ */

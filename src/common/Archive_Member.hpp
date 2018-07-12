@@ -40,7 +40,7 @@ extern "C" {
 #include <grp.h>
 }
 
-#include "Debug.hpp"
+#include "Debug2/Debug2.hpp"
 #include "Xmltar/XmltarInvocation.hpp"
 #include "Conversions.hpp"
 

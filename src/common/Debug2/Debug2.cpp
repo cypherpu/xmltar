@@ -19,22 +19,31 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifdef BETZ_DEBUG
+#include "../Debug2/Debug2.hpp"
 
-#include <stdlib.h>
-#include "Debug/Debug.hpp"
+#include <iostream>
 
-int Debug::depth=0;
 
-void Terminate(std::ostream& os){
-    os << "Terminated" << std::endl;
-    exit(-1);
+namespace betz {
+
+int Debug2::depth=0;
+int Debug2::spaces=4;
+
+Debug2::Debug2(char const *msg)
+	: msg_(msg){
+	std::cerr << std::string(depth*spaces,' ') << msg_ << ": entering" << std::endl;
+	depth++;
 }
 
-void Terminate(const char *msg){
-    std::cerr << msg << std::endl;
-    std::cerr << "Terminated" << std::endl;
-    exit(-1);
+Debug2::~Debug2(){
+	depth--;
+	std::cerr << std::string(depth*spaces,' ') << msg_ << ": leaving" << std::endl;
 }
 
-#endif
+std::ostream & operator<<(std::ostream & os, Debug2 const & dbg){
+	os << std::string(Debug2::depth*Debug2::spaces,' ') << dbg.msg_;
+
+	return os;
+}
+
+}	//betz

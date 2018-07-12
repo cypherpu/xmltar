@@ -30,8 +30,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <vector>
+#include <deque>
 
-#include "Include/Debug.hpp"
+#include "Debug/Debug.hpp"
 
 class Bidirectional_Pipe {
 public:
@@ -53,6 +54,9 @@ public: // protected:
     size_t read1_count;
     size_t read2_count;
     size_t write_count;
+    size_t sss_dequeRead1Count_;
+    size_t sss_dequeRead2Count_;
+    size_t sss_dequeWriteCount_;
     size_t queued_write_count;
 
     static const size_t pipe_buf_size=PIPE_BUF;
@@ -90,20 +94,36 @@ public:
 
     void Print_Args(void);
 
+    bool sss_Can_Read1(void);
+    bool sss_Can_Read2(void);
+    bool sss_Can_Write(void);
+
     bool Can_Read1(void);
     bool Can_Read2(void);
     bool Can_Write(void);
 
     void Write();
+    void sss_Write(std::string const & data);
+    void sss_Write(char const *c, int n);
     void QueueWrite(char const c);
     void QueueWrite(char const *c, int n);
     void QueueWrite(std::string const & data);
     std::string Read1(size_t n=PIPE_BUF);
     std::string Read2(size_t n=PIPE_BUF);
 
+    std::string sss_Read1();
+    std::string sss_Read2();
+
+    void sss_writeClose();
     void QueueWriteClose();
     bool ChildExitedAndAllPipesClosed();
     int ExitStatus();
+
+    std::deque<std::string> sss_writeDeque_;
+    std::deque<std::string> sss_read1Deque_;
+    std::deque<std::string> sss_read2Deque_;
+
+    explicit operator bool();
 };
 
 #endif /* Bidirectional_Pipe_hpp_ */
