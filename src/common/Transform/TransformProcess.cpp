@@ -21,14 +21,13 @@ std::string TransformProcess::ActualCompressorVersionString(){
 			CompressionCommand(),
 			std::vector<char const *>{CompressionName(),"--version"});
 
-	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-		p.QueueWrite("");
-		p.QueueWriteClose();
+	if (p && p.sss_Can_Write()){
+		p.sss_Write("");
+		p.sss_writeClose();
 	}
-	while(!p.ChildExitedAndAllPipesClosed()){
-		if (p.Can_Write()) p.Write();
-		if (p.Can_Read1()) result1+=p.Read1();
-		if (p.Can_Read2()) result2+=p.Read2();
+	while(p){
+		if (p.sss_Can_Read1()) result1+=p.sss_Read1();
+		if (p.sss_Can_Read2()) result2+=p.sss_Read2();
 	}
 
 	// std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
@@ -123,14 +122,13 @@ std::string TransformProcess::CompressString(std::string const & s){
 			CompressionCommand(),
 			CompressionArguments());
 
-	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-		p.QueueWrite(s);
-		p.QueueWriteClose();
+	if (p && p.sss_Can_Write()){
+		p.sss_Write(s);
+		p.sss_writeClose();
 	}
-	while(!p.ChildExitedAndAllPipesClosed()){
-		if (p.Can_Write()) p.Write();
-		if (p.Can_Read1()) result+=p.Read1();
-		if (p.Can_Read2()) p.Read2();
+	while(p){
+		if (p.sss_Can_Read1()) result+=p.sss_Read1();
+		if (p.sss_Can_Read2()) p.sss_Read2();
 	}
 
 	return result;
@@ -144,13 +142,13 @@ std::string TransformProcess::DecompressString(std::string const & s){
 			CompressionCommand(),
 			DecompressionArguments());
 
-	if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-		p.QueueWrite(s);
-		p.QueueWriteClose();
+	if (p && p.sss_Can_Write()){
+		p.sss_Write(s);
+		p.sss_writeClose();
 	}
-	while(!p.ChildExitedAndAllPipesClosed()){
-		if (p.Can_Read1()) result+=p.Read1();
-		if (p.Can_Read2()) p.Read2();
+	while(p){
+		if (p.sss_Can_Read1()) result+=p.sss_Read1();
+		if (p.sss_Can_Read2()) p.sss_Read2();
 	}
 
 	return result;
@@ -170,13 +168,18 @@ void TransformProcess::OpenDecompression(){
 
 void TransformProcess::Write(std::string const & input){
 	// if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
-		pipe_.QueueWrite(input);
+		pipe_.sss_Write(input);
 
 }
 
 std::string TransformProcess::Read(){
 	std::string result;
 
+	if (pipe_)
+		if (pipe_.sss_Can_Read1()) result+=pipe_.sss_Read1();
+		else if (pipe_.sss_Can_Read2()) pipe_.sss_Read2();
+
+#if 0
 	for(;;){
 		pipe_.Select_Nonblocking();
 		if (pipe_.Can_Write()) pipe_.Write();
@@ -184,20 +187,18 @@ std::string TransformProcess::Read(){
 		else if (pipe_.Can_Read2()) pipe_.Read2();
 		else break;
 	}
-
+#endif
 	return result;
 }
 
 std::string TransformProcess::Close(){
 	std::string result;
 
-	if (!pipe_.ChildExitedAndAllPipesClosed()){
-		pipe_.QueueWriteClose();
-	}
-	while(!pipe_.ChildExitedAndAllPipesClosed()){
-		if (pipe_.Can_Write()) pipe_.Write();
-		if (pipe_.Can_Read1()) result+=pipe_.Read1();
-		if (pipe_.Can_Read2()) pipe_.Read2();
+	if (pipe_) pipe_.sss_writeClose();
+
+	while(pipe_){
+		if (pipe_.sss_Can_Read1()) result+=pipe_.sss_Read1();
+		if (pipe_.sss_Can_Read2()) pipe_.sss_Read2();
 	}
 
 	return result;
@@ -212,7 +213,8 @@ size_t TransformProcess::QueuedWriteCount(){
 }
 
 size_t TransformProcess::ReadCount(){
-	return pipe_.Read1_Count();
+	// return pipe_.Read1_Count();
+	return pipe_.pipeRead1Count();
 }
 
 TransformProcess::~TransformProcess(){}

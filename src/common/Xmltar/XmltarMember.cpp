@@ -68,12 +68,12 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::string encoded, tmp;
 		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
 			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-			std::cerr << dbg << ": read " << ifs.gcount() << " bytes" << std::endl;
+			//std::cerr << dbg << ": read " << ifs.gcount() << " bytes" << std::endl;
 			precompression->Write(std::string(buf,ifs.gcount()));
 			encoding->Write(precompression->Read());
 			tmp=encoding->Read();
 			encoded+=tmp;
-			std::cerr << "tmp=" << tmp << std::endl;
+			//std::cerr << "tmp=" << tmp << std::endl;
 			memberCompression->Write(tmp);
 			archiveCompression->Write(memberCompression->Read());
 			ofs << archiveCompression->Read();

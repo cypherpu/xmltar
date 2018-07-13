@@ -54,9 +54,10 @@ public: // protected:
     size_t read1_count;
     size_t read2_count;
     size_t write_count;
-    size_t sss_dequeRead1Count_;
-    size_t sss_dequeRead2Count_;
-    size_t sss_dequeWriteCount_;
+
+    size_t pipeRead1Count_;
+    size_t pipeRead2Count_;
+
     size_t queued_write_count;
 
     static const size_t pipe_buf_size=PIPE_BUF;
@@ -89,6 +90,9 @@ public:
     void close_read2(void);
 
     size_t Read1_Count(void){ return read1_count; }
+    size_t Read2_Count(void){ return read2_count; }
+    size_t pipeRead1Count(void){ return pipeRead1Count_; }
+    size_t pipeRead2Count(void){ return pipeRead2Count_; }
     size_t Write_Count(void){ return write_count; }
     size_t Queued_Write_Count(void){ return queued_write_count; }
 
