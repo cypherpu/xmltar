@@ -31,8 +31,13 @@ public:
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<boost::filesystem::path,
-		std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+		std::shared_ptr<XmltarMember> & nextMember
+	);
+
+	XmltarArchive(
+		XmltarOptions & opts,
+		std::string filename,
 		std::shared_ptr<XmltarMember> & nextMember
 	);
 

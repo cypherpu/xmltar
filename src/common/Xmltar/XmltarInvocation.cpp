@@ -140,6 +140,22 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		}
 		*/
 	}
+	if (options_.operation_ && options_.operation_==XmltarOptions::EXTRACT){
+		if (!options_.starting_sequence_number_)
+			throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
+
+        if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
+        size_t volumeNumber=options_.starting_sequence_number_.get();
+        std::shared_ptr<XmltarMember> nextMember;
+
+        for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
+            boost::format fmt(options_.base_xmltar_file_name_.get());
+            fmt % volumeNumber;
+            std::string filename=str(fmt);
+
+            XmltarArchive xmltarArchive(options_,filename, nextMember);
+        }
+	}
 
 #if 0
 	if (options_.multi_volume_){
