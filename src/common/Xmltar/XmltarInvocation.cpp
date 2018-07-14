@@ -105,7 +105,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (xmltarArchive.ranOutOfFiles()) break;
+            	if (!nextMember && xmltarArchive.ranOutOfFiles()) break;
             }
 		}
 		else {	// !options_.multi_volume_
