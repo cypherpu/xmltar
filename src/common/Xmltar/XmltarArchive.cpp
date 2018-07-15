@@ -57,7 +57,7 @@ XmltarArchive::XmltarArchive(
 	XmltarOptions & opts,
 	std::string filename,
 	unsigned int volumeNumber,
-	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> & filesToBeArchived,
+	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
 	std::shared_ptr<XmltarMember> & nextMember
 )
 	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
@@ -86,7 +86,7 @@ XmltarArchive::XmltarArchive(
 
 			archiveCompression->OpenCompression();
 
-			if (!filesToBeArchived.empty() && !nextMember_)
+			if (!filesToBeArchived->empty() && !nextMember_)
 				nextMember_=NextMember();
 
 			for(bool firstPass=true; nextMember_; firstPass=false){
@@ -225,18 +225,18 @@ XmltarArchive::XmltarArchive(
 			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string minCompressedTrailer=CompressedArchiveTrailer();
 
-			std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived.size() << std::endl;
+			std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived->size() << std::endl;
 			std::shared_ptr<XmltarMember> xmltarMember;
-			for( ; filesToBeArchived.size(); ){
-				std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived.top() << std::endl;
+			for( ; filesToBeArchived->size(); ){
+				std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived->top() << std::endl;
 
-				boost::filesystem::path const filepath=filesToBeArchived_.top();
-				filesToBeArchived.pop();
+				boost::filesystem::path const filepath=filesToBeArchived_->top();
+				filesToBeArchived->pop();
 				boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
 
 				if (boost::filesystem::is_directory(f_stat)){
 					for(auto & p : boost::filesystem::directory_iterator(filepath) ){
-						filesToBeArchived.push(p);
+						filesToBeArchived->push(p);
 					}
 				}
 

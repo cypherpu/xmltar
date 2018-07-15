@@ -99,7 +99,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 std::string filename=str(fmt);
 
                 std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
-                XmltarArchive xmltarArchive(options_,filename, volumeNumber, filesToArchive, nextMember);
+                XmltarArchive xmltarArchive(options_,filename, volumeNumber, &filesToArchive, nextMember);
                 std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
@@ -113,7 +113,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
             std::shared_ptr<XmltarMember> nextMember;
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, filesToArchive,nextMember);
+            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, &filesToArchive,nextMember);
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
