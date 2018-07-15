@@ -246,7 +246,7 @@ XmltarArchive::XmltarArchive(
 }
 
 XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
-: options_(opts), volumeNumber_(0), filename_(filename), /*filesToBeArchived_(), */nextMember_(nextMember)
+: options_(opts), volumeNumber_(0), filename_(filename), filesToBeArchived_(nullptr), nextMember_(nextMember)
 {
 }
 
