@@ -16,6 +16,7 @@ public:
 	std::string ExpectedCompressorVersionString(){ return "gzip 1.8"; }
 	// bool CorrectCompressorVersion();
 	std::string HeaderMagicNumber(std::string identity){ return "\x1f\x8b"; }
+	static std::string StaticHeaderMagicNumber(std::string identity){ return "\x1f\x8b"; }
 	std::string TrailerMagicNumber(){ return "\x1f\x8b";	}
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return plaintextSize+(plaintextSize>>8)+50;

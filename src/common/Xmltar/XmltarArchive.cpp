@@ -28,6 +28,10 @@ extern "C" {
 #include "Bidirectional_Pipe.hpp"
 
 #include "Transform/TransformIdentity.hpp"
+#include "Transform/TransformGzip.hpp"
+#include "Transform/TransformBzip2.hpp"
+#include "Transform/TransformLzip.hpp"
+#include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 
 #include "../Debug2/Debug2.hpp"
@@ -248,6 +252,54 @@ XmltarArchive::XmltarArchive(
 XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
 : options_(opts), volumeNumber_(0), filename_(filename), filesToBeArchived_(nullptr), nextMember_(nextMember)
 {
+	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT)
+		if (options_.multi_volume_){
+			std:: ifstream ifs(filename);
+
+			if (!ifs)
+				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" cannot be read");
+
+			char smallBuf[5];
+			ifs.read(smallBuf,sizeof(smallBuf));
+			if (!ifs)
+				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" error or EOF");
+			if (ifs.gcount()!=5)
+				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" too short");
+			std::string bufString(smallBuf,sizeof(smallBuf));
+
+			std::vector<std::shared_ptr<Transform>> transformations;
+			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformIdentity>());
+			else if (bufString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformGzip>());
+			else if (bufString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformBzip2>());
+			else if (bufString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformLzip>());
+
+			transformations[0]->OpenDecompression();
+			transformations[0]->Write(bufString);
+			char buffer[2014];
+			std::string readString=transformations[0]->Read();
+			while(ifs && readString.size()<5){
+				ifs.read(buffer,sizeof(buffer));
+				transformations[0]->Write(std::string(buffer,ifs.gcount()));
+				readString=transformations[0]->Read();
+			}
+
+			if (readString.size()<5)
+				throw std::runtime_error("XmltarArchive::XmltarArchive: readString.size()<5");
+			if (readString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformIdentity>());
+			else if (readString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformGzip>());
+			else if (readString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformBzip2>());
+			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+				transformations.push_back(std::make_shared<TransformLzip>());
+		}
+		else {
+		}
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

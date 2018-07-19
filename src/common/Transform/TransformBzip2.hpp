@@ -16,6 +16,7 @@ public:
 	std::string ExpectedCompressorVersionString(){ return "bzip2, a block-sorting file compressor.  Version 1.0.6, 6-Sept-2010."; }
 	// bool CorrectCompressorVersion();
 	std::string HeaderMagicNumber(std::string identity){ return "BZh"; }
+	static std::string StaticHeaderMagicNumber(std::string identity){ return "BZh"; }
 	std::string TrailerMagicNumber(){ return "BZh";	}
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return (plaintextSize<1000?(plaintextSize+(plaintextSize>>1)+80):(plaintextSize+(plaintextSize>>7)+550));

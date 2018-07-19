@@ -16,6 +16,7 @@ public:
 	std::string ExpectedCompressorVersionString(){ return "lzip 1.20"; }
 	// bool CorrectCompressorVersion();
 	std::string HeaderMagicNumber(std::string identity){ return "LZIP\x01"; }
+	static std::string StaticHeaderMagicNumber(std::string identity){ return "LZIP\x01"; }
 	std::string TrailerMagicNumber(){ return "LZIP\x01";	}
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return plaintextSize+(plaintextSize>>6)+70;
