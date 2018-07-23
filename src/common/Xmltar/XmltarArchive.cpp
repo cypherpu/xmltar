@@ -22,6 +22,10 @@ extern "C" {
 #include <boost/random/random_device.hpp>
 #include <boost/random/uniform_int.hpp>
 
+extern "C" {
+#include <expat.h>
+}
+
 #include "Xmltar/XmltarArchive.hpp"
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/ToHexDigit.hpp"
@@ -35,6 +39,25 @@ extern "C" {
 #include "Transform/DMap.hpp"
 
 #include "../Debug2/Debug2.hpp"
+
+namespace {
+
+extern "C" {
+void StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
+	std::cerr << "Start Element: " << name << std::endl;
+}
+
+void EndElementHandler(void *userData, const XML_Char *name){
+	std::cerr << "End Element: " << name << std::endl;
+}
+
+void CharacterDataHandler(void *userData, const XML_Char *s, int len){
+
+}
+
+}
+
+}
 
 class NonDeterministicRNG : public boost::random::random_device {
 public:
@@ -297,8 +320,26 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				transformations.push_back(std::make_shared<TransformBzip2>());
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
+
+			transformations[1]->OpenDecompression();
+			transformations[1]->Write(readString);
+
+
+			XML_Parser parser=XML_ParserCreate(nullptr);
+			XML_SetUserData(parser,this);
+			XML_SetStartElementHandler(parser,StartElementHandler);
+			XML_SetEndElementHandler(parser,EndElementHandler);
+			XML_SetCharacterDataHandler(parser,CharacterDataHandler);
+
+			std::string readSome;
+			while(ifs){
+				transformations[1]->Write(transformations[0]->Read());
+				readSome=transformations[1]->Read();
+				XML_Parse(parser,readSome.c_str(),readSome.size(),false);
+			}
+
 		}
-		else {
+		else {	// !options_.multivolume
 		}
 }
 

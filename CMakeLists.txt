@@ -16,7 +16,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 link_directories(/usr/local/lib)
 link_directories(/usr/lib64)
 
-set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random boost_filesystem boost_system xerces-c gtest)
+set(LIBS cairo cryptopp boost_date_time boost_unit_test_framework boost_random boost_filesystem boost_system xerces-c gtest expat)
 
 include_directories(
 src/
