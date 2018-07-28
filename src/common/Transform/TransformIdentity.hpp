@@ -21,7 +21,7 @@ public:
 	std::string ActualCompressorVersionString(){ return "identity"; }
 	std::string ExpectedCompressorVersionString(){ return "identity"; }
 	bool CorrectCompressorVersion(){ return true; }
-	std::string HeaderMagicNumber(std::string identity){ return ""; }
+	std::string HeaderMagicNumber(std::string identity){ return identity; }
 	static std::string StaticHeaderMagicNumber(std::string identity){ return identity; }
 	std::string TrailerMagicNumber(){ return ""; }
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){ return plaintextSize; }

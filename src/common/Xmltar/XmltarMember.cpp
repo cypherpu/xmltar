@@ -18,7 +18,8 @@ extern "C" {
 #include <boost/lexical_cast.hpp>
 
 #include "Xmltar/XmltarMember.hpp"
-#include "Utilities/XMLEscapeAttribute.hpp"
+#include "Utilities/XmlEscapeAttribute.hpp"
+#include "Utilities/CppStringEscape.hpp"
 #include "Utilities/ToLocalTime.hpp"
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
@@ -123,7 +124,7 @@ size_t XmltarMember::MemberSize(){
 std::string XmltarMember::MemberHeader(){
     std::string s;
 
-    s=s+options_.Tabs("\t\t")+"<file name=\"" + XMLEscapeAttribute(filepath_.relative_path().string()) + "\">"+options_.Newline();
+    s=s+options_.Tabs("\t\t")+"<file name=\"" + XmlEscapeAttribute(CppStringEscape(filepath_.relative_path().string())) + "\">"+options_.Newline();
 
 	std::vector<std::pair<std::string,std::string> > attr_list;
 
@@ -149,8 +150,8 @@ std::string XmltarMember::MemberHeader(){
 
 	for(unsigned int i=0; i<attr_list.size(); ++i)
 		s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
-			+XMLEscapeAttribute(attr_list[i].first)+"\" value=\""
-			+XMLEscapeAttribute(attr_list[i].second)+"\"/>"+options_.Newline();
+			+XmlEscapeAttribute(CppStringEscape(attr_list[i].first))+"\" value=\""
+			+XmlEscapeAttribute(CppStringEscape(attr_list[i].second))+"\"/>"+options_.Newline();
 
 	struct passwd *pw=getpwuid(stat_buf.st_uid);
 	struct group *g=getgrgid(stat_buf.st_gid);
@@ -187,7 +188,7 @@ std::string XmltarMember::MemberHeader(){
             std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
             if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
                 throw "Archive_Member::Generate_Metadata: symbolic link size changed";
-            s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+XMLEscapeAttribute(std::string(p.get(),stat_buf.st_size))+"\"/>"+options_.Newline();
+            s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+XmlEscapeAttribute(CppStringEscape(std::string(p.get(),stat_buf.st_size)))+"\"/>"+options_.Newline();
         }
             break;
         case boost::filesystem::block_file:

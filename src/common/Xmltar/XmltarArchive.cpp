@@ -45,6 +45,8 @@ namespace {
 extern "C" {
 void StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
 	std::cerr << "Start Element: " << name << std::endl;
+	for(unsigned int i=0; atts[i]!=nullptr; ++i)
+		std::cerr << '\t' << atts[i] << std::endl;
 }
 
 void EndElementHandler(void *userData, const XML_Char *name){
@@ -247,7 +249,7 @@ XmltarArchive::XmltarArchive(
 			else
 				throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 		}
-		else {
+		else {	// !multi_volume
 			std::ofstream ofs(filename_);
 			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string minCompressedTrailer=CompressedArchiveTrailer();
@@ -279,51 +281,51 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 		if (options_.multi_volume_){
 			std:: ifstream ifs(filename);
 
+			std::cerr << "filename=" << filename << std::endl;
 			if (!ifs)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" cannot be read");
 
-			char smallBuf[5];
-			ifs.read(smallBuf,sizeof(smallBuf));
+			char buffer[2048];
+			ifs.read(buffer,sizeof(buffer));
 			if (!ifs)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" error or EOF");
 			if (ifs.gcount()!=5)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" too short");
-			std::string bufString(smallBuf,sizeof(smallBuf));
+			std::string readSome(buffer,sizeof(buffer));
 
+			std::cerr << "readSome.substr(0,5)=" << readSome.substr(0,5) << " TransformIdentity::StaticHeaderMagicNumber(\"<?xml\")=" << TransformIdentity::StaticHeaderMagicNumber("<?xml") << std::endl;
 			std::vector<std::shared_ptr<Transform>> transformations;
-			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+			if (readSome.substr(0,5)==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformIdentity>());
-			else if (bufString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformGzip>());
-			else if (bufString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformBzip2>());
-			else if (bufString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
 
 			transformations[0]->OpenDecompression();
-			transformations[0]->Write(bufString);
-			char buffer[2014];
-			std::string readString=transformations[0]->Read();
-			while(ifs && readString.size()<5){
+			transformations[0]->Write(readSome);
+			readSome=transformations[0]->Read();
+			while(ifs && readSome.size()<5){
 				ifs.read(buffer,sizeof(buffer));
 				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				readString=transformations[0]->Read();
+				readSome+=transformations[0]->Read();
 			}
 
-			if (readString.size()<5)
+			if (readSome.size()<5)
 				throw std::runtime_error("XmltarArchive::XmltarArchive: readString.size()<5");
-			if (readString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+			if (readSome.substr(0,5)==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformIdentity>());
-			else if (readString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformGzip>());
-			else if (readString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformBzip2>());
-			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readSome.substr(0,5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
 
 			transformations[1]->OpenDecompression();
-			transformations[1]->Write(readString);
-
+			transformations[1]->Write(readSome);
 
 			XML_Parser parser=XML_ParserCreate(nullptr);
 			XML_SetUserData(parser,this);
@@ -331,11 +333,15 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			XML_SetEndElementHandler(parser,EndElementHandler);
 			XML_SetCharacterDataHandler(parser,CharacterDataHandler);
 
-			std::string readSome;
 			while(ifs){
+				ifs.read(buffer,sizeof(buffer));
+				transformations[0]->Write(std::string(buffer,ifs.gcount()));
 				transformations[1]->Write(transformations[0]->Read());
 				readSome=transformations[1]->Read();
-				XML_Parse(parser,readSome.c_str(),readSome.size(),false);
+				if (XML_Parse(parser,readSome.c_str(),readSome.size(),false) == XML_STATUS_ERROR) {
+					std::cerr << XML_ErrorString(XML_GetErrorCode(parser)) << " " << XML_GetCurrentLineNumber(parser) << std::endl;
+					throw std::runtime_error("parse error");
+				}
 			}
 
 		}
@@ -501,7 +507,11 @@ std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int arc
 
 std::string XmltarArchive::ArchiveTrailerBegin(){
     std::string s
-		=options_.Tabs("\t")+"</members>"+options_.Newline()
+		=
+		options_.Tabs("\t\t\t\t")+"</stream>"+options_.Newline()
+		+options_.Tabs("\t\t\t\t")+"</content>"+options_.Newline()
+		+options_.Tabs("\t\t\t")+"</file>"+options_.Newline()
+		+options_.Tabs("\t")+"</members>"+options_.Newline()
 		+options_.Tabs("\t")+"<padding>";
 
     return s;

@@ -62,6 +62,10 @@ public:
 
 	}
 
+	XmltarMember *xmltarMemberFactory(boost::filesystem::path const & filepath,boost::filesystem::file_status & f_stat, XmltarOptions & options){
+		return new XmltarMember(options,filepath);
+	}
+
 	std::shared_ptr<XmltarMember> NextMember(){
 		if (filesToBeArchived_->empty()){
 			return std::shared_ptr<XmltarMember>();
@@ -77,7 +81,8 @@ public:
 			}
 		}
 
-		return std::make_shared<XmltarMember>(options_,filepath);
+		// return std::make_shared<XmltarMember>(options_,filepath);
+		return std::shared_ptr<XmltarMember>(xmltarMemberFactory(filepath, f_stat, options_));
 	}
 };
 
