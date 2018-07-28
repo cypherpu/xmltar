@@ -158,7 +158,7 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 				}
-				if (nextMember_->isSymLink()){
+				else if (nextMember_->isSymLink()){
 					if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
 						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 						std::string compressedDirectoryMember
@@ -192,7 +192,7 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 				}
-				if (nextMember_->isRegularFile()){
+				else if (nextMember_->isRegularFile()){
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0)
