@@ -146,40 +146,12 @@ XmltarArchive::XmltarArchive(
 					}
 				}
 
-				if (nextMember_->isDirectory()){
-					std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
-					std::string compressedDirectoryMember
-						= options_.archiveMemberCompression_->CompressString(
-								tmp
-							);
-					std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
-					archiveCompression->Write(compressedDirectoryMember);
-					std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+				nextMember_->write(archiveCompression,committedBytes, pendingBytes,ofs);
+				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+				if (nextMember_->IsComplete())
 					nextMember_=NextMember();
-					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
-					std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
-				}
-				else if (nextMember_->isSymLink()){
-					std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
-					std::string compressedDirectoryMember
-						= options_.archiveMemberCompression_->CompressString(
-								tmp
-							);
-					std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
-					archiveCompression->Write(compressedDirectoryMember);
-					std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
-					nextMember_=NextMember();
-					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
-					std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
-				}
-				else if (nextMember_->isRegularFile()){
-					nextMember_->write(archiveCompression,committedBytes, pendingBytes,ofs);
-					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
-					if (nextMember_->IsComplete())
-						nextMember_=NextMember();
-					else
-						nextMember_->RecalculateMemberHeader();
-				}
+				else
+					nextMember_->RecalculateMemberHeader();
 			}
 
 			ofs << archiveCompression->Close();

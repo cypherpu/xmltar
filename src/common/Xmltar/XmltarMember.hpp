@@ -26,6 +26,7 @@ protected:
 	std::string memberHeader_;
 	std::string memberTrailer_;
 	size_t nextByte_;
+	bool isArchived_;
 
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);

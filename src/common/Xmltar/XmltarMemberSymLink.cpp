@@ -55,61 +55,16 @@ bool XmltarMemberSymLink::completed(){
 void XmltarMemberSymLink::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 
-		size_t numberOfFileBytesThatCanBeArchived=NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+		std::string tmp=MemberHeader()+MemberTrailer();
+		std::string compressedDirectoryMember
+			= options_.archiveMemberCompression_->CompressString(
+					tmp
+				);
+		std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+		archiveCompression->Write(compressedDirectoryMember);
+		std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
 
-		std::ifstream ifs(filepath_.string());
-		ifs.seekg(nextByte_);
-
-		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
-		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
-		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
-
-		size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
-		precompression->OpenCompression();
-		encoding->OpenCompression();
-		memberCompression->OpenCompression();
-		char buf[1024];
-
-		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
-		memberCompression->Write(memberHeader_);
-
-		std::string encoded, tmp;
-		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
-			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
-			//std::cerr << dbg << ": read " << ifs.gcount() << " bytes" << std::endl;
-			precompression->Write(std::string(buf,ifs.gcount()));
-			encoding->Write(precompression->Read());
-			tmp=encoding->Read();
-			encoded+=tmp;
-			//std::cerr << "tmp=" << tmp << std::endl;
-			memberCompression->Write(tmp);
-			archiveCompression->Write(memberCompression->Read());
-			ofs << archiveCompression->Read();
-		}
-
-		std::cerr << dbg << ": finished loop" << std::endl;
-		encoding->Write(precompression->Close());
-		std::cerr << dbg << ": 1" << std::endl;
-		tmp=encoding->Close();
-		std::cerr << dbg << ": 2" << std::endl;
-		encoded+=tmp;
-		memberCompression->Write(tmp);
-		std::cerr << dbg << ": 3" << std::endl;
-		memberCompression->Write(memberTrailer_);
-		std::cerr << dbg << ": 4" << std::endl;
-		std::string tmp2=memberCompression->Close();
-		std::cerr << dbg << ": 4.5" << std::endl;
-		archiveCompression->Write(tmp);
-		std::cerr << dbg << ": 5" << std::endl;
-
-		// std::cerr << tmp << std::endl;
-		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
-		std::cerr << dbg << ": 6" << std::endl;
-		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;
-		std::cerr << dbg << ": encoding->ReadCount=" << encoding->ReadCount() << std::endl;
-		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+		isArchived_=true;
 }
 
 std::string XmltarMemberSymLink::MemberHeader(){
@@ -161,46 +116,10 @@ std::string XmltarMemberSymLink::MemberHeader(){
 
 	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 
-    switch(f_type){
-        case boost::filesystem::regular_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
-            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
-
-            s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName();
-
-            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(nextByte_)+"\">"+options_.Newline();
-            break;
-        case boost::filesystem::directory_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::symlink_file:
-        {
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"symlink\">"+options_.Newline();
-            std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
-            if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
-                throw "Archive_Member::Generate_Metadata: symbolic link size changed";
-            s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+XmlEscapeAttribute(CppStringEscape(std::string(p.get(),stat_buf.st_size)))+"\"/>"+options_.Newline();
-        }
-            break;
-        case boost::filesystem::block_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"block\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::character_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"character\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::fifo_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"fifo\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::socket_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"socket\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::type_unknown:
-        case boost::filesystem::status_unknown:
-        case boost::filesystem::file_not_found:
-        default:
-            throw "Archive_Member::Generate_Header: unable to stat file";
-            break;
-    }
+	std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
+	if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
+		throw "Archive_Member::Generate_Metadata: symbolic link size changed";
+	s+=options_.Tabs("\t\t\t")+"<content type=\"symlink\" target=\""+XmlEscapeAttribute(CppStringEscape(std::string(p.get(),stat_buf.st_size)))+"\"/>"+options_.Newline();
 
     return s;
 }
@@ -208,14 +127,6 @@ std::string XmltarMemberSymLink::MemberHeader(){
 std::string XmltarMemberSymLink::MemberTrailer(){
     std::string s;
 
-    // only include a content section if the file is a regular file
-    if (f_type==boost::filesystem::regular_file){
-        s=s+options_.Newline();
-        s=s+options_.Tabs("\t\t\t\t")+"</stream>"+options_.Newline();
-    }
-    if (f_type==boost::filesystem::regular_file || f_type==boost::filesystem::symlink_file){
-        s=s+options_.Tabs("\t\t\t")+"</content>"+options_.Newline();
-    }
     s=s+options_.Tabs("\t\t")+"</file>"+options_.Newline();
 
     return s;

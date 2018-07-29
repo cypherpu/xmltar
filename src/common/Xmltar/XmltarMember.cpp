@@ -27,7 +27,7 @@ extern "C" {
 #include "../Debug2/Debug2.hpp"
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
-	: options_(options), filepath_(filepath), nextByte_(0) {
+	: options_(options), filepath_(filepath), nextByte_(0), isArchived_(false) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=boost::filesystem::symlink_status(filepath_);
