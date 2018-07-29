@@ -176,7 +176,6 @@ XmltarArchive::XmltarArchive(
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
 						ofs << archiveCompression->Close();
-						ofs.flush();
 						committedBytes+=archiveCompression->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
 						if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
@@ -195,7 +194,7 @@ XmltarArchive::XmltarArchive(
 				else if (nextMember_->isRegularFile()){
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
-					if (numberOfFileBytesThatCanBeArchived==0)
+					if (nextMember_->CanArchiveRegularFile(committedBytes, pendingBytes, archiveCompression)){
 						if (firstPass)
 							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
 						else {	// close off this archiveCompression to free up space
@@ -223,7 +222,9 @@ XmltarArchive::XmltarArchive(
 								archiveCompression->OpenCompression();
 							}
 						}
+					}
 
+					numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
 					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
 					if (nextMember_->IsComplete())

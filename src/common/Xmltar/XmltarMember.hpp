@@ -29,27 +29,24 @@ class XmltarMember {
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
-	bool completed(){ return nextByte_>=file_size; }
-	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
+	virtual bool completed();
+	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
-	std::string MemberHeader();
-	std::string MemberTrailer();
-	std::string CompressedMemberHeader();
-	std::string CompressedMemberTrailer();
-	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool IsComplete(){ return nextByte_==file_size; }
-	boost::filesystem::path filepath(){ return filepath_; }
-	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
-	bool isSymLink(){ return f_type==boost::filesystem::file_type::symlink_file; }
-	bool isRegularFile(){ return f_type==boost::filesystem::file_type::regular_file; }
-	size_t NextByte(){ return nextByte_; }
-	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
-
-	std::shared_ptr<XmltarMember> writeToArchive(){
-
-	}
+	virtual std::string MemberHeader();
+	virtual std::string MemberTrailer();
+	virtual std::string CompressedMemberHeader();
+	virtual std::string CompressedMemberTrailer();
+	virtual size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	virtual bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	virtual bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	virtual bool CanArchiveRegularFile(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	virtual bool IsComplete();
+	virtual boost::filesystem::path filepath();
+	virtual bool isDirectory();
+	virtual bool isSymLink();
+	virtual bool isRegularFile();
+	virtual size_t NextByte();
+	virtual void RecalculateMemberHeader();
 };
 
 

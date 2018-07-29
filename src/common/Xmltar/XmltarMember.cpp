@@ -48,6 +48,10 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     memberTrailer_=MemberTrailer();
 }
 
+bool XmltarMember::completed(){
+	return nextByte_>=file_size;
+}
+
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::ifstream ifs(filepath_.string());
@@ -245,16 +249,6 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 	std::cerr << dbg << ": precompressedBytes=" << precompressedBytes << std::endl;
 
 	return precompressedBytes;
-#if 0
-	size_t numberOfFileBytesThatCanBeArchived
-		=	precompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-				encoding_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-					memberCompression_.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-						archiveCompression.get()->MinimumPlaintextSizeGivenCompressedtextSize(
-							options_.tape_length_.get()-committedBytes-pendingBytes-(includeMemberHeader?memberHeader_.size():0)-memberTrailer_.size()))));
-
-	return numberOfFileBytesThatCanBeArchived;
-#endif
 }
 
 bool XmltarMember::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
@@ -278,3 +272,36 @@ bool XmltarMember::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes,
 
 	return numberOfFileBytesThatCanBeArchived;
 }
+
+bool XmltarMember::CanArchiveRegularFile(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	return NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression)!=0;
+}
+
+bool XmltarMember::IsComplete(){
+	return nextByte_==file_size;
+}
+
+boost::filesystem::path XmltarMember::filepath(){
+	return filepath_;
+}
+
+bool XmltarMember::isDirectory(){
+	return f_type==boost::filesystem::file_type::directory_file;
+}
+
+bool XmltarMember::isSymLink(){
+	return f_type==boost::filesystem::file_type::symlink_file;
+}
+
+bool XmltarMember::isRegularFile(){
+	return f_type==boost::filesystem::file_type::regular_file;
+}
+
+size_t XmltarMember::NextByte(){
+	return nextByte_;
+}
+
+void XmltarMember::RecalculateMemberHeader(){
+	memberHeader_=MemberHeader();
+}
+
