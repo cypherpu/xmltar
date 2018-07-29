@@ -58,9 +58,6 @@ public:
 	bool ranOutOfFiles(){
 		return filesToBeArchived_->empty();
 	}
-	bool ranOutOfSpace(){
-
-	}
 
 	XmltarMember *xmltarMemberFactory(boost::filesystem::path const & filepath,boost::filesystem::file_status & f_stat, XmltarOptions & options){
 		return new XmltarMember(options,filepath);

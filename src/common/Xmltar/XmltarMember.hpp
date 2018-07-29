@@ -49,6 +49,10 @@ public:
 	bool isRegularFile(){ return f_type==boost::filesystem::file_type::regular_file; }
 	size_t NextByte(){ return nextByte_; }
 	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
+
+	std::shared_ptr<XmltarMember> writeToArchive(){
+
+	}
 };
 
 
