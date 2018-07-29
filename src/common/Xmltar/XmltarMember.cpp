@@ -105,22 +105,6 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
-size_t XmltarMember::MaximumSize(size_t n){
-	return
-			options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
-				memberHeader_.size()
-				+options_.encoding_->MaximumCompressedtextSizeGivenPlaintextSize(
-						options_.fileCompression_->MaximumCompressedtextSizeGivenPlaintextSize(n)
-					)
-				+memberTrailer_.size()
-			);
-
-}
-
-size_t XmltarMember::MemberSize(){
-	return MaximumSize(file_size);
-}
-
 std::string XmltarMember::MemberHeader(){
     std::string s;
 
@@ -236,17 +220,6 @@ std::string XmltarMember::CompressedMemberHeader(){
 
 std::string XmltarMember::CompressedMemberTrailer(){
 	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
-}
-
-size_t XmltarMember::MinimumSize(){
-	return
-			options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
-				memberHeader_.size()
-				+options_.encoding_->MaximumCompressedtextSizeGivenPlaintextSize(
-						options_.fileCompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(1)
-					)
-				+memberTrailer_.size()
-			);
 }
 
 size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){

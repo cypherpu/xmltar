@@ -32,13 +32,10 @@ public:
 	bool completed(){ return nextByte_>=file_size; }
 	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
-	size_t MemberSize();
 	std::string MemberHeader();
 	std::string MemberTrailer();
 	std::string CompressedMemberHeader();
 	std::string CompressedMemberTrailer();
-	size_t MinimumSize();
-	size_t MaximumSize(size_t n);
 	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
