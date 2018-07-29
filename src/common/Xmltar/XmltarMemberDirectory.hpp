@@ -21,7 +21,7 @@ public:
 	XmltarMemberDirectory(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
 	virtual bool completed() override;
-	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs) override;
+	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs) override;
 
 	virtual std::string MemberHeader() override;
 	virtual std::string MemberTrailer() override;

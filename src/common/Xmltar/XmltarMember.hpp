@@ -32,7 +32,7 @@ public:
 	virtual ~XmltarMember(){}
 
 	virtual bool completed();
-	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
+	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs);
 
 	virtual std::string MemberHeader();
 	virtual std::string MemberTrailer();

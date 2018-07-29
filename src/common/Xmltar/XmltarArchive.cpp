@@ -140,34 +140,12 @@ XmltarArchive::XmltarArchive(
 						}
 						else {
 							// if there is no more room in this archive, close the archive and open a new archive
-							ofs << archiveCompression->Close();
-							committedBytes+=archiveCompression->ReadCount();
-							pendingBytes=compressedArchiveTrailer.size();
 							ofs << CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-							committedBytes+=archiveCompression->ReadCount();
-							pendingBytes=compressedArchiveTrailer.size();
-							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
-							std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
-							std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
-							std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
-							if (numberOfFileBytesThatCanBeArchived==0){
-								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
-									std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
-									std::cerr << dbg << ": tmp.size()=" << tmp.size() << std::endl;
-									ofs << tmp;
-									ofs.flush();
-
-									return;
-								}
-								else
-									throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
-							}
-							else {
-								archiveCompression.reset(archiveCompression->clone());
-								archiveCompression->OpenCompression();
-							}
+							return;
 						}
 					}
+				}
+
 
 #if 0
 				if (nextMember_->isDirectory()){
@@ -269,7 +247,6 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 
-					numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
 					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
 					if (nextMember_->IsComplete())
@@ -315,7 +292,7 @@ XmltarArchive::XmltarArchive(
 					}
 				}
 
-				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
+				// xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
 			}
 		}
 }

@@ -52,8 +52,11 @@ bool XmltarMemberSymLink::completed(){
 	return nextByte_>=file_size;
 }
 
-void XmltarMemberSymLink::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+void XmltarMemberSymLink::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
+
+		size_t numberOfFileBytesThatCanBeArchived=NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
