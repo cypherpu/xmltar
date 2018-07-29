@@ -118,12 +118,58 @@ XmltarArchive::XmltarArchive(
 			if (!filesToBeArchived->empty() && !nextMember_)
 				nextMember_=NextMember();
 
-			for(bool firstPass=true; nextMember_; firstPass=false){
+			for(bool firstPass=true; nextMember_; ){
 				std::cerr << dbg << ": ##########" << std::endl;
 				std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
 				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;
 				std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
+				if (!nextMember_->CanArchive(committedBytes, pendingBytes, archiveCompression)){
+					if (firstPass)
+						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+					else {
+						// close the current compression run
+						ofs << archiveCompression->Close();
+						committedBytes+=archiveCompression->ReadCount();
+						pendingBytes=compressedArchiveTrailer.size();
+						// check to see if this has freed up some room
+						if (nextMember_->CanArchive(committedBytes, pendingBytes, archiveCompression)){
+							// if some room has been freed, open up a new compression run
+							archiveCompression.reset(archiveCompression->clone());
+							archiveCompression->OpenCompression();
+						}
+						else {
+							// if there is no more room in this archive, close the archive and open a new archive
+							ofs << archiveCompression->Close();
+							committedBytes+=archiveCompression->ReadCount();
+							pendingBytes=compressedArchiveTrailer.size();
+							ofs << CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							committedBytes+=archiveCompression->ReadCount();
+							pendingBytes=compressedArchiveTrailer.size();
+							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+							std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
+							std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
+							std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
+							if (numberOfFileBytesThatCanBeArchived==0){
+								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
+									std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+									std::cerr << dbg << ": tmp.size()=" << tmp.size() << std::endl;
+									ofs << tmp;
+									ofs.flush();
+
+									return;
+								}
+								else
+									throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
+							}
+							else {
+								archiveCompression.reset(archiveCompression->clone());
+								archiveCompression->OpenCompression();
+							}
+						}
+					}
+
+#if 0
 				if (nextMember_->isDirectory()){
 					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
 						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
@@ -142,7 +188,6 @@ XmltarArchive::XmltarArchive(
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
 						ofs << archiveCompression->Close();
-						ofs.flush();
 						committedBytes+=archiveCompression->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
 						if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
@@ -232,7 +277,7 @@ XmltarArchive::XmltarArchive(
 					else
 						nextMember_->RecalculateMemberHeader();
 				}
-
+#endif
 			}
 
 			ofs << archiveCompression->Close();

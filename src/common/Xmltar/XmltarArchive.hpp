@@ -12,7 +12,9 @@
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
-#include "Xmltar/XmltarMember.hpp"
+#include "Xmltar/XmltarMemberRegularFile.hpp"
+#include "Xmltar/XmltarMemberDirectory.hpp"
+#include "Xmltar/XmltarMemberSymLink.hpp"
 
 class PartialFileRead {
 public:
@@ -60,7 +62,14 @@ public:
 	}
 
 	XmltarMember *xmltarMemberFactory(boost::filesystem::path const & filepath,boost::filesystem::file_status & f_stat, XmltarOptions & options){
-		return new XmltarMember(options,filepath);
+		if (boost::filesystem::is_regular(filepath))
+			return new XmltarMemberRegularFile(options,filepath);
+		else if (boost::filesystem::is_directory(filepath))
+			return new XmltarMemberDirectory(options,filepath);
+		else if (boost::filesystem::is_symlink(filepath))
+			return new XmltarMemberSymLink(options,filepath);
+		else
+			throw std::runtime_error("XmltarArchive::xmltarMemberFactory: unhandled file type");
 	}
 
 	std::shared_ptr<XmltarMember> NextMember(){
@@ -78,7 +87,6 @@ public:
 			}
 		}
 
-		// return std::make_shared<XmltarMember>(options_,filepath);
 		return std::shared_ptr<XmltarMember>(xmltarMemberFactory(filepath, f_stat, options_));
 	}
 };

@@ -16,6 +16,7 @@ extern "C" {
 }
 
 class XmltarMember {
+protected:
 	XmltarOptions const  & options_;
 	boost::filesystem::path const filepath_;
 	struct stat stat_buf;
@@ -28,6 +29,7 @@ class XmltarMember {
 
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
+	virtual ~XmltarMember(){}
 
 	virtual bool completed();
 	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
@@ -37,9 +39,7 @@ public:
 	virtual std::string CompressedMemberHeader();
 	virtual std::string CompressedMemberTrailer();
 	virtual size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	virtual bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	virtual bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	virtual bool CanArchiveRegularFile(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	virtual bool CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression)=0;
 	virtual bool IsComplete();
 	virtual boost::filesystem::path filepath();
 	virtual bool isDirectory();

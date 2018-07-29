@@ -1,5 +1,5 @@
 /*
- * XmltarMember.cpp
+ * XmltarMemberSymLink.cpp
  *
  *  Created on: Nov 26, 2017
  *      Author: dbetz
@@ -17,7 +17,7 @@ extern "C" {
 }
 #include <boost/lexical_cast.hpp>
 
-#include "Xmltar/XmltarMember.hpp"
+#include "Xmltar/XmltarMemberSymLink.hpp"
 #include "Utilities/XmlEscapeAttribute.hpp"
 #include "Utilities/CppStringEscape.hpp"
 #include "Utilities/ToLocalTime.hpp"
@@ -26,8 +26,8 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
-	: options_(options), filepath_(filepath), nextByte_(0) {
+XmltarMemberSymLink::XmltarMemberSymLink(XmltarOptions const & options, boost::filesystem::path const & filepath)
+	: XmltarMember(options, filepath) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=boost::filesystem::symlink_status(filepath_);
@@ -48,11 +48,11 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     memberTrailer_=MemberTrailer();
 }
 
-bool XmltarMember::completed(){
+bool XmltarMemberSymLink::completed(){
 	return nextByte_>=file_size;
 }
 
-void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+void XmltarMemberSymLink::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
@@ -109,7 +109,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
-std::string XmltarMember::MemberHeader(){
+std::string XmltarMemberSymLink::MemberHeader(){
     std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + XmlEscapeAttribute(CppStringEscape(filepath_.relative_path().string())) + "\">"+options_.Newline();
@@ -202,7 +202,7 @@ std::string XmltarMember::MemberHeader(){
     return s;
 }
 
-std::string XmltarMember::MemberTrailer(){
+std::string XmltarMemberSymLink::MemberTrailer(){
     std::string s;
 
     // only include a content section if the file is a regular file
@@ -218,15 +218,15 @@ std::string XmltarMember::MemberTrailer(){
     return s;
 }
 
-std::string XmltarMember::CompressedMemberHeader(){
+std::string XmltarMemberSymLink::CompressedMemberHeader(){
 	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
 }
 
-std::string XmltarMember::CompressedMemberTrailer(){
+std::string XmltarMemberSymLink::CompressedMemberTrailer(){
 	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
 }
 
-size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+size_t XmltarMemberSymLink::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
@@ -251,31 +251,42 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 	return precompressedBytes;
 }
 
-bool XmltarMember::IsComplete(){
+bool XmltarMemberSymLink::CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
+
+	size_t numberOfFileBytesThatCanBeArchived
+		=	options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
+				archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(
+					options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
+
+	return numberOfFileBytesThatCanBeArchived;
+}
+
+bool XmltarMemberSymLink::IsComplete(){
 	return nextByte_==file_size;
 }
 
-boost::filesystem::path XmltarMember::filepath(){
+boost::filesystem::path XmltarMemberSymLink::filepath(){
 	return filepath_;
 }
 
-bool XmltarMember::isDirectory(){
+bool XmltarMemberSymLink::isDirectory(){
 	return f_type==boost::filesystem::file_type::directory_file;
 }
 
-bool XmltarMember::isSymLink(){
+bool XmltarMemberSymLink::isSymLink(){
 	return f_type==boost::filesystem::file_type::symlink_file;
 }
 
-bool XmltarMember::isRegularFile(){
+bool XmltarMemberSymLink::isRegularFile(){
 	return f_type==boost::filesystem::file_type::regular_file;
 }
 
-size_t XmltarMember::NextByte(){
+size_t XmltarMemberSymLink::NextByte(){
 	return nextByte_;
 }
 
-void XmltarMember::RecalculateMemberHeader(){
+void XmltarMemberSymLink::RecalculateMemberHeader(){
 	memberHeader_=MemberHeader();
 }
 
