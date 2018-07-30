@@ -48,10 +48,6 @@ XmltarMemberDirectory::XmltarMemberDirectory(XmltarOptions const & options, boos
     memberTrailer_=MemberTrailer();
 }
 
-bool XmltarMemberDirectory::completed(){
-	return nextByte_>=file_size;
-}
-
 void XmltarMemberDirectory::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 

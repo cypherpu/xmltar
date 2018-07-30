@@ -48,10 +48,6 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     memberTrailer_=MemberTrailer();
 }
 
-bool XmltarMember::completed(){
-	return nextByte_>=file_size;
-}
-
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
 		size_t numberOfFileBytesThatCanBeArchived=NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 

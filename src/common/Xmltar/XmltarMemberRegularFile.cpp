@@ -48,10 +48,6 @@ XmltarMemberRegularFile::XmltarMemberRegularFile(XmltarOptions const & options, 
     memberTrailer_=MemberTrailer();
 }
 
-bool XmltarMemberRegularFile::completed(){
-	return nextByte_>=file_size;
-}
-
 void XmltarMemberRegularFile::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 
@@ -110,6 +106,9 @@ void XmltarMemberRegularFile::write(std::shared_ptr<Transform> archiveCompressio
 		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+
+		if (nextByte_>=file_size)
+			isArchived_=true;
 }
 
 std::string XmltarMemberRegularFile::MemberHeader(){

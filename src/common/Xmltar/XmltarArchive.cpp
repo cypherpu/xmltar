@@ -118,7 +118,7 @@ XmltarArchive::XmltarArchive(
 			if (!filesToBeArchived->empty() && !nextMember_)
 				nextMember_=NextMember();
 
-			for(bool firstPass=true; nextMember_; ){
+			for(bool firstPass=true; nextMember_; firstPass=false){
 				std::cerr << dbg << ": ##########" << std::endl;
 				std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
 				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;

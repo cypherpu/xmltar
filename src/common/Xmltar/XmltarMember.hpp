@@ -32,7 +32,7 @@ public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 	virtual ~XmltarMember(){}
 
-	virtual bool completed();
+	bool completed(){ return isArchived_; }
 	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs);
 
 	virtual std::string MemberHeader();
