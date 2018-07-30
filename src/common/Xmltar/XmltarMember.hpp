@@ -17,6 +17,13 @@ extern "C" {
 
 class XmltarMember {
 protected:
+	struct XAttrs {
+		std::string name_;
+		std::string value_;
+	};
+	std::vector<XAttrs> xAttrs_;
+
+protected:
 	XmltarOptions const  & options_;
 	boost::filesystem::path const filepath_;
 	struct stat stat_buf;
@@ -32,6 +39,7 @@ public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 	virtual ~XmltarMember(){}
 
+	void populateXAttrs();
 	bool completed(){ return isArchived_; }
 	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs);
 

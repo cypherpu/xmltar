@@ -44,6 +44,8 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
+    populateXAttrs();
+
     memberHeader_=MemberHeader();
     memberTrailer_=MemberTrailer();
 }
@@ -107,13 +109,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t c
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
-std::string XmltarMember::MemberHeader(){
-    std::string s;
-
-    s=s+options_.Tabs("\t\t")+"<file name=\"" + XmlEscapeAttribute(CppStringEscape(filepath_.relative_path().string())) + "\">"+options_.Newline();
-
-	std::vector<std::pair<std::string,std::string> > attr_list;
-
+void XmltarMember::populateXAttrs(){
 	ssize_t keylist_size=llistxattr(filepath_.string().c_str(),0,0);
 	std::unique_ptr<char[]> xattr(new char[keylist_size]);
 
@@ -126,18 +122,27 @@ std::string XmltarMember::MemberHeader(){
 		for( ; i<keylist_end && xattr[i]!='\0'; ++i)
 			key+=xattr[i];
 		ssize_t val_size=lgetxattr(filepath_.string().c_str(),key.c_str(),0,0);
+		if (val_size<=1)
+			throw std::runtime_error("xattr empty");
 		std::unique_ptr<char[]> xattr_val(new char[val_size]);
 		if ((lgetxattr(filepath_.string().c_str(),key.c_str(),xattr_val.get(),val_size))==-1)
 			throw "Archive_Member::Generate_Metadata: xattr_val list too small";
-		attr_list.push_back(std::pair<std::string,std::string>(key,std::string(xattr_val.get(),val_size)));
+
+		xAttrs_.push_back({key,std::string(xattr_val.get(),val_size-1)});
 	};
+}
+
+std::string XmltarMember::MemberHeader(){
+    std::string s;
+
+    s=s+options_.Tabs("\t\t")+"<file name=\"" + XmlEscapeAttribute(CppStringEscape(filepath_.relative_path().string())) + "\">"+options_.Newline();
 
 	s=s+options_.Tabs("\t\t\t")+"<meta-data>"+options_.Newline();
 
-	for(unsigned int i=0; i<attr_list.size(); ++i)
+	for(unsigned int i=0; i<xAttrs_.size(); ++i)
 		s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
-			+XmlEscapeAttribute(CppStringEscape(attr_list[i].first))+"\" value=\""
-			+XmlEscapeAttribute(CppStringEscape(attr_list[i].second))+"\"/>"+options_.Newline();
+			+XmlEscapeAttribute(CppStringEscape(xAttrs_[i].name_))+"\" value=\""
+			+XmlEscapeAttribute(CppStringEscape(xAttrs_[i].value_))+"\"/>"+options_.Newline();
 
 	struct passwd *pw=getpwuid(stat_buf.st_uid);
 	struct group *g=getgrgid(stat_buf.st_gid);
