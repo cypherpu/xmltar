@@ -1,12 +1,12 @@
 /*
- * XmltarMemberDirectory.hpp
+ * XmltarMemberCharacter.hpp
  *
- *  Created on: Nov 26, 2017
+ *  Created on: Jul 30, 2018
  *      Author: dbetz
  */
 
-#ifndef SRC_COMMON_XMLTAR_XMLTARMEMBERDIRECTORY_HPP_
-#define SRC_COMMON_XMLTAR_XMLTARMEMBERDIRECTORY_HPP_
+#ifndef SRC_COMMON_XMLTAR_XMLTARMEMBERCHARACTER_HPP_
+#define SRC_COMMON_XMLTAR_XMLTARMEMBERCHARACTER_HPP_
 
 #include "Xmltar/XmltarMember.hpp"
 #include "Options/XmltarOptions.hpp"
@@ -16,9 +16,9 @@ extern "C" {
 #include <sys/stat.h>
 }
 
-class XmltarMemberDirectory : public XmltarMember {
+class XmltarMemberCharacter : public XmltarMember {
 public:
-	XmltarMemberDirectory(XmltarOptions const & options, boost::filesystem::path const & filepath);
+	XmltarMemberCharacter(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
 	virtual void write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs) override;
 
@@ -37,4 +37,4 @@ public:
 	virtual void RecalculateMemberHeader() override;
 };
 
-#endif /* SRC_COMMON_XMLTAR_XMLTARMEMBERDIRECTORY_HPP_ */
+#endif /* SRC_COMMON_XMLTAR_XMLTARMEMBERCHARACTER_HPP_ */

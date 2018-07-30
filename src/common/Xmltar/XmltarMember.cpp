@@ -160,7 +160,7 @@ std::string XmltarMember::MemberHeader(){
 	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
 
 	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
-
+#if 0
     switch(f_type){
         case boost::filesystem::regular_file:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
@@ -201,7 +201,7 @@ std::string XmltarMember::MemberHeader(){
             throw "Archive_Member::Generate_Header: unable to stat file";
             break;
     }
-
+#endif
     return s;
 }
 
