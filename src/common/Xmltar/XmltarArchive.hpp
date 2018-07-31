@@ -8,12 +8,20 @@
 #ifndef SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_
 #define SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_
 
+extern "C" {
+#include <sys/stat.h>
+}
+
 #include <queue>
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
 #include "Xmltar/XmltarMemberRegularFile.hpp"
+#include "Xmltar/XmltarMemberBlock.hpp"
+#include "Xmltar/XmltarMemberCharacter.hpp"
 #include "Xmltar/XmltarMemberDirectory.hpp"
+#include "Xmltar/XmltarMemberFifo.hpp"
+#include "Xmltar/XmltarMemberSocket.hpp"
 #include "Xmltar/XmltarMemberSymLink.hpp"
 
 class PartialFileRead {
@@ -68,6 +76,17 @@ public:
 			return new XmltarMemberDirectory(options,filepath);
 		else if (boost::filesystem::is_symlink(filepath))
 			return new XmltarMemberSymLink(options,filepath);
+
+		struct stat statbuf;
+
+		if (S_ISBLK(statbuf.st_mode))
+			return new XmltarMemberSymLink(options,filepath);
+		else if (S_ISCHR(statbuf.st_mode))
+			return new XmltarMemberCharacter(options,filepath);
+		else if (S_ISFIFO(statbuf.st_mode))
+			return new XmltarMemberFifo(options,filepath);
+		else if (S_ISSOCK(statbuf.st_mode))
+			return new XmltarMemberSocket(options,filepath);
 		else
 			throw std::runtime_error("XmltarArchive::xmltarMemberFactory: unhandled file type");
 	}

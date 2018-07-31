@@ -30,9 +30,6 @@ public:
 	virtual bool CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression) override;
 	virtual bool IsComplete() override;
 	virtual boost::filesystem::path filepath() override;
-	virtual bool isDirectory() override;
-	virtual bool isSymLink() override;
-	virtual bool isRegularFile() override;
 	virtual size_t NextByte() override;
 	virtual void RecalculateMemberHeader() override;
 };

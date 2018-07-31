@@ -5,8 +5,8 @@
  *      Author: dbetz
  */
 
-#ifndef SRC_COMMON_XMLTAR_XMLTARSOCKET_HPP_
-#define SRC_COMMON_XMLTAR_XMLTARSOCKET_HPP_
+#ifndef SRC_COMMON_XMLTAR_XMLTARMEMBERSOCKET_HPP_
+#define SRC_COMMON_XMLTAR_XMLTARMEMBERSOCKET_HPP_
 
 #include "Xmltar/XmltarMember.hpp"
 #include "Options/XmltarOptions.hpp"
@@ -30,11 +30,8 @@ public:
 	virtual bool CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression) override;
 	virtual bool IsComplete() override;
 	virtual boost::filesystem::path filepath() override;
-	virtual bool isDirectory() override;
-	virtual bool isSymLink() override;
-	virtual bool isRegularFile() override;
 	virtual size_t NextByte() override;
 	virtual void RecalculateMemberHeader() override;
 };
 
-#endif /* SRC_COMMON_XMLTAR_XMLTARSOCKET_HPP_ */
+#endif /* SRC_COMMON_XMLTAR_XMLTARMEMBERSOCKET_HPP_ */

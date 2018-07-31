@@ -28,24 +28,6 @@ extern "C" {
 
 XmltarMemberRegularFile::XmltarMemberRegularFile(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: XmltarMember(options, filepath) {
-	// betz::Debug dbg("XmltarMember::XmltarMember");
-
-    f_stat=boost::filesystem::symlink_status(filepath_);
-
-    if (!boost::filesystem::exists(f_stat))
-        throw "Archive_Member::Archive_Member: source file does not exist: "+filepath_.string();
-
-    f_type=f_stat.type();
-
-    if (boost::filesystem::is_regular(f_stat))
-        file_size=boost::filesystem::file_size(filepath_);
-    else file_size=0;
-
-    if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
-        throw "Archive_Member:Archive_Member: cannot lstat file";
-
-    memberHeader_=MemberHeader();
-    memberTrailer_=MemberTrailer();
 }
 
 void XmltarMemberRegularFile::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
@@ -178,18 +160,6 @@ bool XmltarMemberRegularFile::IsComplete(){
 
 boost::filesystem::path XmltarMemberRegularFile::filepath(){
 	return filepath_;
-}
-
-bool XmltarMemberRegularFile::isDirectory(){
-	return f_type==boost::filesystem::file_type::directory_file;
-}
-
-bool XmltarMemberRegularFile::isSymLink(){
-	return f_type==boost::filesystem::file_type::symlink_file;
-}
-
-bool XmltarMemberRegularFile::isRegularFile(){
-	return f_type==boost::filesystem::file_type::regular_file;
 }
 
 size_t XmltarMemberRegularFile::NextByte(){

@@ -26,7 +26,7 @@ protected:
 protected:
 	XmltarOptions const  & options_;
 	boost::filesystem::path const filepath_;
-	struct stat stat_buf;
+	struct stat stat_buf_;
 	boost::filesystem::file_status f_stat;
 	boost::filesystem::file_type f_type;
 	off_t file_size;
@@ -51,9 +51,6 @@ public:
 	virtual bool CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression)=0;
 	virtual bool IsComplete();
 	virtual boost::filesystem::path filepath();
-	virtual bool isDirectory();
-	virtual bool isSymLink();
-	virtual bool isRegularFile();
 	virtual size_t NextByte();
 	virtual void RecalculateMemberHeader();
 };

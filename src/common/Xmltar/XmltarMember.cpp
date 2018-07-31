@@ -41,7 +41,7 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
         file_size=boost::filesystem::file_size(filepath_);
     else file_size=0;
 
-    if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
+    if (lstat(filepath_.string().c_str(),&stat_buf_)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
     populateXAttrs();
@@ -144,20 +144,20 @@ std::string XmltarMember::MemberHeader(){
 			+XmlEscapeAttribute(CppStringEscape(xAttrs_[i].name_))+"\" value=\""
 			+XmlEscapeAttribute(CppStringEscape(xAttrs_[i].value_))+"\"/>"+options_.Newline();
 
-	struct passwd *pw=getpwuid(stat_buf.st_uid);
-	struct group *g=getgrgid(stat_buf.st_gid);
+	struct passwd *pw=getpwuid(stat_buf_.st_uid);
+	struct group *g=getgrgid(stat_buf_.st_gid);
 
-	s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf_.st_mode)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf_.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf_.st_atime)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf_.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf_.st_ctime)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf_.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf_.st_mtime)+"\"/>"+options_.Newline();
 
-	s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
-	if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
-		s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf_.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf_.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
+	if (S_ISCHR(stat_buf_.st_mode) || S_ISBLK(stat_buf_.st_mode)){
+		s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf_.st_rdev)+"\"/>"+options_.Newline();
 	}
-	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
+	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf_.st_size)+"\"/>"+options_.Newline();
 
 	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 #if 0
@@ -260,18 +260,6 @@ bool XmltarMember::IsComplete(){
 
 boost::filesystem::path XmltarMember::filepath(){
 	return filepath_;
-}
-
-bool XmltarMember::isDirectory(){
-	return f_type==boost::filesystem::file_type::directory_file;
-}
-
-bool XmltarMember::isSymLink(){
-	return f_type==boost::filesystem::file_type::symlink_file;
-}
-
-bool XmltarMember::isRegularFile(){
-	return f_type==boost::filesystem::file_type::regular_file;
 }
 
 size_t XmltarMember::NextByte(){
