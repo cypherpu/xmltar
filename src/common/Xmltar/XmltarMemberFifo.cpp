@@ -46,7 +46,7 @@ void XmltarMemberFifo::write(std::shared_ptr<Transform> archiveCompression, size
 
 std::string XmltarMemberFifo::MemberHeader(){
     std::string s=XmltarMember::commonHeader();
-    s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t")+"<content type=\"fifo\"/>"+options_.Newline();
 
     return s;
 }

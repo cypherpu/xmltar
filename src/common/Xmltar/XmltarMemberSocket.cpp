@@ -46,7 +46,7 @@ void XmltarMemberSocket::write(std::shared_ptr<Transform> archiveCompression, si
 
 std::string XmltarMemberSocket::MemberHeader(){
     std::string s=XmltarMember::commonHeader();
-    s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t")+"<content type=\"socket\"/>"+options_.Newline();
 
     return s;
 }
