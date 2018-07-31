@@ -28,6 +28,7 @@ extern "C" {
 
 XmltarMemberBlock::XmltarMemberBlock(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: XmltarMember(options, filepath) {
+    memberTrailer_=MemberTrailer();
 }
 
 void XmltarMemberBlock::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){
@@ -46,7 +47,7 @@ void XmltarMemberBlock::write(std::shared_ptr<Transform> archiveCompression, siz
 
 std::string XmltarMemberBlock::MemberHeader(){
     std::string s=XmltarMember::commonHeader();
-    s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
+    s=s+options_.Tabs("\t\t\t")+"<content type=\"block\" rdev=\""+ToDecimalInt(stat_buf_.st_rdev)+"\"/>"+options_.Newline();
 
     return s;
 }

@@ -28,6 +28,7 @@ extern "C" {
 
 XmltarMemberDirectory::XmltarMemberDirectory(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: XmltarMember(options, filepath) {
+    memberTrailer_=MemberTrailer();
 }
 
 void XmltarMemberDirectory::write(std::shared_ptr<Transform> archiveCompression, size_t committedBytes, size_t pendingBytes, std::ostream & ofs){

@@ -47,7 +47,6 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
     populateXAttrs();
 
     memberHeader_=commonHeader();
-    memberTrailer_=MemberTrailer();
 }
 
 void XmltarMember::populateXAttrs(){
@@ -101,48 +100,7 @@ std::string XmltarMember::commonHeader(){
 	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf_.st_size)+"\"/>"+options_.Newline();
 
 	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
-#if 0
-    switch(f_type){
-        case boost::filesystem::regular_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
-            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
 
-            s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName();
-
-            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(nextByte_)+"\">"+options_.Newline();
-            break;
-        case boost::filesystem::directory_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::symlink_file:
-        {
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"symlink\">"+options_.Newline();
-            std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
-            if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
-                throw "Archive_Member::Generate_Metadata: symbolic link size changed";
-            s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+XmlEscapeAttribute(CppStringEscape(std::string(p.get(),stat_buf.st_size)))+"\"/>"+options_.Newline();
-        }
-            break;
-        case boost::filesystem::block_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"block\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::character_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"character\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::fifo_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"fifo\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::socket_file:
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"socket\"/>"+options_.Newline();
-            break;
-        case boost::filesystem::type_unknown:
-        case boost::filesystem::status_unknown:
-        case boost::filesystem::file_not_found:
-        default:
-            throw "Archive_Member::Generate_Header: unable to stat file";
-            break;
-    }
-#endif
     return s;
 }
 
