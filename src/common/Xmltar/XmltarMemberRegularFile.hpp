@@ -17,6 +17,7 @@ extern "C" {
 }
 
 class XmltarMemberRegularFile : public XmltarMember {
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 public:
 	XmltarMemberRegularFile(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
@@ -24,14 +25,7 @@ public:
 
 	virtual std::string MemberHeader() override;
 	virtual std::string MemberTrailer() override;
-	virtual std::string CompressedMemberHeader() override;
-	virtual std::string CompressedMemberTrailer() override;
-	virtual size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression) override;
 	virtual bool CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression) override;
-	virtual bool IsComplete() override;
-	virtual boost::filesystem::path filepath() override;
-	virtual size_t NextByte() override;
-	virtual void RecalculateMemberHeader() override;
 };
 
 

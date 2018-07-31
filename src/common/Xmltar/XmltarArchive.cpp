@@ -148,7 +148,7 @@ XmltarArchive::XmltarArchive(
 
 				nextMember_->write(archiveCompression,committedBytes, pendingBytes,ofs);
 				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
-				if (nextMember_->IsComplete())
+				if (nextMember_->completed())
 					nextMember_=NextMember();
 				else
 					nextMember_->RecalculateMemberHeader();

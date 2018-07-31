@@ -46,7 +46,7 @@ void XmltarMemberSymLink::write(std::shared_ptr<Transform> archiveCompression, s
 }
 
 std::string XmltarMemberSymLink::MemberHeader(){
-    std::string s=XmltarMember::MemberHeader();
+    std::string s=XmltarMember::commonHeader();
 
 	std::unique_ptr<char[]> p(new char[stat_buf_.st_size]);
 	if (readlink(filepath_.string().c_str(),p.get(),stat_buf_.st_size)!=stat_buf_.st_size)
@@ -64,39 +64,6 @@ std::string XmltarMemberSymLink::MemberTrailer(){
     return s;
 }
 
-std::string XmltarMemberSymLink::CompressedMemberHeader(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
-}
-
-std::string XmltarMemberSymLink::CompressedMemberTrailer(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
-}
-
-size_t XmltarMemberSymLink::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
-	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
-
-	if (options_.tape_length_.get()<committedBytes+pendingBytes)
-		throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");
-
-	size_t archiveBytes=options_.tape_length_.get()-committedBytes-pendingBytes;
-	size_t uncompressedArchiveBytes=archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
-	size_t uncompressedMemberBytes=options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes);
-	size_t encodedMemberBytes;
-	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedMemberBytes)
-		encodedMemberBytes=0;
-	else
-		encodedMemberBytes=options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedMemberBytes-memberHeader_.size()-memberTrailer_.size());
-	size_t precompressedBytes=options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
-
-	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
-	std::cerr << dbg << ": encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
-	std::cerr << dbg << ": precompressedBytes=" << precompressedBytes << std::endl;
-
-	return precompressedBytes;
-}
-
 bool XmltarMemberSymLink::CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
@@ -107,20 +74,3 @@ bool XmltarMemberSymLink::CanArchive(size_t committedBytes, size_t pendingBytes,
 
 	return numberOfFileBytesThatCanBeArchived;
 }
-
-bool XmltarMemberSymLink::IsComplete(){
-	return nextByte_==file_size;
-}
-
-boost::filesystem::path XmltarMemberSymLink::filepath(){
-	return filepath_;
-}
-
-size_t XmltarMemberSymLink::NextByte(){
-	return nextByte_;
-}
-
-void XmltarMemberSymLink::RecalculateMemberHeader(){
-	memberHeader_=MemberHeader();
-}
-

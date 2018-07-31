@@ -94,7 +94,7 @@ void XmltarMemberRegularFile::write(std::shared_ptr<Transform> archiveCompressio
 }
 
 std::string XmltarMemberRegularFile::MemberHeader(){
-    std::string s=XmltarMember::MemberHeader();
+    std::string s=XmltarMember::commonHeader();
 
 	s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
 	s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
@@ -115,14 +115,6 @@ std::string XmltarMemberRegularFile::MemberTrailer(){
     s=s+options_.Tabs("\t\t")+"</file>"+options_.Newline();
 
     return s;
-}
-
-std::string XmltarMemberRegularFile::CompressedMemberHeader(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
-}
-
-std::string XmltarMemberRegularFile::CompressedMemberTrailer(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
 }
 
 size_t XmltarMemberRegularFile::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
@@ -153,20 +145,3 @@ size_t XmltarMemberRegularFile::NumberOfFileBytesThatCanBeArchived(size_t commit
 bool XmltarMemberRegularFile::CanArchive(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	return NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression)!=0;
 }
-
-bool XmltarMemberRegularFile::IsComplete(){
-	return nextByte_==file_size;
-}
-
-boost::filesystem::path XmltarMemberRegularFile::filepath(){
-	return filepath_;
-}
-
-size_t XmltarMemberRegularFile::NextByte(){
-	return nextByte_;
-}
-
-void XmltarMemberRegularFile::RecalculateMemberHeader(){
-	memberHeader_=MemberHeader();
-}
-
