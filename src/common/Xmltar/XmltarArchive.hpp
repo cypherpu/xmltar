@@ -13,6 +13,7 @@ extern "C" {
 }
 
 #include <queue>
+#include <ios>
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
@@ -27,7 +28,7 @@ extern "C" {
 class PartialFileRead {
 public:
 	std::string filename_;
-	std::ios::streampos nextPositionToBeRead_;
+	std::streampos nextPositionToBeRead_;
 };
 
 class XmltarArchive {

@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "Xmltar/XmltarOptions.hpp"
+#include "Options/XmltarOptions.hpp"
 
 class Metadata {
 public:

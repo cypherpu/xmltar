@@ -252,8 +252,8 @@ public:
 
 class Option {
 public:
-	int number_of_times_assigned;
 	N_Args number_of_arguments;
+	int number_of_times_assigned;
 	std::string short_form;
 	std::string long_form;
 	std::string description;
@@ -263,8 +263,8 @@ public:
 	Option(N_Args nargs, std::string sf, std::string lf, std::string desc)
 		: number_of_arguments(nargs), number_of_times_assigned(0), short_form(sf), long_form(lf), description(desc) {
 	}
-	bool Matches(std::string){
-	}
+	//bool Matches(std::string){
+	//}
 
 	void Do_Actions(std::string s){
 		for(std::vector<Action *>::iterator i=actions.begin(); i!=actions.end(); ++i)
@@ -343,13 +343,14 @@ public:
 	void Add_Option(N_Args nargs, const char *sf, const char *lf, const char *desc, Action* a1){
 		std::string sfs(sf), lfs(lf), descs(desc);
 
-		if (sfs!="")
+		if (sfs!=""){
 			if (sfs.size()>2)
 				throw "Add_Option: short form option has too many characters";
 			else if (sfs.size()<2)
 				throw "Add_Option: short form option has too few characters";
 			else if (sfs[0]!='-')
 				throw "Add_Option: short form option must start with a '-'";
+		}
 
 		Option *p=new Option(nargs, sfs, lfs, descs);
 		p->actions.push_back(a1);
@@ -361,13 +362,14 @@ public:
 	void Add_Option(N_Args nargs, const char *sf, const char *lf, const char *desc, Action* a1, Action* a2, Action* a3){
 		std::string sfs(sf), lfs(lf), descs(desc);
 
-		if (sfs!="")
+		if (sfs!=""){
 			if (sfs.size()>2)
 				throw "Add_Option: short form option has too many characters";
 			else if (sfs.size()<2)
 				throw "Add_Option: short form option has too few characters";
 			else if (sfs[0]!='-')
 				throw "Add_Option: short form option must start with a '-'";
+		}
 
 		Option *p=new Option(nargs, sfs, lfs, descs);
 
@@ -382,13 +384,14 @@ public:
 	void Add_Option(N_Args nargs, const char *sf, const char *lf, const char *desc, Action* a1, Action* a2){
 		std::string sfs(sf), lfs(lf), descs(desc);
 
-		if (sfs!="")
+		if (sfs!=""){
 			if (sfs.size()>2)
 				throw "Add_Option: short form option has too many characters";
 			else if (sfs.size()<2)
 				throw "Add_Option: short form option has too few characters";
 			else if (sfs[0]!='-')
 				throw "Add_Option: short form option must start with a '-'";
+		}
 
 		Option *p=new Option(nargs, sfs, lfs, descs);
 		p->actions.push_back(a1);

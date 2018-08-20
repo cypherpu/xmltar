@@ -14,6 +14,29 @@ cc_binary(
 	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common"],
 	linkopts = [
 				"-lgtest",
+				"-lboost_filesystem",
+				"-lboost_system",
+				"-lxerces-c",
+				"-lexpat",
+				"-lboost_date_time"
+				]
+)
+
+cc_binary(
+	name = "xmltar",
+	srcs = ["src/xmltar.cpp"]
+			+glob(["src/common/**/*.cpp"] )
+			+glob(["src/common/**/*.hpp"])
+			,
+	includes = [],
+	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common"],
+	linkopts = [
+				"-lgtest",
+				"-lboost_filesystem",
+				"-lboost_system",
+				"-lxerces-c",
+				"-lexpat",
+				"-lboost_date_time"
 				]
 )
 

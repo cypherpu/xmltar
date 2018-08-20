@@ -70,10 +70,10 @@ public:
 		  archiveMemberCompression_(new TransformIdentity),
 		  archiveCompression_(new TransformIdentity),
           tape_length_(), stop_after_(),
-		  source_files_(), listed_incremental_file_(), compress_listed_incremental_file_(),
+		  listed_incremental_file_(), compress_listed_incremental_file_(),
 		  files_from_(), exclude_files_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
-		  base_xmltar_file_name_(), starting_sequence_number_(),
+		  base_xmltar_file_name_(), starting_sequence_number_(), source_files_(),
 		  current_xmltar_file_name_(), current_sequence_number_() { }
 
     void ProcessOptions(int argc, char const *argv[]);
