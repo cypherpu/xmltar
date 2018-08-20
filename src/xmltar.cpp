@@ -23,7 +23,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <boost/format.hpp>
 
-#include "common/Xmltar/XmltarInvocation.hpp"
+#include "Xmltar/XmltarInvocation.hpp"
 #include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Options/XmltarOptions.hpp"
