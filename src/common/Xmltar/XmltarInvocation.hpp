@@ -31,7 +31,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 
 #include "Options/XmltarOptions.hpp"
-//#include "Meta_Data_Ext4.hpp"
+#include "Meta_Data_Ext4.hpp"
 #include "Debug.hpp"
 #include "Utilities/PathCompare.hpp"
 

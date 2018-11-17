@@ -146,7 +146,7 @@ void Bidirectional_Pipe::Set_Child_Status(void){
     int waitpid_result=waitpid(child_pid_,&status,WNOHANG);
 
     if (waitpid_result<0){
-    	std::cerr << strerror(errno) << std::endl;
+    	std::cerr << sys_errlist[errno] << std::endl;
         throw "Bidirectional_Pipe::Set_Child_Status: unable to waitpid";
     }
     else if (waitpid_result==0) return;

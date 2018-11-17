@@ -22,8 +22,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef Incremental_File_hpp_
 #define Incremental_File_hpp_
 
-#if 0
-
 #include <string>
 #include <map>
 #include <fstream>
@@ -125,7 +123,5 @@ class Incremental_File {
 		}
 		void Insert_Into_Map(std::string, time_t);
 };
-
-#endif
 
 #endif /* Incremental_File_hpp_ */

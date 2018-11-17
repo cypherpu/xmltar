@@ -10,7 +10,7 @@
 
 #include <string>
 
-std::string XmlEscapeAttribute(std::string const data);
-std::string XmlUnescapeAttribute(std::string const data);
+std::string XMLEscapeAttribute(std::string const data);
+std::string XMLUnescapeAttribute(std::string const data);
 
 #endif /* SRC_COMMON_UTILITIES_XMLESCAPEATTRIBUTE_HPP_ */

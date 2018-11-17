@@ -20,7 +20,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <limits>
-#include <boost/filesystem.hpp>
 
 #include <boost/format.hpp>
 #include <boost/random.hpp>
@@ -58,6 +57,24 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
+	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToArchive(pathCompare);
+	if (options_.source_files_)
+		for(auto & i : options_.source_files_.get())
+			filesToArchive.push(i);
+	else if (options_.files_from_){
+		std::ifstream ifs(options_.files_from_.get().string());
+
+		if (ifs){
+			std::string line;
+			while(std::getline(ifs,line))
+				filesToArchive.push(boost::filesystem::path(line));
+		}
+		else
+			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
+	}
+	else
+		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
+
 	boost::optional<Snapshot> snapshot;
 	if (options_.listed_incremental_file_){
 		snapshot=Snapshot();
@@ -68,24 +85,6 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	}
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToArchive(pathCompare);
-		if (options_.source_files_)
-			for(auto & i : options_.source_files_.get())
-				filesToArchive.push(i);
-		else if (options_.files_from_){
-			std::ifstream ifs(options_.files_from_.get().string());
-
-			if (ifs){
-				std::string line;
-				while(std::getline(ifs,line))
-					filesToArchive.push(boost::filesystem::path(line));
-			}
-			else
-				throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
-		}
-		else
-			throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
-
 		if (options_.multi_volume_){
 			if (!options_.starting_sequence_number_)
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
@@ -143,7 +142,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	}
 	if (options_.operation_ && options_.operation_==XmltarOptions::EXTRACT){
 		if (!options_.starting_sequence_number_)
-			throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to extract multivolume archive");
+			throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
 
         if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
         size_t volumeNumber=options_.starting_sequence_number_.get();
@@ -154,8 +153,6 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
             fmt % volumeNumber;
             std::string filename=str(fmt);
 
-            std::cerr << "###########################################################" << std::endl;
-            if (!boost::filesystem::exists(filename)) break;
             XmltarArchive xmltarArchive(options_,filename, nextMember);
         }
 	}

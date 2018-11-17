@@ -22,10 +22,6 @@ extern "C" {
 #include <boost/random/random_device.hpp>
 #include <boost/random/uniform_int.hpp>
 
-extern "C" {
-#include <expat.h>
-}
-
 #include "Xmltar/XmltarArchive.hpp"
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/ToHexDigit.hpp"
@@ -39,27 +35,6 @@ extern "C" {
 #include "Transform/DMap.hpp"
 
 #include "../Debug2/Debug2.hpp"
-
-namespace {
-
-extern "C" {
-void StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
-	std::cerr << "Start Element: " << name << std::endl;
-	for(unsigned int i=0; atts[i]!=nullptr; ++i)
-		std::cerr << '\t' << atts[i] << std::endl;
-}
-
-void EndElementHandler(void *userData, const XML_Char *name){
-	std::cerr << "End Element: " << name << std::endl;
-}
-
-void CharacterDataHandler(void *userData, const XML_Char *s, int len){
-
-}
-
-}
-
-}
 
 class NonDeterministicRNG : public boost::random::random_device {
 public:
@@ -124,34 +99,114 @@ XmltarArchive::XmltarArchive(
 				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;
 				std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
-				if (!nextMember_->CanArchive(committedBytes, pendingBytes, archiveCompression)){
-					if (firstPass)
+				if (nextMember_->isDirectory()){
+					if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
+						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+						std::string compressedDirectoryMember
+							= options_.archiveMemberCompression_->CompressString(
+									tmp
+								);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						archiveCompression->Write(compressedDirectoryMember);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						nextMember_=NextMember();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+					}
+					else if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
-						// close the current compression run
 						ofs << archiveCompression->Close();
+						ofs.flush();
 						committedBytes+=archiveCompression->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
-						// check to see if this has freed up some room
-						if (nextMember_->CanArchive(committedBytes, pendingBytes, archiveCompression)){
-							// if some room has been freed, open up a new compression run
+						if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
 							archiveCompression.reset(archiveCompression->clone());
 							archiveCompression->OpenCompression();
 						}
 						else {
-							// if there is no more room in this archive, close the archive and open a new archive
-							ofs << CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
+							ofs << tmp;
+							ofs.flush();
 							return;
 						}
 					}
 				}
+				if (nextMember_->isSymLink()){
+					if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
+						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+						std::string compressedDirectoryMember
+							= options_.archiveMemberCompression_->CompressString(
+									tmp
+								);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						archiveCompression->Write(compressedDirectoryMember);
+						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						nextMember_=NextMember();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+					}
+					else if (firstPass)
+						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+					else {
+						ofs << archiveCompression->Close();
+						ofs.flush();
+						committedBytes+=archiveCompression->ReadCount();
+						pendingBytes=compressedArchiveTrailer.size();
+						if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
+							archiveCompression.reset(archiveCompression->clone());
+							archiveCompression->OpenCompression();
+						}
+						else {
+							std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+							std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
+							ofs << tmp;
+							ofs.flush();
+							return;
+						}
+					}
+				}
+				if (nextMember_->isRegularFile()){
+					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
+					if (numberOfFileBytesThatCanBeArchived==0)
+						if (firstPass)
+							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
+						else {	// close off this archiveCompression to free up space
+							ofs << archiveCompression->Close();
+							committedBytes+=archiveCompression->ReadCount();
+							pendingBytes=compressedArchiveTrailer.size();
+							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
+							std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
+							std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
+							std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
+							if (numberOfFileBytesThatCanBeArchived==0){
+								if (committedBytes+compressedArchiveTrailer.size()<=options_.tape_length_.get()){
+									std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
+									std::cerr << dbg << ": tmp.size()=" << tmp.size() << std::endl;
+									ofs << tmp;
+									ofs.flush();
 
-				nextMember_->write(archiveCompression,committedBytes, pendingBytes,ofs);
-				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
-				if (nextMember_->completed())
-					nextMember_=NextMember();
-				else
-					nextMember_->RecalculateMemberHeader();
+									return;
+								}
+								else
+									throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
+							}
+							else {
+								archiveCompression.reset(archiveCompression->clone());
+								archiveCompression->OpenCompression();
+							}
+						}
+
+					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
+					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+					if (nextMember_->IsComplete())
+						nextMember_=NextMember();
+					else
+						nextMember_->RecalculateMemberHeader();
+				}
+
 			}
 
 			ofs << archiveCompression->Close();
@@ -169,7 +224,7 @@ XmltarArchive::XmltarArchive(
 			else
 				throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 		}
-		else {	// !multi_volume
+		else {
 			std::ofstream ofs(filename_);
 			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
 			std::string minCompressedTrailer=CompressedArchiveTrailer();
@@ -189,7 +244,7 @@ XmltarArchive::XmltarArchive(
 					}
 				}
 
-				// xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
+				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
 			}
 		}
 }
@@ -201,71 +256,49 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 		if (options_.multi_volume_){
 			std:: ifstream ifs(filename);
 
-			std::cerr << "filename=" << filename << std::endl;
 			if (!ifs)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" cannot be read");
 
-			char buffer[2048];
-			ifs.read(buffer,sizeof(buffer));
+			char smallBuf[5];
+			ifs.read(smallBuf,sizeof(smallBuf));
 			if (!ifs)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" error or EOF");
 			if (ifs.gcount()!=5)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" too short");
-			std::string readSome(buffer,sizeof(buffer));
+			std::string bufString(smallBuf,sizeof(smallBuf));
 
-			std::cerr << "readSome.substr(0,5)=" << readSome.substr(0,5) << " TransformIdentity::StaticHeaderMagicNumber(\"<?xml\")=" << TransformIdentity::StaticHeaderMagicNumber("<?xml") << std::endl;
 			std::vector<std::shared_ptr<Transform>> transformations;
-			if (readSome.substr(0,5)==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformIdentity>());
-			else if (readSome.substr(0,2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (bufString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformGzip>());
-			else if (readSome.substr(0,3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (bufString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformBzip2>());
-			else if (readSome.substr(0,5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (bufString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
 
 			transformations[0]->OpenDecompression();
-			transformations[0]->Write(readSome);
-			readSome=transformations[0]->Read();
-			while(ifs && readSome.size()<5){
+			transformations[0]->Write(bufString);
+			char buffer[2014];
+			std::string readString=transformations[0]->Read();
+			while(ifs && readString.size()<5){
 				ifs.read(buffer,sizeof(buffer));
 				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				readSome+=transformations[0]->Read();
+				readString=transformations[0]->Read();
 			}
 
-			if (readSome.size()<5)
+			if (readString.size()<5)
 				throw std::runtime_error("XmltarArchive::XmltarArchive: readString.size()<5");
-			if (readSome.substr(0,5)==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
+			if (readString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformIdentity>());
-			else if (readSome.substr(0,2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformGzip>());
-			else if (readSome.substr(0,3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformBzip2>());
-			else if (readSome.substr(0,5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
+			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
-
-			transformations[1]->OpenDecompression();
-			transformations[1]->Write(readSome);
-
-			XML_Parser parser=XML_ParserCreate(nullptr);
-			XML_SetUserData(parser,this);
-			XML_SetStartElementHandler(parser,StartElementHandler);
-			XML_SetEndElementHandler(parser,EndElementHandler);
-			XML_SetCharacterDataHandler(parser,CharacterDataHandler);
-
-			while(ifs){
-				ifs.read(buffer,sizeof(buffer));
-				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				transformations[1]->Write(transformations[0]->Read());
-				readSome=transformations[1]->Read();
-				if (XML_Parse(parser,readSome.c_str(),readSome.size(),false) == XML_STATUS_ERROR) {
-					std::cerr << XML_ErrorString(XML_GetErrorCode(parser)) << " " << XML_GetCurrentLineNumber(parser) << std::endl;
-					throw std::runtime_error("parse error");
-				}
-			}
-
 		}
-		else {	// !options_.multivolume
+		else {
 		}
 }
 
@@ -427,11 +460,7 @@ std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int arc
 
 std::string XmltarArchive::ArchiveTrailerBegin(){
     std::string s
-		=
-		options_.Tabs("\t\t\t\t")+"</stream>"+options_.Newline()
-		+options_.Tabs("\t\t\t\t")+"</content>"+options_.Newline()
-		+options_.Tabs("\t\t\t")+"</file>"+options_.Newline()
-		+options_.Tabs("\t")+"</members>"+options_.Newline()
+		=options_.Tabs("\t")+"</members>"+options_.Newline()
 		+options_.Tabs("\t")+"<padding>";
 
     return s;
