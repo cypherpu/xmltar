@@ -31,8 +31,13 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 
 #include "Options/XmltarOptions.hpp"
+<<<<<<< HEAD
 #include "Meta_Data_Ext4.hpp"
 #include "Debug.hpp"
+=======
+//#include "Meta_Data_Ext4.hpp"
+#include "Debug/Debug.hpp"
+>>>>>>> refs/remotes/origin/dev
 #include "Utilities/PathCompare.hpp"
 
 class XmltarInvocation {

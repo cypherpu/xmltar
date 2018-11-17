@@ -22,7 +22,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 
-#include "Conversions.hpp"
+#include "Include/Conversions.hpp"
 
 int String_To_Integer(std::string s){
 	int result=0;

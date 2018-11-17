@@ -9,6 +9,7 @@
 #define SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_
 
 #include <queue>
+#include <ios>
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
@@ -17,7 +18,7 @@
 class PartialFileRead {
 public:
 	std::string filename_;
-	std::ios::streampos nextPositionToBeRead_;
+	std::streampos nextPositionToBeRead_;
 };
 
 class XmltarArchive {

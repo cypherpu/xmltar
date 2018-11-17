@@ -25,7 +25,7 @@ extern "C" {
 #include "Xmltar/XmltarArchive.hpp"
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/ToHexDigit.hpp"
-#include "Bidirectional_Pipe.hpp"
+#include "Generated/Bidirectional_Pipe.hpp"
 
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"
@@ -52,7 +52,7 @@ public:
 		: c_(c), offset_(offset){}
 
 	CBEntry(std::fstream & iofs){
-		std::ios::off_type offset__=iofs.tellg();
+		std::ios::off_type offset_=iofs.tellg();
 		iofs.get(c_);
 	}
 };
@@ -64,12 +64,12 @@ XmltarArchive::XmltarArchive(
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
 	std::shared_ptr<XmltarMember> & nextMember
 )
-	: options_(opts), volumeNumber_(volumeNumber), filename_(filename), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
+	: options_(opts), filename_(filename), volumeNumber_(volumeNumber), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
 
-	if (options_.operation_.get()==XmltarOptions::Operation::CREATE)
+	if (options_.operation_.get()==XmltarOptions::Operation::CREATE){
 		if (options_.multi_volume_){
 			if (!options_.tape_length_)
 				throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
@@ -247,10 +247,11 @@ XmltarArchive::XmltarArchive(
 				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
 			}
 		}
+	}
 }
 
 XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
-: options_(opts), volumeNumber_(0), filename_(filename), filesToBeArchived_(nullptr), nextMember_(nextMember)
+: options_(opts), filename_(filename), volumeNumber_(0), filesToBeArchived_(nullptr), nextMember_(nextMember)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT)
 		if (options_.multi_volume_){
