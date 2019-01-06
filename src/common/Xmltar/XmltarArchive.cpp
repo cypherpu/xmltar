@@ -170,7 +170,7 @@ XmltarArchive::XmltarArchive(
 				if (nextMember_->isRegularFile()){
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
-					if (numberOfFileBytesThatCanBeArchived==0)
+					if (numberOfFileBytesThatCanBeArchived==0){
 						if (firstPass)
 							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
 						else {	// close off this archiveCompression to free up space
@@ -198,6 +198,7 @@ XmltarArchive::XmltarArchive(
 								archiveCompression->OpenCompression();
 							}
 						}
+					}
 
 					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
 					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
@@ -225,10 +226,21 @@ XmltarArchive::XmltarArchive(
 				throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
 		}
 		else {
-			std::ofstream ofs(filename_);
-			std::string compressedHeader=CompressedArchiveHeader(filename_,volumeNumber);
-			std::string minCompressedTrailer=CompressedArchiveTrailer();
+			// if (options_.operation_.get()==XmltarOptions::Operation::CREATE){
+			//	if (!options_.multi_volume_){
 
+			std::cerr << "XmlmtarArchive::XmltarArchive: starting archive **********" << std::endl;
+			std::ostream *ofs;
+			std::ofstream outputFileStream;
+			if (filename_=="-")
+				ofs=&std::cout;
+			else {
+				outputFileStream.open(filename);
+				ofs=&outputFileStream;
+			}
+			std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
+			archiveCompression->OpenCompression();
+			*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 			std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived->size() << std::endl;
 			std::shared_ptr<XmltarMember> xmltarMember;
 			for( ; filesToBeArchived->size(); ){
@@ -245,7 +257,10 @@ XmltarArchive::XmltarArchive(
 				}
 
 				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
+				xmltarMember->write(archiveCompression, std::numeric_limits<size_t>::max(), *ofs);
 			}
+			*ofs << archiveCompression->Close();
+			*ofs << CompressedArchiveTrailer();
 		}
 	}
 }
@@ -253,7 +268,7 @@ XmltarArchive::XmltarArchive(
 XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
 : options_(opts), filename_(filename), volumeNumber_(0), filesToBeArchived_(nullptr), nextMember_(nextMember)
 {
-	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT)
+	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
 		if (options_.multi_volume_){
 			std:: ifstream ifs(filename);
 
@@ -301,6 +316,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 		}
 		else {
 		}
+	}
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

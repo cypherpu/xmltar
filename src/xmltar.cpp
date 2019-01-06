@@ -36,6 +36,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char const *argv[])
 {
 	try {
+		/*
 		TransformIdentity transformIdentity;
 		TransformGzip transformGzip;
 		TransformBzip2 transformBzip2;
@@ -52,7 +53,7 @@ int main(int argc, char const *argv[])
 
 		if (!transformLzip.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'lzip' command");
-
+		*/
 		XmltarOptions options;
 		options.ProcessOptions(argc, argv);
 

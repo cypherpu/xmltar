@@ -73,7 +73,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 			encoding->Write(precompression->Read());
 			tmp=encoding->Read();
 			encoded+=tmp;
-			//std::cerr << "tmp=" << tmp << std::endl;
+			std::cerr << "tmp=" << tmp << std::endl;
 			memberCompression->Write(tmp);
 			archiveCompression->Write(memberCompression->Read());
 			ofs << archiveCompression->Read();
@@ -91,10 +91,10 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": 4" << std::endl;
 		std::string tmp2=memberCompression->Close();
 		std::cerr << dbg << ": 4.5" << std::endl;
-		archiveCompression->Write(tmp);
+		archiveCompression->Write(tmp2);
 		std::cerr << dbg << ": 5" << std::endl;
 
-		// std::cerr << tmp << std::endl;
+		// std::cerr << tmp2 << std::endl;
 		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": 6" << std::endl;
 		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;
