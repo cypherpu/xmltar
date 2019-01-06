@@ -52,7 +52,7 @@ public:
 		: c_(c), offset_(offset){}
 
 	CBEntry(std::fstream & iofs){
-		std::ios::off_type offset_=iofs.tellg();
+		offset_=iofs.tellg();
 		iofs.get(c_);
 	}
 };

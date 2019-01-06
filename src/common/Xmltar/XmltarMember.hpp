@@ -29,7 +29,14 @@ class XmltarMember {
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 
-	bool completed(){ return nextByte_>=file_size; }
+	bool completed(){
+		// nextByte_ (size_t) is unsigned
+		// file_size (off_t) is signed
+		if (file_size<0)
+			throw std::logic_error("");
+		else
+			return nextByte_>=(size_t) file_size;
+	}
 	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
 	size_t MemberSize();
@@ -42,7 +49,14 @@ public:
 	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool IsComplete(){ return nextByte_==file_size; }
+	bool IsComplete(){
+		// nextByte_ (size_t) is unsigned
+		// file_size (off_t) is signed
+		if (file_size<0)
+			throw std::logic_error("");
+		else
+			return nextByte_==(size_t) file_size;
+	}
 	boost::filesystem::path filepath(){ return filepath_; }
 	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
 	bool isSymLink(){ return f_type==boost::filesystem::file_type::symlink_file; }

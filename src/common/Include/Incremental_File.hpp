@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
+#if 0
 #ifndef Incremental_File_hpp_
 #define Incremental_File_hpp_
 
@@ -125,3 +125,4 @@ class Incremental_File {
 };
 
 #endif /* Incremental_File_hpp_ */
+#endif

@@ -49,7 +49,7 @@ std::string XMLUnscapeAttribute(std::string const data) {
     for(size_t i = 0; i != data.size(); )
     	if (data[i]=='&'){
     		size_t j;
-    		for(size_t j=0; i<sizeof(entities); ++j)
+    		for( j=0; i<sizeof(entities); ++j)
     			if (data.size()>=entities[j].entity_.size() && !data.compare(0,entities[j].entity_.size(),entities[j].entity_)){
     				buffer.append(&entities[i].c_,1);
     				break;

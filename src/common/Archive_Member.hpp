@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
+#if 0
 #ifndef Archive_Member_hpp_
 #define Archive_Member_hpp_
 
@@ -105,3 +105,4 @@ class Archive_Member {
 };
 
 #endif /*Archive_Member_hpp_*/
+#endif

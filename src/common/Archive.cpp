@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+#if 0
 
 #include "Archive.hpp"
 
@@ -349,4 +350,4 @@ void Archive::Close_Transitbuf(void){
 
 void Archive::Write_Archive_Header(void){
 }
-
+#endif

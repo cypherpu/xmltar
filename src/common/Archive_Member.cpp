@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
+#if 0
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Utilities/ToLocalTime.hpp"
@@ -199,3 +199,4 @@ size_t Archive_Member::Delta_Encoded_Length(size_t n, bool include_header){
 
     return result;
 }
+#endif
