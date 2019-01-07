@@ -159,7 +159,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		}
 		else {
 			std::shared_ptr<XmltarMember> nextMember;
-			XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_, nextMember);
+			XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), nextMember);
 		}
 	}
 
