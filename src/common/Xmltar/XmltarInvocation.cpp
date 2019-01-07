@@ -42,19 +42,19 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (options_.operation_==XmltarOptions::EXTRACT) std::cerr << "Operation=EXTRACT" << std::endl;
 		std::cerr << "verbosity=" << options_.verbosity_.get() << std::endl;
 		if (options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
-		std::cerr << "starting_sequence_number=" << options_.starting_sequence_number_.get() << std::endl;
-		std::cerr << "tape length=" << options_.tape_length_.get() << std::endl;
-		std::cerr << "stop after=" << options_.stop_after_.get() << std::endl;
+		if (options_.starting_sequence_number_) std::cerr << "starting_sequence_number=" << options_.starting_sequence_number_.get() << std::endl;
+		if (options_.tape_length_) std::cerr << "tape length=" << options_.tape_length_.get() << std::endl;
+		if (options_.stop_after_) std::cerr << "stop after=" << options_.stop_after_.get() << std::endl;
 		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_.get() << std::endl;
-		std::cerr << "Source file size=" << options_.source_files_.get().size() << std::endl;
+		if (options_.source_files_) std::cerr << "Source file size=" << options_.source_files_.get().size() << std::endl;
 		if (options_.exclude_files_)
 			for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files_.get().begin(); i!=options_.exclude_files_.get().end(); ++i)
 				std::cerr << "Exclude file=" << *i << std::endl;
 		if (options_.source_files_)
 			for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i)
 				std::cerr << "Source file=" << *i << std::endl;
-		std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
-		std::cerr << "files from=" << options_.files_from_.get() << std::endl;
+		if (options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
+		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
 	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToArchive(pathCompare);
@@ -72,7 +72,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
 	}
-	else
+	else if (options_.operation_==XmltarOptions::CREATE || options_.operation_==XmltarOptions::APPEND)
 		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 	boost::optional<Snapshot> snapshot;
@@ -141,20 +141,26 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		*/
 	}
 	if (options_.operation_ && options_.operation_==XmltarOptions::EXTRACT){
-		if (!options_.starting_sequence_number_)
-			throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
+		if (options_.multi_volume_){
+			if (!options_.starting_sequence_number_)
+				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
 
-        if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
-        size_t volumeNumber=options_.starting_sequence_number_.get();
-        std::shared_ptr<XmltarMember> nextMember;
+			if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
+			size_t volumeNumber=options_.starting_sequence_number_.get();
+			std::shared_ptr<XmltarMember> nextMember;
 
-        for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
-            boost::format fmt(options_.base_xmltar_file_name_.get());
-            fmt % volumeNumber;
-            std::string filename=str(fmt);
+			for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
+				boost::format fmt(options_.base_xmltar_file_name_.get());
+				fmt % volumeNumber;
+				std::string filename=str(fmt);
 
-            XmltarArchive xmltarArchive(options_,filename, nextMember);
-        }
+				XmltarArchive xmltarArchive(options_,filename, nextMember);
+			}
+		}
+		else {
+			std::shared_ptr<XmltarMember> nextMember;
+			XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_, nextMember);
+		}
 	}
 
 #if 0
