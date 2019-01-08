@@ -34,6 +34,11 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 
+#include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/sax2/SAX2XMLReader.hpp>
+#include <xercesc/sax2/XMLReaderFactory.hpp>
+#include <xercesc/util/XMLString.hpp>
+
 #include "../Debug2/Debug2.hpp"
 
 class NonDeterministicRNG : public boost::random::random_device {
@@ -361,6 +366,8 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				transformations.push_back(std::make_shared<TransformLzip>());
 
 			std::cerr << "readString=" << readString << std::endl;
+
+
 		}
 	}
 }

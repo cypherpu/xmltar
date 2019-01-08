@@ -11,15 +11,20 @@
 #include <string>
 #include <vector>
 
-#include <xercesc/sax2/DefaultHandler.hpp>
+extern "C" {
+#include <expat.h>
+
+static void XMLCALL startElementCallback(void *userData, const XML_Char *name, const XML_Char **atts);
+static void XMLCALL endElementCallback(void *userData, const XML_Char *name);
+}
 
 class XmltarArchive;
 
-class XmltarArchiveHandler : public xercesc::DefaultHandler
+class XmltarArchiveHandler
 {
 	XmltarArchive & xmltarArchive_;
 	std::vector<std::string> elementNameStack_;
-	std::vector<std::vector<XMLCh>> characterDataStack_;
+	std::vector<std::string> characterDataStack_;
 
 	std::vector<std::string> optionsStack_;
 public:
@@ -27,12 +32,8 @@ public:
 		: xmltarArchive_(xmltarArchive){}
 	virtual ~XmltarArchiveHandler(){}
 
-	void startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs);
-	void endElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname);
-	void characters(const XMLCh* const chars, const XMLSize_t length);
-	void fatalError(const xercesc::SAXParseException&);
-
-	std::vector<char const *> optionsArgv();
+	void startElement(std::string const & name, std::vector<std::string> const & attributes);
+	void endElement(std::string const & name);
 };
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVEHANDLER_HPP_ */
