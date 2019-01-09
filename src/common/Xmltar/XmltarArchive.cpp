@@ -34,10 +34,7 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 
-#include <xercesc/parsers/SAXParser.hpp>
-#include <xercesc/sax2/SAX2XMLReader.hpp>
-#include <xercesc/sax2/XMLReaderFactory.hpp>
-#include <xercesc/util/XMLString.hpp>
+#include "XmltarArchiveHandler.hpp"
 
 #include "../Debug2/Debug2.hpp"
 
@@ -332,7 +329,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			if (ifs.gcount()!=5)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" too short");
 			std::string bufString(smallBuf,sizeof(smallBuf));
-			std::cerr << "bufString=" << bufString << std::endl;
+			// std::cerr << "bufString=" << bufString << std::endl;
 
 			std::vector<std::shared_ptr<Transform>> transformations;
 			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
@@ -365,9 +362,24 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>());
 
-			std::cerr << "readString=" << readString << std::endl;
+			// std::cerr << "readString=" << readString << std::endl;
 
+			XmltarArchiveHandler archiveParser(*this);
+			archiveParser.Parse(readString,false);
 
+			while(ifs){
+				ifs.read(buffer,sizeof(buffer));
+				transformations[0]->Write(std::string(buffer,ifs.gcount()));
+				transformations[1]->Write(transformations[0]->Read());
+				readString=transformations[1]->Read();
+				// std::cerr << readString;
+				archiveParser.Parse(readString,false);
+			}
+
+			transformations[1]->Write(transformations[0]->Close());
+			readString=transformations[1]->Close();
+			// std::cerr << readString;
+			archiveParser.Parse(readString,true);
 		}
 	}
 }

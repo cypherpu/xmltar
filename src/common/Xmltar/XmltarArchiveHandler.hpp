@@ -11,12 +11,7 @@
 #include <string>
 #include <vector>
 
-extern "C" {
 #include <expat.h>
-
-static void XMLCALL startElementCallback(void *userData, const XML_Char *name, const XML_Char **atts);
-static void XMLCALL endElementCallback(void *userData, const XML_Char *name);
-}
 
 class XmltarArchive;
 
@@ -27,13 +22,27 @@ class XmltarArchiveHandler
 	std::vector<std::string> characterDataStack_;
 
 	std::vector<std::string> optionsStack_;
-public:
-	XmltarArchiveHandler(XmltarArchive & xmltarArchive)
-		: xmltarArchive_(xmltarArchive){}
-	virtual ~XmltarArchiveHandler(){}
 
-	void startElement(std::string const & name, std::vector<std::string> const & attributes);
-	void endElement(std::string const & name);
+	XML_Parser parser_;
+public:
+	XmltarArchiveHandler(XmltarArchive & xmltarArchive);
+
+	void Parse(std::string const & buff, bool done){
+		std::cerr << "Parsing \"" << buff << "\"" << std::endl;
+		if (XML_Parse(parser_, buff.c_str(), buff.size(), done) == XML_STATUS_ERROR) {
+			std::cerr << "Error: " << XML_ErrorString(XML_GetErrorCode(parser_))
+						<< " at " << XML_GetCurrentLineNumber(parser_) << std::endl;
+			exit(-1);
+		}
+	}
+
+	virtual ~XmltarArchiveHandler(){
+		XML_ParserFree(parser_);
+	}
+
+	void startElement(const XML_Char *name, const XML_Char **atts);
+	void endElement(const XML_Char *name);
+	void characterData(XML_Char const *s, int len);
 };
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVEHANDLER_HPP_ */

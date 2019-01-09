@@ -12,16 +12,40 @@
 #include "Xmltar/XmltarArchiveHandler.hpp"
 #include "Xmltar/XmltarArchive.hpp"
 
-void XmltarArchiveHandler::startElement(std::string const & name, std::vector<std::string> const & attributes){
-	elementNameStack_.push_back(name);
-	characterDataStack_.push_back("");
+extern "C" void XMLCALL StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
+	((XmltarArchiveHandler *) userData)->startElement(name,atts);
 }
 
-void XmltarArchiveHandler::endElement(std::string const & name){
+extern "C" void XMLCALL EndElementHandler(void *userData, const XML_Char *name){
+	((XmltarArchiveHandler *) userData)->endElement(name);
+}
+
+extern "C" void XMLCALL CharacterDataHandler(void *userData, XML_Char const *s, int len){
+	((XmltarArchiveHandler *) userData)->characterData(s,len);
+}
+
+XmltarArchiveHandler::XmltarArchiveHandler(XmltarArchive & xmltarArchive)
+	: xmltarArchive_(xmltarArchive){
+
+	parser_ = XML_ParserCreate(NULL);
+	XML_SetUserData(parser_, this);
+    XML_SetElementHandler(parser_, StartElementHandler, EndElementHandler);
+    XML_SetCharacterDataHandler(parser_, CharacterDataHandler);
+}
+
+void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **atts){
+	elementNameStack_.push_back(name);
+	characterDataStack_.push_back("");
+
+	std::cerr << std::string('\t',elementNameStack_.size()) << "<" << name << ">" << std::endl;
+}
+
+void XmltarArchiveHandler::endElement(const XML_Char *name){
+	std::cerr << std::string('\t',elementNameStack_.size()) << "</" << name << ">" << std::endl;
+
 	characterDataStack_.pop_back();
 	elementNameStack_.pop_back();
 }
 
-void XmltarArchiveHandler::characters(std::string const & chars){
-	characterDataStack_.back()+=chars;
+void XmltarArchiveHandler::characterData(XML_Char const *s, int len){
 }

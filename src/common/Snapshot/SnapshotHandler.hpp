@@ -11,15 +11,13 @@
 #include <string>
 #include <vector>
 
-#include <xercesc/sax2/DefaultHandler.hpp>
-
 class Snapshot;
 
-class SnapshotHandler : public xercesc::DefaultHandler
+class SnapshotHandler
 {
 	Snapshot & snapshot_;
 	std::vector<std::string> elementNameStack_;
-	std::vector<std::vector<XMLCh>> characterDataStack_;
+	std::vector<std::vector<char>> characterDataStack_;
 
 	std::vector<std::string> optionsStack_;
 public:
@@ -27,10 +25,9 @@ public:
 		: snapshot_(snapshot){}
 	virtual ~SnapshotHandler(){}
 
-	void startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs);
-	void endElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname);
-	void characters(const XMLCh* const chars, const XMLSize_t length);
-	void fatalError(const xercesc::SAXParseException&);
+	void startElement(const char * const uri, const char * const localname, const char * const qname, const char **attrs);
+	void endElement(const char * const uri, const char * const localname, const char * const qname);
+	void characters(const char * const chars, const size_t length);
 
 	std::vector<char const *> optionsArgv();
 };
