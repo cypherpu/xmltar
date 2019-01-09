@@ -34,7 +34,7 @@ std::string XMLEscapeAttribute(std::string const data) {
             case '\'': buffer.append("&apos;");      break;
             case '<':  buffer.append("&lt;");        break;
             case '>':  buffer.append("&gt;");        break;
-            case '\x00':  buffer.append("&#00;");        break;
+            case '\x00':  buffer.append("\\000");        break;
             default:   buffer.append(&data[i], 1); break;
         }
     }
