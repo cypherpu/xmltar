@@ -17,12 +17,29 @@ class XmltarArchive;
 
 class XmltarArchiveHandler
 {
+	class Element {
+	public:
+		class Attribute {
+		public:
+			std::string name_;
+			std::string value_;
+
+			Attribute(char const *name, char const *value)
+				: name_(name), value_(value) {}
+		};
+		std::string name_;
+		std::vector<Attribute> attributes_;
+		std::string characterData_;
+
+		Element(const XML_Char *name, const XML_Char **atts)
+			: name_(name) {
+			for(size_t i=0; atts[i]!=nullptr; i+=2)
+				attributes_.push_back(Attribute(atts[i],atts[i+1]));
+		}
+	};
+
 	XmltarArchive & xmltarArchive_;
-	std::vector<std::string> elementNameStack_;
-	std::vector<std::string> characterDataStack_;
-
-	std::vector<std::string> optionsStack_;
-
+	std::vector<Element> elements_;
 	XML_Parser parser_;
 public:
 	XmltarArchiveHandler(XmltarArchive & xmltarArchive);

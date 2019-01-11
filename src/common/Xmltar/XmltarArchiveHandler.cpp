@@ -34,17 +34,15 @@ XmltarArchiveHandler::XmltarArchiveHandler(XmltarArchive & xmltarArchive)
 }
 
 void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **atts){
-	elementNameStack_.push_back(name);
-	characterDataStack_.push_back("");
+	elements_.push_back(Element(name,atts));
 
-	std::cerr << std::string('\t',elementNameStack_.size()) << "<" << name << ">" << std::endl;
+	std::cerr << std::string('\t',elements_.size()) << "<" << name << ">" << std::endl;
 }
 
 void XmltarArchiveHandler::endElement(const XML_Char *name){
-	std::cerr << std::string('\t',elementNameStack_.size()) << "</" << name << ">" << std::endl;
+	std::cerr << std::string('\t',elements_.size()) << "</" << name << ">" << std::endl;
 
-	characterDataStack_.pop_back();
-	elementNameStack_.pop_back();
+	elements_.pop_back();
 }
 
 void XmltarArchiveHandler::characterData(XML_Char const *s, int len){
