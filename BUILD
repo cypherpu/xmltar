@@ -18,7 +18,9 @@ cc_binary(
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
-				"-lboost_date_time"
+				"-lboost_date_time",
+				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
+				"-lstdc++fs"
 				]
 )
 
@@ -36,7 +38,9 @@ cc_binary(
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
-				"-lboost_date_time"
+				"-lboost_date_time",
+				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
+				"-lstdc++fs"
 				]
 )
 
