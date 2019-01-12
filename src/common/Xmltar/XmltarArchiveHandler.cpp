@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <boost/lexical_cast.hpp>
+#include <filesystem>
 
 #include "Xmltar/XmltarArchiveHandler.hpp"
 #include "Xmltar/XmltarArchive.hpp"
@@ -35,6 +36,19 @@ XmltarArchiveHandler::XmltarArchiveHandler(XmltarArchive & xmltarArchive)
 
 void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **atts){
 	elements_.push_back(Element(name,atts));
+
+	if (elements_.back().name_=="file")
+		if (elements_.size()!=3) throw std::domain_error("XmltarArchiveHandler::startElement: \"file\" wrong nesting level");
+		else if (elements_.end()[-2].name_!="members") throw std::domain_error("XmltarArchiveHandler::startElement \"members\" not parent of \"file\"");
+		else if (elements_.back().attributes_.find("name")==elements_.back().attributes_.end())
+			throw std::domain_error("XmltarArchiveHandler::startElement: \"file\" missing name attribute");
+
+	if (elements_.back().name_=="content")
+		if (elements_.size()!=4) throw std::domain_error("XmltarArchiveHandler::startElement: \"content\" wrong nesting level");
+		else if (elements_.end()[-2].name_!="file") throw std::domain_error("XmltarArchiveHandler::startElement \"file\" not parent of \"content\"");
+
+	if (elements_.back().name_=="content")
+		std::filesystem::create_directories(elements_.end()[-2].attributes_["name"]);
 
 	std::cerr << std::string('\t',elements_.size()) << "<" << name << ">" << std::endl;
 }
