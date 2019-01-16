@@ -248,8 +248,8 @@ void Bidirectional_Pipe::Select_Blocking(unsigned int microseconds){
 
 Bidirectional_Pipe::Bidirectional_Pipe(void)
     : parent_to_child_stdin_(-1), child_stdout_to_parent_(-1), child_stderr_to_parent_(-1),
-	  childState_(ChildState::NOT_STARTED), read1_count(0), read2_count(0), write_count(0), queued_write_count(0),
-	  pipeRead1Count_(0), pipeRead2Count_(0),
+	  childState_(ChildState::NOT_STARTED), read1_count(0), read2_count(0), write_count(0),
+	  pipeRead1Count_(0), pipeRead2Count_(0), queued_write_count(0),
 	  read1DescriptorState_(DescriptorState::NOT_OPENED), read2DescriptorState_(DescriptorState::NOT_OPENED), writeDescriptorState_(DescriptorState::NOT_OPENED),
 	  writeCloseWhenEmpty_(false){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Bidirectional_Pipe()");
@@ -321,24 +321,6 @@ void Bidirectional_Pipe::Print_Args(void){
             std::cerr << saved_args[i] << " ";
 }
 
-bool Bidirectional_Pipe::sss_Can_Read1(void){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Can_Read1()");
-
-    return sss_read1Deque_.size()>0;
-}
-
-bool Bidirectional_Pipe::sss_Can_Read2(void){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Can_Read2()");
-
-    return sss_read2Deque_.size()>0;
-}
-
-bool Bidirectional_Pipe::sss_Can_Write(void){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Can_Write()");
-
-    return writeDescriptorState_==DescriptorState::OPENED_WRITABLE;	// FIXME
-}
-
 bool Bidirectional_Pipe::Can_Read1(void){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Can_Read1()");
 
@@ -386,13 +368,6 @@ void Bidirectional_Pipe::Write(){
     // std::cerr << "w=" << result << " ";
 }
 
-void Bidirectional_Pipe::sss_Write(std::string const & data){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Write()");
-
-    sss_writeDeque_.push_back(data);
-    queued_write_count+=data.size();
-}
-
 void Bidirectional_Pipe::QueueWrite(char const c){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
@@ -404,13 +379,6 @@ void Bidirectional_Pipe::QueueWrite(char const *c, int n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
 
     writeBuffer_+=std::string(c,n);
-    queued_write_count+=n;
-}
-
-void Bidirectional_Pipe::sss_Write(char const *c, int n){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
-
-    sss_writeDeque_.push_back(std::string(c,n));
     queued_write_count+=n;
 }
 
@@ -442,32 +410,6 @@ std::string Bidirectional_Pipe::Read1(size_t n){
     return std::string(buf,result);
 }
 
-std::string Bidirectional_Pipe::sss_Read1(){
-	std::string result;
-
-	if (sss_read1Deque_.size()>0){
-		result=sss_read1Deque_[0];
-		sss_read1Deque_.pop_front();
-	}
-
-	pipeRead1Count_+=result.size();
-
-	return result;
-}
-
-std::string Bidirectional_Pipe::sss_Read2(){
-	std::string result;
-
-	if (sss_read2Deque_.size()>0){
-		result=sss_read2Deque_[0];
-		sss_read2Deque_.pop_front();
-	}
-
-	pipeRead2Count_+=result.size();
-
-	return result;
-}
-
 std::string Bidirectional_Pipe::Read2(size_t n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Read2()");
 
@@ -492,11 +434,6 @@ std::string Bidirectional_Pipe::Read2(size_t n){
 void Bidirectional_Pipe::QueueWriteClose(){
 	writeCloseWhenEmpty_=true;
 	// if (writeBuffer_.length()==0) writeDescriptorState_=DescriptorState::CLOSED;	//FIXME
-}
-
-void Bidirectional_Pipe::sss_writeClose(){
-	writeCloseWhenEmpty_=true;
-	if (sss_writeDeque_.size()==0) close_write();
 }
 
 bool Bidirectional_Pipe::ChildExitedAndAllPipesClosed(){
@@ -559,82 +496,4 @@ std::ostream & operator<<(std::ostream & os, Bidirectional_Pipe::DescriptorState
 	}
 
 	return os;
-}
-
-Bidirectional_Pipe::operator bool() {
-	// std::cerr << "Before Set_Child_Status()" << std::endl;
-	Set_Child_Status();
-	// std::cerr << "Before Select_Nonblocking()" << std::endl;
-	Select_Nonblocking();
-	// std::cerr << "writeDescriptorState_" << writeDescriptorState_ << std::endl;
-	// std::cerr << "read1DescriptorState_" << read1DescriptorState_ << std::endl;
-	// std::cerr << "read2DescriptorState_" << read2DescriptorState_ << std::endl;
-	// std::cerr << "sss_writeDeque_.size()=" << sss_writeDeque_.size() << std::endl;
-	// std::cerr << "sss_read1Deque_.size()=" << sss_read1Deque_.size() << std::endl;
-	// std::cerr << "sss_read2Deque_.size()=" << sss_read2Deque_.size() << std::endl;
-
-	if (read1DescriptorState_==DescriptorState::OPENED_READABLE){
-	    char buf[PIPE_BUF];
-
-	    ssize_t result=::read(child_stdout_to_parent_,buf,PIPE_BUF);
-
-	    if (result<0)
-	    	throw std::runtime_error("Bidirectional_Pipe::Read1: read error");
-
-	    // sss_dequeRead1Count_+=result;
-
-	    if (result==0 && getChildState()==ChildState::EXITED) close_read1();
-
-	    sss_read1Deque_.push_back(std::string(buf,result));
-	}
-
-	if (read2DescriptorState_==DescriptorState::OPENED_READABLE){
-	    char buf[PIPE_BUF];
-
-	    ssize_t result=::read(child_stderr_to_parent_,buf,PIPE_BUF);
-
-	    if (result<0)
-	    	throw std::runtime_error("Bidirectional_Pipe::Read2: read error");
-
-	    // sss_dequeRead2Count_+=result;
-
-	    if (result==0 && getChildState()==ChildState::EXITED) close_read2();
-
-	    // std::cerr << "r2=" << result << " ";
-
-	    sss_read2Deque_.push_back(std::string(buf,result));
-	}
-
-	if (writeDescriptorState_==DescriptorState::OPENED_WRITABLE){
-	    if (sss_writeDeque_.size()>0){
-	        ssize_t result=::write(parent_to_child_stdin_,sss_writeDeque_[0].data(),sss_writeDeque_[0].length());
-
-	        if (result<0)
-	        	if (errno==EAGAIN){
-	        		// write is non-blocking but pipe is full
-	        	}
-	        	else
-	    			throw std::runtime_error("Bidirectional_Pipe::Write: write error");
-	        else {
-	    		write_count+=result;
-	    		sss_writeDeque_[0]=sss_writeDeque_[0].substr(result);
-	    		if (sss_writeDeque_[0].size()==0) sss_writeDeque_.pop_front();
-	        }
-	    }
-
-	    if (sss_writeDeque_.size()==0 && writeCloseWhenEmpty_){
-	    	// std::cerr << "Bidirectional_Pipe::Write: closing write" << std::endl;
-	    	close_write();
-	    }
-	}
-	if (childState_==ChildState::EXITED &&
-		read1DescriptorState_==DescriptorState::CLOSED &&
-		sss_read1Deque_.size()==0 &&
-		read2DescriptorState_==DescriptorState::CLOSED &&
-		sss_read2Deque_.size()==0 &&
-		writeDescriptorState_==DescriptorState::CLOSED &&
-		sss_writeDeque_.size()==0)
-		return false;
-
-	return true;
 }

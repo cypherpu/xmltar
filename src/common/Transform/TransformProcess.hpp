@@ -9,13 +9,13 @@
 #define SRC_COMMON_TRANSFORM_TRANSFORMPROCESS_HPP_
 
 #include "Transform/Transform.hpp"
-#include "Generated/Bidirectional_Pipe.hpp"
+#include "Generated/BufferedBidirectionalPipe.hpp"
 
 class TransformProcess : public Transform {
 public:
 	enum class PipeState { UNOPENED, OPENED };
 
-	Bidirectional_Pipe pipe_;
+	BufferedBidirectionalPipe pipe_;
 	PipeState pipeState_;
 
 	std::string ActualCompressorVersionString();

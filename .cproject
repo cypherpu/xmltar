@@ -247,6 +247,8 @@
                 				
                 <buildCommand>make</buildCommand>
                 				
+                <buildArguments>-c '( ./pre-build.sh ; bazel build -s --verbose_failures --copt -g --cxxopt='-std=c++1z' --strip=never :all )'</buildArguments>
+                				
                 <buildTarget>all</buildTarget>
                 				
                 <stopOnError>true</stopOnError>
@@ -259,15 +261,15 @@
             			
             <target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
                 				
-                <buildCommand>make</buildCommand>
+                <buildCommand>bash</buildCommand>
                 				
-                <buildArguments>-C /home/dbetz/git/xmltar/build -j 8</buildArguments>
+                <buildArguments>-c '( bazel clean --expunge ) ' ; echo</buildArguments>
                 				
                 <buildTarget>clean</buildTarget>
                 				
                 <stopOnError>true</stopOnError>
                 				
-                <useDefaultCommand>true</useDefaultCommand>
+                <useDefaultCommand>false</useDefaultCommand>
                 				
                 <runAllBuilders>true</runAllBuilders>
                 			

@@ -123,10 +123,6 @@ public:
     bool ChildExitedAndAllPipesClosed();
     int ExitStatus();
 
-    std::deque<std::string> sss_writeDeque_;
-    std::deque<std::string> sss_read1Deque_;
-    std::deque<std::string> sss_read2Deque_;
-
     explicit operator bool();
 };
 

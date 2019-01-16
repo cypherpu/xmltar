@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "Generated/Bidirectional_Pipe.hpp"
+#include "Generated/BufferedBidirectionalPipe.hpp"
 #include "Transform/TransformProcess.hpp"
 
 #include "../Debug2/Debug2.hpp"
@@ -15,7 +15,7 @@
 std::string TransformProcess::ActualCompressorVersionString(){
 	std::string result1;
 	std::string result2;
-	Bidirectional_Pipe p;
+	BufferedBidirectionalPipe p;
 
 	p.Open(
 			CompressionCommand(),
@@ -116,7 +116,7 @@ size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t comp
 
 std::string TransformProcess::CompressString(std::string const & s){
 	std::string result;
-	Bidirectional_Pipe p;
+	BufferedBidirectionalPipe p;
 
 	p.Open(
 			CompressionCommand(),
@@ -136,7 +136,7 @@ std::string TransformProcess::CompressString(std::string const & s){
 
 std::string TransformProcess::DecompressString(std::string const & s){
 	std::string result;
-	Bidirectional_Pipe p;
+	BufferedBidirectionalPipe p;
 
 	p.Open(
 			CompressionCommand(),
