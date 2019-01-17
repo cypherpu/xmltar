@@ -103,18 +103,12 @@ public:
     bool Can_Write(void);
 
     void Write();
-    //void sss_Write(std::string const & data);
-    //void sss_Write(char const *c, int n);
     void QueueWrite(char const c);
     void QueueWrite(char const *c, int n);
     void QueueWrite(std::string const & data);
     std::string Read1(size_t n=PIPE_BUF);
     std::string Read2(size_t n=PIPE_BUF);
 
-    std::string sss_Read1();
-    std::string sss_Read2();
-
-    //void sss_writeClose();
     void QueueWriteClose();
     bool ChildExitedAndAllPipesClosed();
     int ExitStatus();
