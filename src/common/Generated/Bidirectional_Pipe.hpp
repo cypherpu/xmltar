@@ -98,17 +98,13 @@ public:
 
     void Print_Args(void);
 
-    bool sss_Can_Read1(void);
-    bool sss_Can_Read2(void);
-    bool sss_Can_Write(void);
-
     bool Can_Read1(void);
     bool Can_Read2(void);
     bool Can_Write(void);
 
     void Write();
-    void sss_Write(std::string const & data);
-    void sss_Write(char const *c, int n);
+    //void sss_Write(std::string const & data);
+    //void sss_Write(char const *c, int n);
     void QueueWrite(char const c);
     void QueueWrite(char const *c, int n);
     void QueueWrite(std::string const & data);
@@ -118,7 +114,7 @@ public:
     std::string sss_Read1();
     std::string sss_Read2();
 
-    void sss_writeClose();
+    //void sss_writeClose();
     void QueueWriteClose();
     bool ChildExitedAndAllPipesClosed();
     int ExitStatus();
