@@ -102,10 +102,15 @@ public:
     bool Can_Read2(void);
     bool Can_Write(void);
 
+    size_t write(char const *data, size_t n);
     void Write();
+#if 0
     void QueueWrite(char const c);
     void QueueWrite(char const *c, int n);
     void QueueWrite(std::string const & data);
+#endif
+    size_t read1(char *buffer, size_t n);
+   	size_t read2(char *buffer, size_t n);
     std::string Read1(size_t n=PIPE_BUF);
     std::string Read2(size_t n=PIPE_BUF);
 
