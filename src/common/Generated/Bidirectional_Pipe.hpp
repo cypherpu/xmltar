@@ -45,20 +45,15 @@ public:
 public: // protected:
     int child_pid_;
     int exit_status_;
+    ChildState childState_;
 
     int parent_to_child_stdin_;           // parent -> child::std::in
     int child_stdout_to_parent_;          // child::std::out -> parent
     int child_stderr_to_parent_;          // child::std::err -> parent
 
-    ChildState childState_;
-    size_t read1_count;
-    size_t read2_count;
-    size_t write_count;
-
     size_t pipeRead1Count_;
     size_t pipeRead2Count_;
-
-    size_t queued_write_count;
+    size_t pipeWriteCount_;
 
     static const size_t pipe_buf_size=PIPE_BUF;
     std::vector<char const *> saved_args;
@@ -74,8 +69,6 @@ public: // protected:
     void Select_Blocking(void);
     void Select_Blocking(unsigned int microseconds);
 
-    std::string writeBuffer_;
-    bool writeCloseWhenEmpty_;
 public:
     Bidirectional_Pipe(void);
     Bidirectional_Pipe(const char *path, std::vector<char const *> argv);
@@ -89,12 +82,9 @@ public:
     void close_read1(void);
     void close_read2(void);
 
-    size_t Read1_Count(void){ return read1_count; }
-    size_t Read2_Count(void){ return read2_count; }
     size_t pipeRead1Count(void){ return pipeRead1Count_; }
     size_t pipeRead2Count(void){ return pipeRead2Count_; }
-    size_t Write_Count(void){ return write_count; }
-    size_t Queued_Write_Count(void){ return queued_write_count; }
+    size_t pipeWriteCount(void){ return pipeWriteCount_; }
 
     void Print_Args(void);
 
@@ -103,18 +93,9 @@ public:
     bool Can_Write(void);
 
     size_t write(char const *data, size_t n);
-    void Write();
-#if 0
-    void QueueWrite(char const c);
-    void QueueWrite(char const *c, int n);
-    void QueueWrite(std::string const & data);
-#endif
     size_t read1(char *buffer, size_t n);
    	size_t read2(char *buffer, size_t n);
-    std::string Read1(size_t n=PIPE_BUF);
-    std::string Read2(size_t n=PIPE_BUF);
 
-    void QueueWriteClose();
     bool ChildExitedAndAllPipesClosed();
     int ExitStatus();
 

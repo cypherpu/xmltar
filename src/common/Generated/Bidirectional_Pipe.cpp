@@ -124,13 +124,9 @@ void Bidirectional_Pipe::Init(const char *path, const std::vector<const char *> 
 
     childState_=ChildState::RUNNING;
 
-    read1_count=0;
-    read2_count=0;
-    write_count=0;
-    queued_write_count=0;
-
     pipeRead1Count_=0;
     pipeRead2Count_=0;
+    pipeWriteCount_=0;
 
     read1DescriptorState_=DescriptorState::OPENED;
     read2DescriptorState_=DescriptorState::OPENED;
@@ -247,13 +243,11 @@ void Bidirectional_Pipe::Select_Blocking(unsigned int microseconds){
 }
 
 Bidirectional_Pipe::Bidirectional_Pipe(void)
-    : parent_to_child_stdin_(-1), child_stdout_to_parent_(-1), child_stderr_to_parent_(-1),
-	  childState_(ChildState::NOT_STARTED), read1_count(0), read2_count(0), write_count(0),
-	  pipeRead1Count_(0), pipeRead2Count_(0), queued_write_count(0),
-	  read1DescriptorState_(DescriptorState::NOT_OPENED), read2DescriptorState_(DescriptorState::NOT_OPENED), writeDescriptorState_(DescriptorState::NOT_OPENED),
-	  writeCloseWhenEmpty_(false){
+    : child_pid_(-1), exit_status_(-1), childState_(ChildState::NOT_STARTED),
+	  parent_to_child_stdin_(-1), child_stdout_to_parent_(-1), child_stderr_to_parent_(-1),
+	  pipeRead1Count_(0), pipeRead2Count_(0), pipeWriteCount_(0),
+	  read1DescriptorState_(DescriptorState::NOT_OPENED), read2DescriptorState_(DescriptorState::NOT_OPENED), writeDescriptorState_(DescriptorState::NOT_OPENED){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::Bidirectional_Pipe()");
-
 }
 
 Bidirectional_Pipe::Bidirectional_Pipe(const char *path, std::vector<char const *> argv)
@@ -343,6 +337,7 @@ size_t Bidirectional_Pipe::write(char const *data, size_t n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::write(char const *data, size_t n)");
 
 	ssize_t result=::write(parent_to_child_stdin_,data,n);
+	writeDescriptorState_==DescriptorState::OPENED;
 
 	if (result<0)
 		if (errno==EAGAIN){
@@ -354,71 +349,11 @@ size_t Bidirectional_Pipe::write(char const *data, size_t n){
 			throw "Bidirectional_Pipe::Write: write error";
 		}
 	else {
-		write_count+=result;
+		pipeWriteCount_+=result;
 
 		return result;
 	}
-#if 0
-    if (writeBuffer_.length()==0 && writeCloseWhenEmpty_){
-    	// std::cerr << "Bidirectional_Pipe::Write: closing write" << std::endl;
-    	close_write();
-    	writeDescriptorState_=DescriptorState::CLOSED;
-    }
-#endif
-    // std::cerr << "w=" << result << " ";
 }
-
-void Bidirectional_Pipe::Write(){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Write()");
-
-    if (writeBuffer_.length()>0){
-        ssize_t result=::write(parent_to_child_stdin_,writeBuffer_.data(),writeBuffer_.length());
-
-        if (result<0)
-        	if (errno==EAGAIN){
-        		// write is non-blocking but pipe is full
-        	}
-        	else {
-    			std::cerr << strerror(errno) << std::endl;
-			throw "Bidirectional_Pipe::Write: write error";
-        	}
-        else {
-    		write_count+=result;
-    		writeBuffer_=writeBuffer_.substr(result);
-        }
-    }
-
-    if (writeBuffer_.length()==0 && writeCloseWhenEmpty_){
-    	// std::cerr << "Bidirectional_Pipe::Write: closing write" << std::endl;
-    	close_write();
-    	writeDescriptorState_=DescriptorState::CLOSED;
-    }
-
-    // std::cerr << "w=" << result << " ";
-}
-
-#if 0
-void Bidirectional_Pipe::QueueWrite(char const c){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
-
-    writeBuffer_.push_back(c);
-    queued_write_count+=1;
-}
-
-void Bidirectional_Pipe::QueueWrite(char const *c, int n){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
-
-    writeBuffer_+=std::string(c,n);
-    queued_write_count+=n;
-}
-
-void Bidirectional_Pipe::QueueWrite(std::string const & data){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::QueueWrite()");
-
-    writeBuffer_+=data;
-    queued_write_count+=data.size();
-}
-#endif
 
 size_t Bidirectional_Pipe::read1(char *buffer, size_t n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::read1(char *buffer, size_t n)");
@@ -426,11 +361,12 @@ size_t Bidirectional_Pipe::read1(char *buffer, size_t n){
     if (read1DescriptorState_==DescriptorState::CLOSED) return 0;
 
     size_t result=::read(child_stdout_to_parent_,buffer,n);
+    read1DescriptorState_==DescriptorState::OPENED;
 
     if (result<0)
     	throw "Bidirectional_Pipe::read1: read error";
 
-    read1_count+=result;
+    pipeRead1Count_+=result;
 
     if (result==0 && getChildState()==ChildState::EXITED) close_read1();
 
@@ -443,68 +379,21 @@ size_t Bidirectional_Pipe::read2(char *buffer, size_t n){
     if (read2DescriptorState_==DescriptorState::CLOSED) return 0;
 
     size_t result=::read(child_stderr_to_parent_,buffer,n);
+    read2DescriptorState_==DescriptorState::OPENED;
 
     if (result<0)
     	throw "Bidirectional_Pipe::read2: read error";
 
-    read2_count+=result;
+    pipeRead2Count_+=result;
 
     if (result==0 && getChildState()==ChildState::EXITED) close_read2();
 
     return result;
 }
 
-std::string Bidirectional_Pipe::Read1(size_t n){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Read1()");
-
-    if (read1DescriptorState_==DescriptorState::CLOSED) return "";
-
-    char buf[PIPE_BUF];
-
-    ssize_t result=::read(child_stdout_to_parent_,buf,std::min(n,(size_t)PIPE_BUF));
-
-    if (result<0)
-    	throw "Bidirectional_Pipe::Read1: read error";
-
-    read1_count+=result;
-
-    if (result==0 && getChildState()==ChildState::EXITED) close_read1();
-
-    // std::cerr << "r1=" << result << " ";
-
-    return std::string(buf,result);
-}
-
-std::string Bidirectional_Pipe::Read2(size_t n){
-    DEBUGCXX(debugcxx,"Bidirectional_Pipe::Read2()");
-
-    if (read2DescriptorState_==DescriptorState::CLOSED) return "";
-
-    char buf[PIPE_BUF];
-
-    ssize_t result=::read(child_stderr_to_parent_,buf,std::min(n,(size_t)PIPE_BUF));
-
-    if (result<0)
-    	throw "Bidirectional_Pipe::Read2: read error";
-
-    read2_count+=result;
-
-    if (result==0 && getChildState()==ChildState::EXITED) close_read2();
-
-    // std::cerr << "r2=" << result << " ";
-
-    return std::string(buf,result);
-}
-
-void Bidirectional_Pipe::QueueWriteClose(){
-	writeCloseWhenEmpty_=true;
-	// if (writeBuffer_.length()==0) writeDescriptorState_=DescriptorState::CLOSED;	//FIXME
-}
-
 bool Bidirectional_Pipe::ChildExitedAndAllPipesClosed(){
 	Set_Child_Status();
 	Select_Nonblocking();
-	if (Can_Write()) Write();
 
 	if (childState_==ChildState::EXITED &&
 		read1DescriptorState_==DescriptorState::CLOSED &&

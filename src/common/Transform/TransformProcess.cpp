@@ -21,13 +21,13 @@ std::string TransformProcess::ActualCompressorVersionString(){
 			CompressionCommand(),
 			std::vector<char const *>{CompressionName(),"--version"});
 
-	if (p && p.sss_Can_Write()){
-		p.sss_Write("");
-		p.sss_writeClose();
+	if (p){
+		p.Buffered_Write("");
+		p.Buffered_close_write();
 	}
 	while(p){
-		if (p.sss_Can_Read1()) result1+=p.sss_Read1();
-		if (p.sss_Can_Read2()) result2+=p.sss_Read2();
+		if (p.Buffered_Can_Read1()) result1+=p.Buffered_Read1();
+		if (p.Buffered_Can_Read2()) result2+=p.Buffered_Read2();
 	}
 
 	// std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
@@ -122,13 +122,13 @@ std::string TransformProcess::CompressString(std::string const & s){
 			CompressionCommand(),
 			CompressionArguments());
 
-	if (p && p.sss_Can_Write()){
-		p.sss_Write(s);
-		p.sss_writeClose();
+	if (p){
+		p.Buffered_Write(s);
+		p.Buffered_close_write();
 	}
 	while(p){
-		if (p.sss_Can_Read1()) result+=p.sss_Read1();
-		if (p.sss_Can_Read2()) p.sss_Read2();
+		if (p.Buffered_Can_Read1()) result+=p.Buffered_Read1();
+		if (p.Buffered_Can_Read2()) p.Buffered_Read2();
 	}
 
 	return result;
@@ -142,13 +142,13 @@ std::string TransformProcess::DecompressString(std::string const & s){
 			CompressionCommand(),
 			DecompressionArguments());
 
-	if (p && p.sss_Can_Write()){
-		p.sss_Write(s);
-		p.sss_writeClose();
+	if (p){
+		p.Buffered_Write(s);
+		p.Buffered_close_write();
 	}
 	while(p){
-		if (p.sss_Can_Read1()) result+=p.sss_Read1();
-		if (p.sss_Can_Read2()) p.sss_Read2();
+		if (p.Buffered_Can_Read1()) result+=p.Buffered_Read1();
+		if (p.Buffered_Can_Read2()) p.Buffered_Read2();
 	}
 
 	return result;
@@ -168,7 +168,7 @@ void TransformProcess::OpenDecompression(){
 
 void TransformProcess::Write(std::string const & input){
 	// if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
-		pipe_.sss_Write(input);
+		pipe_.Buffered_Write(input);
 
 }
 
@@ -176,8 +176,8 @@ std::string TransformProcess::Read(){
 	std::string result;
 
 	if (pipe_)
-		if (pipe_.sss_Can_Read1()) result+=pipe_.sss_Read1();
-		else if (pipe_.sss_Can_Read2()) pipe_.sss_Read2();
+		if (pipe_.Buffered_Can_Read1()) result+=pipe_.Buffered_Read1();
+		else if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
 
 #if 0
 	for(;;){
@@ -194,11 +194,11 @@ std::string TransformProcess::Read(){
 std::string TransformProcess::Close(){
 	std::string result;
 
-	if (pipe_) pipe_.sss_writeClose();
+	if (pipe_) pipe_.Buffered_close_write();
 
 	while(pipe_){
-		if (pipe_.sss_Can_Read1()) result+=pipe_.sss_Read1();
-		if (pipe_.sss_Can_Read2()) pipe_.sss_Read2();
+		if (pipe_.Buffered_Can_Read1()) result+=pipe_.Buffered_Read1();
+		if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
 	}
 
 	return result;
