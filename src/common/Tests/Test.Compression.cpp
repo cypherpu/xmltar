@@ -10,41 +10,6 @@
 #include "Generated/Bidirectional_Pipe.hpp"
 #include "Transform/TransformHex.hpp"
 
-TEST(XmltarTest,CompressGzip)
-{
-	std::string cleartext("<padding>0123456789abcdef</padding>");
-	std::string compressedCleartext;
-	std::string retrievedCleartext;
-	{
-		Bidirectional_Pipe p("/usr/bin/gzip",std::vector<char const *>{"gzip","-nc"});
-
-		if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-			p.QueueWrite(cleartext);
-			p.QueueWriteClose();
-		}
-		while(!p.ChildExitedAndAllPipesClosed()){
-			if (p.Can_Read1()) compressedCleartext+=p.Read1();
-			if (p.Can_Read2()) p.Read2();
-		}
-		ASSERT_EQ(p.ExitStatus(),0);
-	}
-	{
-		Bidirectional_Pipe p("/usr/bin/gzip",std::vector<char const *>{"gzip","-dnc"});
-
-		if (!p.ChildExitedAndAllPipesClosed() && p.Can_Write()){
-			p.QueueWrite(compressedCleartext);
-			p.QueueWriteClose();
-		}
-		while(!p.ChildExitedAndAllPipesClosed()){
-			if (p.Can_Read1()) retrievedCleartext+=p.Read1();
-			if (p.Can_Read2()) p.Read2();
-		}
-		ASSERT_EQ(p.ExitStatus(),0);
-	}
-
-	ASSERT_TRUE(cleartext==retrievedCleartext);
-}
-
 TEST(XmltarTest,CompressHex)
 {
 	TransformHex transformHex;

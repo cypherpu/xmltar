@@ -205,11 +205,11 @@ std::string TransformProcess::Close(){
 }
 
 size_t TransformProcess::WriteCount(){
-	return pipe_.Write_Count();
+	return pipe_.pipeWriteCount();
 }
 
 size_t TransformProcess::QueuedWriteCount(){
-	return pipe_.Queued_Write_Count();
+	return pipe_.BufferedWriteCount();
 }
 
 size_t TransformProcess::ReadCount(){

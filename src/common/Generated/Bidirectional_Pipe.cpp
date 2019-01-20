@@ -337,7 +337,7 @@ size_t Bidirectional_Pipe::write(char const *data, size_t n){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::write(char const *data, size_t n)");
 
 	ssize_t result=::write(parent_to_child_stdin_,data,n);
-	writeDescriptorState_==DescriptorState::OPENED;
+	writeDescriptorState_=DescriptorState::OPENED;
 
 	if (result<0)
 		if (errno==EAGAIN){
@@ -361,7 +361,7 @@ size_t Bidirectional_Pipe::read1(char *buffer, size_t n){
     if (read1DescriptorState_==DescriptorState::CLOSED) return 0;
 
     size_t result=::read(child_stdout_to_parent_,buffer,n);
-    read1DescriptorState_==DescriptorState::OPENED;
+    read1DescriptorState_=DescriptorState::OPENED;
 
     if (result<0)
     	throw "Bidirectional_Pipe::read1: read error";
@@ -379,7 +379,7 @@ size_t Bidirectional_Pipe::read2(char *buffer, size_t n){
     if (read2DescriptorState_==DescriptorState::CLOSED) return 0;
 
     size_t result=::read(child_stderr_to_parent_,buffer,n);
-    read2DescriptorState_==DescriptorState::OPENED;
+    read2DescriptorState_=DescriptorState::OPENED;
 
     if (result<0)
     	throw "Bidirectional_Pipe::read2: read error";

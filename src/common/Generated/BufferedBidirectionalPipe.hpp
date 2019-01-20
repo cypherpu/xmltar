@@ -14,6 +14,8 @@
 #include "Bidirectional_Pipe.hpp"
 
 class BufferedBidirectionalPipe : public Bidirectional_Pipe {
+private:
+	bool Can_Write(){ return false; }
 protected:
     std::deque<std::string> writeDeque_;
     std::deque<std::string> read1Deque_;
@@ -155,10 +157,8 @@ public:
     	return true;
     }
 
-    bool sss_Can_Write(void){
-        DEBUGCXX(debugcxx,"Bidirectional_Pipe::Can_Write()");
-
-        return writeDescriptorState_==DescriptorState::OPENED_WRITABLE;	// FIXME
+    size_t BufferedWriteCount(){
+    	return bufferedWriteCount_;
     }
 };
 
