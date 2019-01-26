@@ -21,7 +21,9 @@ public:
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return (plaintextSize<1000?(plaintextSize+(plaintextSize>>1)+80):(plaintextSize+(plaintextSize>>7)+550));
 	}
-	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+		return compressedtextSize-(compressedtextSize>>7)-(compressedtextSize>>8)-(compressedtextSize>>9)-350;
+	}
 	char const *CompressionCommand(){ return "/usr/bin/bzip2"; }
 	char const *CompressionName(){ return "bzip2"; }
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"bzip2","-fc"}); }

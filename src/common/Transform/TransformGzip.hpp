@@ -21,7 +21,9 @@ public:
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return plaintextSize+(plaintextSize>>8)+50;
 	}
-	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+		return compressedtextSize-(compressedtextSize>>13)-(compressedtextSize>>14)-25;
+	}
 	char const *CompressionCommand(){ return "/usr/bin/gzip"; }
 	char const *CompressionName(){ return "gzip"; }
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"gzip","-fnc"}); }

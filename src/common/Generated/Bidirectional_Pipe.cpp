@@ -294,16 +294,20 @@ void Bidirectional_Pipe::close_write(void){
 
 void Bidirectional_Pipe::close_read1(void){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::close_read1");
-    if (close(child_stdout_to_parent_)<0)
-        throw "Bidirectional_Pipe::close_read1: could not close child_to_parent_stdout_";
+    if (close(child_stdout_to_parent_)<0){
+    	std::cerr << strerror[errno] << std::endl;
+        throw std::runtime_error("Bidirectional_Pipe::close_read1: could not close child_stdout_to_parent_");
+    }
 
     read1DescriptorState_=DescriptorState::CLOSED;
 }
 
 void Bidirectional_Pipe::close_read2(void){
     DEBUGCXX(debugcxx,"Bidirectional_Pipe::close_read2");
-    if (close(child_stderr_to_parent_)<0)
-        throw "Bidirectional_Pipe::close_read2: could not close child_to_parent_stderr_";
+    if (close(child_stderr_to_parent_)<0){
+    	std::cerr << strerror[errno] << std::endl;
+        throw std::runtime_error("Bidirectional_Pipe::close_read2: could not close child_stderr_to_parent_");
+    }
 
     read2DescriptorState_=DescriptorState::CLOSED;
 }

@@ -21,7 +21,9 @@ public:
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize){
 		return plaintextSize+(plaintextSize>>6)+70;
 	}
-	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+		return compressedtextSize-(compressedtextSize>>7)-(compressedtextSize>>8)-(compressedtextSize>>9)-50;
+	}
 	char const *CompressionCommand(){ return "/usr/bin/lzip"; }
 	char const *CompressionName(){ return "lzip"; }
 	std::vector<char const *> CompressionArguments(){ return std::vector<char const *>({"lzip","-fc"}); }

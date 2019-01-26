@@ -13,9 +13,9 @@
 
 #include "Bidirectional_Pipe.hpp"
 
-class BufferedBidirectionalPipe : public Bidirectional_Pipe {
+class BufferedBidirectionalPipe {
 private:
-	bool Can_Write(){ return false; }
+	Bidirectional_Pipe p_;
 protected:
     std::deque<std::string> writeDeque_;
     std::deque<std::string> read1Deque_;
@@ -26,12 +26,12 @@ protected:
 
 public:
 	BufferedBidirectionalPipe()
-		: Bidirectional_Pipe(), writeDeque_(),read1Deque_(), read2Deque_(), bufferedWriteCount_(0), close_write_when_empty_(false) {}
+		: p_(), writeDeque_(),read1Deque_(), read2Deque_(), bufferedWriteCount_(0), close_write_when_empty_(false) {}
 	BufferedBidirectionalPipe(const char *path, std::vector<char const *> argv)
-    	: Bidirectional_Pipe(path, argv), writeDeque_(),read1Deque_(), read2Deque_(), bufferedWriteCount_(0), close_write_when_empty_(false) {}
+    	: p_(path, argv), writeDeque_(),read1Deque_(), read2Deque_(), bufferedWriteCount_(0), close_write_when_empty_(false) {}
 
     void Open(const char *path, std::vector<char const *> argv){
-    	Bidirectional_Pipe::Open(path,argv);
+    	p_.Open(path,argv);
     }
 
     bool Buffered_Can_Read1(void){
@@ -53,6 +53,7 @@ public:
         	throw std::logic_error("BufferedBidirectionalPipe::Buffered_Write(std::string const & data): attempt to write after close");
 
         writeDeque_.push_back(data);
+        bufferedWriteCount_+=data.size();
     }
 
     void Buffered_Write(char const *c, int n){
@@ -62,6 +63,7 @@ public:
         	throw std::logic_error("BufferedBidirectionalPipe::Buffered_Write(char const *c, int n): attempt to write after close");
 
         writeDeque_.push_back(std::string(c,n));
+        bufferedWriteCount_+=n;
     }
 
     std::string Buffered_Read1(){
@@ -71,8 +73,6 @@ public:
     		result=read1Deque_[0];
     		read1Deque_.pop_front();
     	}
-
-    	pipeRead1Count_+=result.size();
 
     	return result;
     }
@@ -85,49 +85,37 @@ public:
     		read2Deque_.pop_front();
     	}
 
-    	pipeRead2Count_+=result.size();
-
     	return result;
     }
 
     void Buffered_close_write(){
     	close_write_when_empty_=true;
-    	if (writeDeque_.size()==0) close_write();
+    	if (writeDeque_.size()==0) p_.close_write();
     }
 
     operator bool() {
-    	Set_Child_Status();
-    	Select_Nonblocking();
+    	p_.Set_Child_Status();
+    	p_.Select_Nonblocking();
 
-    	if (read1DescriptorState_==DescriptorState::OPENED_READABLE){
+    	if (p_.read1DescriptorState_==Bidirectional_Pipe::DescriptorState::OPENED_READABLE){
     	    char buf[PIPE_BUF];
 
-    	    ssize_t result=::read(child_stdout_to_parent_,buf,PIPE_BUF);
+        	ssize_t result=p_.read1(buf,PIPE_BUF);
 
-    	    if (result<0)
-    	    	throw std::runtime_error("Bidirectional_Pipe::Read1: read error");
-
-    	    if (result==0 && getChildState()==ChildState::EXITED) close_read1();
-
-    	    read1Deque_.push_back(std::string(buf,result));
+        	if (result>0) read1Deque_.push_back(std::string(buf,result));
     	}
 
-    	if (read2DescriptorState_==DescriptorState::OPENED_READABLE){
+    	if (p_.read2DescriptorState_==Bidirectional_Pipe::DescriptorState::OPENED_READABLE){
     	    char buf[PIPE_BUF];
 
-    	    ssize_t result=::read(child_stderr_to_parent_,buf,PIPE_BUF);
+    	    ssize_t result=p_.read2(buf,PIPE_BUF);
 
-    	    if (result<0)
-    	    	throw std::runtime_error("Bidirectional_Pipe::Read2: read error");
-
-    	    if (result==0 && getChildState()==ChildState::EXITED) close_read2();
-
-    	    read2Deque_.push_back(std::string(buf,result));
+    	    if (result>0) read2Deque_.push_back(std::string(buf,result));
     	}
 
-    	if (writeDescriptorState_==DescriptorState::OPENED_WRITABLE){
+    	if (p_.writeDescriptorState_==Bidirectional_Pipe::DescriptorState::OPENED_WRITABLE){
     	    if (writeDeque_.size()>0){
-    	        ssize_t result=::write(parent_to_child_stdin_,writeDeque_[0].data(),writeDeque_[0].length());
+    	        ssize_t result=p_.write(writeDeque_[0].data(),writeDeque_[0].length());
 
     	        if (result<0)
     	        	if (errno==EAGAIN){
@@ -142,23 +130,39 @@ public:
     	    }
 
     	    if (writeDeque_.size()==0 && close_write_when_empty_){
-    	    	close_write();
+    	    	p_.close_write();
     	    }
     	}
-    	if (childState_==ChildState::EXITED &&
-    		read1DescriptorState_==DescriptorState::CLOSED &&
+    	if (p_.childState_==Bidirectional_Pipe::ChildState::EXITED &&
+    		p_.read1DescriptorState_==Bidirectional_Pipe::DescriptorState::CLOSED &&
     		read1Deque_.size()==0 &&
-    		read2DescriptorState_==DescriptorState::CLOSED &&
+			p_.read2DescriptorState_==Bidirectional_Pipe::DescriptorState::CLOSED &&
     		read2Deque_.size()==0 &&
-    		writeDescriptorState_==DescriptorState::CLOSED &&
+			p_.writeDescriptorState_==Bidirectional_Pipe::DescriptorState::CLOSED &&
     		writeDeque_.size()==0)
     		return false;
 
     	return true;
     }
 
+    size_t Read1Count(){
+    	return p_.pipeRead1Count_;
+    }
+
+    size_t Read2Count(){
+    	return p_.pipeRead2Count_;
+    }
+
+    size_t WriteCount(){
+    	return p_.pipeWriteCount();
+    }
+
     size_t BufferedWriteCount(){
     	return bufferedWriteCount_;
+    }
+
+    int ExitStatus(){
+    	return p_.ExitStatus();
     }
 };
 
