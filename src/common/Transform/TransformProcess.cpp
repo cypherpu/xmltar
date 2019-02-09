@@ -167,27 +167,25 @@ void TransformProcess::OpenDecompression(){
 }
 
 void TransformProcess::Write(std::string const & input){
-	// if (!pipe_.ChildExitedAndAllPipesClosed() && pipe_.Can_Write())
-		pipe_.Buffered_Write(input);
-
+	// std::cerr << name() << "::WriteBufferSize()=" << pipe_.WriteBufferSize() << std::endl;
+	pipe_.Buffered_Write(input);
+	if (pipe_)
+		if (!pipe_.Can_Read1() && !pipe_.Can_Read2() && !pipe_.Can_Write()){
+			// std::cerr << "TransformProcess::Write: " << name() << " Blocking" << std::endl;
+			pipe_.Block(10000);
+		}
 }
 
 std::string TransformProcess::Read(){
+	//std::cerr << name() << "::ReadBufferSize()=" << pipe_.Read1BufferSize()+pipe_.Read2BufferSize() << std::endl;
 	std::string result;
 
-	if (pipe_)
-		if (pipe_.Buffered_Can_Read1()) result+=pipe_.Buffered_Read1();
-		else if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
+	if (pipe_.Buffered_Can_Read1()) result=pipe_.Buffered_Read1();
+	else if (pipe_)
+		if (pipe_.Buffered_Can_Read1()) result=pipe_.Buffered_Read1();
 
-#if 0
-	for(;;){
-		pipe_.Select_Nonblocking();
-		if (pipe_.Can_Write()) pipe_.Write();
-		if (pipe_.Can_Read1()) result+=pipe_.Read1();
-		else if (pipe_.Can_Read2()) pipe_.Read2();
-		else break;
-	}
-#endif
+	if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
+
 	return result;
 }
 

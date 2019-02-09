@@ -31,8 +31,9 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common"],
+	copts = ["-pg","-std=c++1z","-Isrc","-Isrc/common"],
 	linkopts = [
+				"-pg",
 				"-lgtest",
 				"-lboost_filesystem",
 				"-lboost_system",

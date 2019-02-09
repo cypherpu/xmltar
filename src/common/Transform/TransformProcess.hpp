@@ -44,6 +44,8 @@ public:
 	size_t QueuedWriteCount();
 	size_t ReadCount();
 
+	TransformProcess(std::string const & name)
+		: Transform(name) {}
 	virtual ~TransformProcess();
 };
 

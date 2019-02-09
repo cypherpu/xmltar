@@ -12,6 +12,7 @@
 #include <vector>
 
 class Transform {
+	std::string name_;
 public:
 	virtual std::string ActualCompressorVersionString()=0;
 	virtual std::string ExpectedCompressorVersionString()=0;
@@ -41,6 +42,10 @@ public:
 	virtual size_t QueuedWriteCount()=0;
 	virtual size_t ReadCount()=0;
 
+	std::string name(){ return name_; }
+
+	Transform(std::string const & name)
+		: name_(name){}
 	virtual ~Transform();
 };
 

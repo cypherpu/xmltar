@@ -65,10 +65,10 @@ public:
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
-		  fileCompression_(new TransformIdentity),
-		  encoding_(new TransformHex),
-		  archiveMemberCompression_(new TransformIdentity),
-		  archiveCompression_(new TransformIdentity),
+		  fileCompression_(new TransformIdentity("fileCompression")),
+		  encoding_(new TransformHex("encoding")),
+		  archiveMemberCompression_(new TransformIdentity("archiveMemberCompression")),
+		  archiveCompression_(new TransformIdentity("archiveCompression")),
           tape_length_(), stop_after_(),
 		  listed_incremental_file_(), compress_listed_incremental_file_(),
 		  files_from_(), exclude_files_(),

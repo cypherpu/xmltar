@@ -34,6 +34,10 @@ public:
     	p_.Open(path,argv);
     }
 
+    void Block(unsigned int microseconds){
+    	p_.Select_Blocking(microseconds);
+    }
+
     bool Buffered_Can_Read1(void){
         DEBUGCXX(debugcxx,"BufferedBidirectionalPipe::Can_Read1()");
 
@@ -65,6 +69,19 @@ public:
         writeDeque_.push_back(std::string(c,n));
         bufferedWriteCount_+=n;
     }
+
+    bool Can_Read1(){
+    	return p_.Can_Read1();
+    }
+
+    bool Can_Read2(){
+    	return p_.Can_Read2();
+    }
+
+    bool Can_Write(){
+    	return p_.Can_Write();
+    }
+
 
     std::string Buffered_Read1(){
     	std::string result;
@@ -163,6 +180,33 @@ public:
 
     int ExitStatus(){
     	return p_.ExitStatus();
+    }
+
+    size_t WriteBufferSize(){
+    	size_t result=0;
+
+    	for(auto & i : writeDeque_)
+    		result+=i.size();
+
+    	return result;
+    }
+
+    size_t Read1BufferSize(){
+    	size_t result=0;
+
+    	for(auto & i : read1Deque_)
+    		result+=i.size();
+
+    	return result;
+    }
+
+    size_t Read2BufferSize(){
+    	size_t result=0;
+
+    	for(auto & i : read2Deque_)
+    		result+=i.size();
+
+    	return result;
     }
 };
 

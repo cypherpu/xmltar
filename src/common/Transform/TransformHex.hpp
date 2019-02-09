@@ -32,8 +32,10 @@ public:
 	std::string MinimumCompressionString(){ return ""; }
 	// std::string CompressString(std::string const & s);
 	// std::string DecompressString(std::string const & s);
-	Transform *clone(){ return new TransformHex; }
+	Transform *clone(){ return new TransformHex(name()); }
 
+	TransformHex(std::string const & name)
+		: TransformProcess(name) {}
 	~TransformHex(){}
 };
 

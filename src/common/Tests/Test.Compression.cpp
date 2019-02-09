@@ -12,7 +12,7 @@
 
 TEST(XmltarTest,CompressHex)
 {
-	TransformHex transformHex;
+	TransformHex transformHex("CompressHex");
 	for(int i=0; i<500; ++i){
 		std::string cleartext(i,'0');
 		//std::cerr << "\"" << cleartext << "\"" << std::endl;

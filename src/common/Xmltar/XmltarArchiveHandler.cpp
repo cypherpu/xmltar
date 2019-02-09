@@ -60,7 +60,7 @@ void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **a
 			std::filesystem::create_directories(elements_.end()[-2].attributes_.at("name"));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
 		xmltarArchive_.ofs_.open(elements_.end()[-3].attributes_.at("name"));
-		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchive_.decoder_.reset(new TransformHex);
+		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchive_.decoder_.reset(new TransformHex("decoder"));
 		xmltarArchive_.decoder_->OpenDecompression();
 	}
 

@@ -35,9 +35,11 @@ public:
 	// std::string CompressString(std::string const & s);		use default
 	// std::string DecompressString(std::string const & s);		use default
 	Transform *clone(){
-		return new TransformLzip();
+		return new TransformLzip(name());
 	}
 
+	TransformLzip(std::string const & name)
+		: TransformProcess(name){}
 	~TransformLzip(){}
 };
 

@@ -37,7 +37,7 @@ public:
 	std::string CompressString(std::string const & s){ return s; }
 	std::string DecompressString(std::string const & s){ return s; }
 	Transform *clone(){
-		return new TransformIdentity();
+		return new TransformIdentity(name());
 	}
 
 	void OpenCompression(){ if (data_!="") throw std::logic_error("TransformIdentity::OpenCompression: data_ not empty"); }
@@ -49,8 +49,8 @@ public:
 	size_t WriteCount(){ return write_count; }
 	size_t QueuedWriteCount(){ return write_count; }
 
-	TransformIdentity()
-		: read_count(0), write_count(0) {}
+	TransformIdentity(std::string const & name)
+		: Transform(name), read_count(0), write_count(0) {}
 	~TransformIdentity(){}
 };
 

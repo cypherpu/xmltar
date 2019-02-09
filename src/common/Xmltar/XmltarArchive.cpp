@@ -287,13 +287,13 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 
 			std::vector<std::shared_ptr<Transform>> transformations;
 			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformIdentity>());
+				transformations.push_back(std::make_shared<TransformIdentity>("archiveCompression"));
 			else if (bufString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformGzip>());
+				transformations.push_back(std::make_shared<TransformGzip>("archiveCompression"));
 			else if (bufString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformBzip2>());
+				transformations.push_back(std::make_shared<TransformBzip2>("archiveCompression"));
 			else if (bufString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformLzip>());
+				transformations.push_back(std::make_shared<TransformLzip>("archiveCompression"));
 
 			transformations[0]->OpenDecompression();
 			transformations[0]->Write(bufString);
@@ -308,13 +308,13 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			if (readString.size()<5)
 				throw std::runtime_error("XmltarArchive::XmltarArchive: readString.size()<5");
 			if (readString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformIdentity>());
+				transformations.push_back(std::make_shared<TransformIdentity>("memberCompression"));
 			else if (readString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformGzip>());
+				transformations.push_back(std::make_shared<TransformGzip>("memberCompression"));
 			else if (readString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformBzip2>());
+				transformations.push_back(std::make_shared<TransformBzip2>("memberCompression"));
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformLzip>());
+				transformations.push_back(std::make_shared<TransformLzip>("memberCompression"));
 		}
 		else {
 			std:: ifstream ifs(filename);
@@ -333,13 +333,13 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 
 			std::vector<std::shared_ptr<Transform>> transformations;
 			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformIdentity>());
+				transformations.push_back(std::make_shared<TransformIdentity>("archiveCompression"));
 			else if (bufString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformGzip>());
+				transformations.push_back(std::make_shared<TransformGzip>("archiveCompression"));
 			else if (bufString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformBzip2>());
+				transformations.push_back(std::make_shared<TransformBzip2>("archiveCompression"));
 			else if (bufString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformLzip>());
+				transformations.push_back(std::make_shared<TransformLzip>("archiveCompression"));
 
 			transformations[0]->OpenDecompression();
 			transformations[0]->Write(bufString);
@@ -354,13 +354,13 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			if (readString.size()<5)
 				throw std::runtime_error("XmltarArchive::XmltarArchive: readString.size()<5");
 			if (readString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformIdentity>());
+				transformations.push_back(std::make_shared<TransformIdentity>("memberCompression"));
 			else if (readString.substr(2)==TransformGzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformGzip>());
+				transformations.push_back(std::make_shared<TransformGzip>("memberCompression"));
 			else if (readString.substr(3)==TransformBzip2::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformBzip2>());
+				transformations.push_back(std::make_shared<TransformBzip2>("memberCompression"));
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
-				transformations.push_back(std::make_shared<TransformLzip>());
+				transformations.push_back(std::make_shared<TransformLzip>("memberCompression"));
 
 			// std::cerr << "readString=" << readString << std::endl;
 
