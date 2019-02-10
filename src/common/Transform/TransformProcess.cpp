@@ -6,6 +6,10 @@
  */
 
 #include <iostream>
+#include <sstream>
+
+#include "Process/Process.hpp"
+#include "Process/Utilities.hpp"
 
 #include "Generated/BufferedBidirectionalPipe.hpp"
 #include "Transform/TransformProcess.hpp"
@@ -115,43 +119,23 @@ size_t TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize(size_t comp
 // std::string TransformProcess::MinimumCompressionString();
 
 std::string TransformProcess::CompressString(std::string const & s){
-	std::string result;
-	BufferedBidirectionalPipe p;
+	std::istringstream iss(s);
+	std::ostringstream oss;
 
-	p.Open(
-			CompressionCommand(),
-			CompressionArguments());
+	Process hexEncode(CompressionCommand(),CompressionArguments(),"xxd");
+	Chain1(hexEncode,iss,oss);
 
-	if (p){
-		p.Buffered_Write(s);
-		p.Buffered_close_write();
-	}
-	while(p){
-		if (p.Buffered_Can_Read1()) result+=p.Buffered_Read1();
-		if (p.Buffered_Can_Read2()) p.Buffered_Read2();
-	}
-
-	return result;
+	return oss.str();
 }
 
 std::string TransformProcess::DecompressString(std::string const & s){
-	std::string result;
-	BufferedBidirectionalPipe p;
+	std::istringstream iss(s);
+	std::ostringstream oss;
 
-	p.Open(
-			CompressionCommand(),
-			DecompressionArguments());
+	Process hexEncode(CompressionCommand(),DecompressionArguments(),"xxd");
+	Chain1(hexEncode,iss,oss);
 
-	if (p){
-		p.Buffered_Write(s);
-		p.Buffered_close_write();
-	}
-	while(p){
-		if (p.Buffered_Can_Read1()) result+=p.Buffered_Read1();
-		if (p.Buffered_Can_Read2()) p.Buffered_Read2();
-	}
-
-	return result;
+	return oss.str();
 }
 
 void TransformProcess::OpenCompression(){
