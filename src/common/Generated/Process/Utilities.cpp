@@ -43,6 +43,40 @@ void Chain1(Process &p, std::istream & is, std::ostream & os){
 	os << b.read();
 }
 
+void Chain1e(Process &p, std::istream & is, std::ostream & os){
+	Pipe a, b, pErr;
+
+	launch({
+			{a,EndPointAction::CLOSE,EndPointAction::NONBLOCKING_WRITE},
+			{p,a,EndPointAction::STDIN,EndPointAction::CLOSE},
+			{b,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{p,b,EndPointAction::CLOSE,EndPointAction::STDOUT},
+
+			{pErr,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{p,pErr,EndPointAction::CLOSE,EndPointAction::STDERR},
+		   }
+	      );
+
+	std::string msg;
+	char buf[1024];
+
+	while(is){
+		is.read(buf,sizeof(buf));
+		msg+=std::string(buf,is.gcount());
+		msg=a.write(msg);
+		os << b.read();
+		os << pErr.read();
+	}
+	a.closeWrite();
+
+	while(p){
+		os << b.read();
+		os << pErr.read();
+	}
+	os << b.read();
+	os << pErr.read();
+}
+
 void Chain2(Process &p, Process &q, std::istream & is, std::ostream & os){
 	Pipe a, b, c, pErr, qErr;
 
@@ -62,20 +96,21 @@ void Chain2(Process &p, Process &q, std::istream & is, std::ostream & os){
 		   }
 	      );
 
-	std::string msg="The quick brown fox jumped over the lazy dog";
-	std::string result;
+	std::string msg;
+	char buf[1024];
 
-	while(msg!=""){
+	while(is){
+		is.read(buf,sizeof(buf));
+		msg+=std::string(buf,is.gcount());
 		msg=a.write(msg);
-		result+=c.read();
+		os << c.read();
 	}
 	a.closeWrite();
 
 	while(q){
-		result+=c.read();
+		os << c.read();
 	}
-
-	std::cerr << result << std::endl;
+	os << c.read();
 }
 
 void Chain3(Process &p, Process &q, Process &r, std::istream & is, std::ostream & os){
@@ -106,25 +141,18 @@ void Chain3(Process &p, Process &q, Process &r, std::istream & is, std::ostream 
 	      );
 
 	std::string msg;
-	std::string result;
-
-	std::ifstream ifs("/usr/bin/qemu-system-i386");
 	char buf[1024];
 
-	while(ifs){
-		if (msg==""){
-			ifs.read(buf,sizeof(buf));
-			msg+=std::string(buf,ifs.gcount());
-		}
-
+	while(is){
+		is.read(buf,sizeof(buf));
+		msg+=std::string(buf,is.gcount());
 		msg=a.write(msg);
-		result+=d.read();
+		os << d.read();
 	}
 	a.closeWrite();
 
 	while(r){
-		result+=d.read();
+		os << d.read();
 	}
-
-	std::cerr << result << std::endl;
+	os << d.read();
 }

@@ -8,36 +8,22 @@
 #include <iostream>
 #include <sstream>
 
-#include "Process/Process.hpp"
-#include "Process/Utilities.hpp"
+#include "Generated/Process/Connection.hpp"
+#include "Generated/Process/Process.hpp"
+#include "Generated/Process/Utilities.hpp"
 
-#include "Generated/BufferedBidirectionalPipe.hpp"
 #include "Transform/TransformProcess.hpp"
 
 #include "../Debug2/Debug2.hpp"
 
 std::string TransformProcess::ActualCompressorVersionString(){
-	std::string result1;
-	std::string result2;
-	BufferedBidirectionalPipe p;
+	std::istringstream iss;
+	std::ostringstream oss;
 
-	p.Open(
-			CompressionCommand(),
-			std::vector<char const *>{CompressionName(),"--version"});
+	Process compress(CompressionCommand(),std::vector<char const *>{CompressionName(),"--version"},"");
+	Chain1e(compress,iss,oss);
 
-	if (p){
-		p.Buffered_Write("");
-		p.Buffered_close_write();
-	}
-	while(p){
-		if (p.Buffered_Can_Read1()) result1+=p.Buffered_Read1();
-		if (p.Buffered_Can_Read2()) result2+=p.Buffered_Read2();
-	}
-
-	// std::cerr << "\"" << result1 << "\" \"" << result2 << "\"" << std::endl;
-
-	if (result2=="") return result1;
-	else return result2;
+	return oss.str();
 }
 
 // std::string TransformProcess::ExpectedCompressorVersionString();
@@ -122,8 +108,8 @@ std::string TransformProcess::CompressString(std::string const & s){
 	std::istringstream iss(s);
 	std::ostringstream oss;
 
-	Process hexEncode(CompressionCommand(),CompressionArguments(),"xxd");
-	Chain1(hexEncode,iss,oss);
+	Process compress(CompressionCommand(),CompressionArguments(),"xxd");
+	Chain1(compress,iss,oss);
 
 	return oss.str();
 }
@@ -132,22 +118,44 @@ std::string TransformProcess::DecompressString(std::string const & s){
 	std::istringstream iss(s);
 	std::ostringstream oss;
 
-	Process hexEncode(CompressionCommand(),DecompressionArguments(),"xxd");
-	Chain1(hexEncode,iss,oss);
+	Process compress(CompressionCommand(),DecompressionArguments(),"xxd");
+	Chain1(compress,iss,oss);
 
 	return oss.str();
 }
 
 void TransformProcess::OpenCompression(){
-	pipe_.Open(
+	process_.Initialize(
 			CompressionCommand(),
 			CompressionArguments());
+
+	launch({
+			{a_,EndPointAction::CLOSE,EndPointAction::NONBLOCKING_WRITE},
+			{process_,a_,EndPointAction::STDIN,EndPointAction::CLOSE},
+			{b_,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{process_,b_,EndPointAction::CLOSE,EndPointAction::STDOUT},
+
+			{err_,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{process_,err_,EndPointAction::CLOSE,EndPointAction::STDERR},
+		   }
+	      );
 }
 
 void TransformProcess::OpenDecompression(){
-	pipe_.Open(
+	process_.Initialize(
 			CompressionCommand(),
 			DecompressionArguments());
+
+	launch({
+			{a_,EndPointAction::CLOSE,EndPointAction::NONBLOCKING_WRITE},
+			{process_,a_,EndPointAction::STDIN,EndPointAction::CLOSE},
+			{b_,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{process_,b_,EndPointAction::CLOSE,EndPointAction::STDOUT},
+
+			{err_,EndPointAction::NONBLOCKING_READ,EndPointAction::CLOSE},
+			{process_,err_,EndPointAction::CLOSE,EndPointAction::STDERR},
+		   }
+	      );
 }
 
 void TransformProcess::Write(std::string const & input){
@@ -164,11 +172,8 @@ std::string TransformProcess::Read(){
 	//std::cerr << name() << "::ReadBufferSize()=" << pipe_.Read1BufferSize()+pipe_.Read2BufferSize() << std::endl;
 	std::string result;
 
-	if (pipe_.Buffered_Can_Read1()) result=pipe_.Buffered_Read1();
-	else if (pipe_)
-		if (pipe_.Buffered_Can_Read1()) result=pipe_.Buffered_Read1();
-
-	if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
+	result+=b_.read();
+	err_.read();
 
 	return result;
 }
@@ -176,27 +181,29 @@ std::string TransformProcess::Read(){
 std::string TransformProcess::Close(){
 	std::string result;
 
-	if (pipe_) pipe_.Buffered_close_write();
+	a_.closeWrite();
 
-	while(pipe_){
-		if (pipe_.Buffered_Can_Read1()) result+=pipe_.Buffered_Read1();
-		if (pipe_.Buffered_Can_Read2()) pipe_.Buffered_Read2();
+	while(process_){
+		result+=b_.read();
+		err_.read();
 	}
+
+	result+=b_.read();
+	err_.read();
+
+	b_.closeRead();
+	err_.closeRead();
 
 	return result;
 }
 
 size_t TransformProcess::WriteCount(){
-	return pipe_.WriteCount();
-}
-
-size_t TransformProcess::QueuedWriteCount(){
-	return pipe_.BufferedWriteCount();
+	return a_.writeCount();
 }
 
 size_t TransformProcess::ReadCount(){
 	// return pipe_.Read1_Count();
-	return pipe_.Read1Count();
+	return b_.readCount();
 }
 
 TransformProcess::~TransformProcess(){}

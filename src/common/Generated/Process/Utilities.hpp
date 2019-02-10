@@ -13,6 +13,7 @@
 #include "Process/Process.hpp"
 
 void Chain1(Process & p, std::istream & is, std::ostream & os);
+void Chain1e(Process & p, std::istream & is, std::ostream & os);
 void Chain2(Process & p, Process & q, std::istream & is, std::ostream & os);
 void Chain3(Process & p, Process & q, Process & r, std::istream & is, std::ostream & os);
 

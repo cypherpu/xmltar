@@ -103,13 +103,14 @@ public:
 	    ssize_t result=::read(readfd_,buffer,n);
 	    //read1DescriptorState_=DescriptorState::OPENED;
 
-	    if (result<0)
+	    if (result<0){
 			if (errno==EAGAIN){
 				// read is non-blocking but pipe is empty
 				return 0;
 			}
 			else
 				throw std::runtime_error(std::string("Pipe::read: ")+strerror(errno));
+	    }
 
 	    readCount_+=result;
 

@@ -11,7 +11,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common"],
+	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common","-Isrc/common/Generated"],
 	linkopts = [
 				"-lgtest",
 				"-lboost_filesystem",
@@ -31,7 +31,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-pg","-std=c++1z","-Isrc","-Isrc/common"],
+	copts = ["-pg","-std=c++1z","-Isrc","-Isrc/common","-Isrc/common/Generated"],
 	linkopts = [
 				"-pg",
 				"-lgtest",

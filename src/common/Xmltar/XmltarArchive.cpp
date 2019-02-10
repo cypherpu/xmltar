@@ -25,7 +25,6 @@ extern "C" {
 #include "Xmltar/XmltarArchive.hpp"
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/ToHexDigit.hpp"
-#include "Generated/Bidirectional_Pipe.hpp"
 
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"

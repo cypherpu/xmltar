@@ -25,12 +25,20 @@ class Process {
 
 	boost::optional<pid_t> pid_;
 public:
-	Process(char const *path, std::vector<char const *> args, char const *nickname)
+	Process()
+		: path_(), args_(), nickname_(), pid_() {}
+
+	Process(char const *path, std::vector<char const *> args, char const *nickname="")
 		: path_(path), nickname_(nickname), pid_(){
-		for(auto i : args){
-			if (i==nullptr) continue;
+		for(auto i : args)
 			args_.push_back(i);
-		}
+	}
+
+	void Initialize(char const *path, std::vector<char const *> args, char const *nickname=""){
+		path_=path;
+		nickname_=nickname;
+		for(auto i : args)
+			args_.push_back(i);
 	}
 
 	pid_t fork(){

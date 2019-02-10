@@ -7,7 +7,7 @@
 
 #include <gmock/gmock.h>
 
-#include "Generated/Bidirectional_Pipe.hpp"
+#include "Generated/Process/Utilities.hpp"
 #include "Transform/TransformHex.hpp"
 
 TEST(XmltarTest,CompressHex)
