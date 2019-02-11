@@ -15,6 +15,8 @@ extern "C" {
 #include <grp.h>
 }
 
+#include <iomanip>
+
 #include <boost/circular_buffer.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -96,8 +98,9 @@ XmltarArchive::XmltarArchive(
 
 			for(bool firstPass=true; nextMember_; firstPass=false){
 				std::cerr << dbg << ": ##########" << std::endl;
-				std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
-				std::cerr << dbg << ": pendingBytes=  " << pendingBytes << std::endl;
+				std::cerr << dbg << ": committedBytes=" << std::right << std::setw(8) << committedBytes << std::endl;
+				std::cerr << dbg << ": pendingBytes  =" << std::right << std::setw(8) << pendingBytes << std::endl;
+				std::cerr << dbg << ": sum           =" << std::right << std::setw(8) << committedBytes+pendingBytes << std::endl;
 				std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
 				if (nextMember_->isDirectory()){
@@ -132,7 +135,7 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 				}
-				if (nextMember_->isSymLink()){
+				else if (nextMember_->isSymLink()){
 					if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
 						std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 						std::string compressedDirectoryMember
@@ -164,7 +167,7 @@ XmltarArchive::XmltarArchive(
 						}
 					}
 				}
-				if (nextMember_->isRegularFile()){
+				else if (nextMember_->isRegularFile()){
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0){

@@ -158,18 +158,6 @@ void TransformProcess::OpenDecompression(){
 	      );
 }
 
-#if 0
-void TransformProcess::Write(std::string const & input){
-	// std::cerr << name() << "::WriteBufferSize()=" << pipe_.WriteBufferSize() << std::endl;
-	pipe_.Buffered_Write(input);
-	if (pipe_)
-		if (!pipe_.Can_Read1() && !pipe_.Can_Read2() && !pipe_.Can_Write()){
-			// std::cerr << "TransformProcess::Write: " << name() << " Blocking" << std::endl;
-			pipe_.Block(10000);
-		}
-}
-#endif
-
 std::string TransformProcess::ForceWrite(std::string input){
 	std::string output;
 

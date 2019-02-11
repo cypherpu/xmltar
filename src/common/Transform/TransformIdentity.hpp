@@ -43,7 +43,7 @@ public:
 	void OpenCompression() override { if (data_!="") throw std::logic_error("TransformIdentity::OpenCompression: data_ not empty"); }
 	void OpenDecompression() override { if (data_!="") throw std::logic_error("TransformIdentity::OpenDecompression: data_ not empty"); }
 	// void Write(std::string const & input){ data_+=input; write_count+=input.size(); }
-	std::string ForceWrite(std::string data) override { read_count+=data.size(); return data; }
+	std::string ForceWrite(std::string data) override { write_count+=data.size(); read_count+=data.size(); return data; }
 	std::string Read() override { std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
 	std::string Close() override { std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
 	size_t ReadCount() override { return read_count; }

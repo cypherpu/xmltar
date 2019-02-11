@@ -92,7 +92,6 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 				memberCompression->Close());
 
 		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
-		std::cerr << dbg << ": 6" << std::endl;
 		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;
 		std::cerr << dbg << ": encoding->ReadCount=" << encoding->ReadCount() << std::endl;
 		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
