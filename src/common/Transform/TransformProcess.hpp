@@ -19,31 +19,32 @@ public:
 	Pipe b_;
 	Pipe err_;
 
-	std::string ActualCompressorVersionString();
+	std::string ActualCompressorVersionString() override;
 	// virtual std::string ExpectedCompressorVersionString()=0;
-	bool CorrectCompressorVersion();
+	bool CorrectCompressorVersion() override;
 	// virtual std::string HeaderMagicNumber(std::string identity)=0;
 	// virtual std::string TrailerMagicNumber()=0;
 	// virtual size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize)=0;
-	virtual size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize) override;
 	// virtual char const *CompressionCommand()=0;
 	// virtual char const *CompressionName()=0;
 	// virtual std::vector<char const *> CompressionArguments()=0;
 	// virtual std::vector<char const *> DecompressionArguments()=0;
 	// virtual std::vector<char const *> VersionArguments()=0;
 	// virtual std::string MinimumCompressionString()=0;
-	std::string CompressString(std::string const & s);
-	std::string DecompressString(std::string const & s);
+	std::string CompressString(std::string const & s) override;
+	std::string DecompressString(std::string const & s) override;
 	// virtual Transform *clone()=0;
 
-	void OpenCompression();
-	void OpenDecompression();
-	void Write(std::string const & input);
-	std::string Read();
-	std::string Close();
-	size_t WriteCount();
-	size_t QueuedWriteCount();
-	size_t ReadCount();
+	void OpenCompression() override;
+	void OpenDecompression() override;
+	// void Write(std::string const & input);
+	std::string ForceWrite(std::string input) override;
+	std::string Read() override;
+	std::string Close() override;
+	size_t WriteCount() override;
+	size_t QueuedWriteCount() override;
+	size_t ReadCount() override;
 
 	TransformProcess(std::string const & name)
 		: Transform(name) {}

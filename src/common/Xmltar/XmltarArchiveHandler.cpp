@@ -80,7 +80,6 @@ void XmltarArchiveHandler::endElement(const XML_Char *name){
 
 void XmltarArchiveHandler::characterData(XML_Char const *s, int len){
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchive_.decoder_->Write(std::string(s,len));
-		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->Read();
+		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->ForceWrite(std::string(s,len));
 	}
 }

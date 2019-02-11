@@ -42,6 +42,10 @@ public:
 		return writefd_;
 	}
 
+	size_t readCount(){ return readCount_; }
+
+	size_t writeCount(){ return writeCount_; }
+
 	void closeRead(){
 		if (close(readfd_))
 			throw std::runtime_error(std::string("Pipe::closeRead: ")+strerror(errno));
@@ -126,7 +130,7 @@ public:
 		return std::string(data,result);
 	}
 
-	size_t write(char const *data, size_t n){
+	ssize_t write(char const *data, size_t n){
 		ssize_t result=::write(writefd_,data,n);
 		// writeDescriptorState_=DescriptorState::OPENED;
 
