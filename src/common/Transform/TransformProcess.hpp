@@ -43,7 +43,7 @@ public:
 	std::string Read() override;
 	std::string Close() override;
 	size_t WriteCount() override;
-	size_t QueuedWriteCount() override;
+	// size_t QueuedWriteCount() override;
 	size_t ReadCount() override;
 
 	TransformProcess(std::string const & name)

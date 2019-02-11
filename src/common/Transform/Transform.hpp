@@ -40,7 +40,7 @@ public:
 	virtual std::string Read()=0;
 	virtual std::string Close()=0;
 	virtual size_t WriteCount()=0;
-	virtual size_t QueuedWriteCount()=0;
+	// virtual size_t QueuedWriteCount()=0;
 	virtual size_t ReadCount()=0;
 
 	std::string name(){ return name_; }

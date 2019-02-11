@@ -19,6 +19,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/*
+ * ../xmltar/bazel-bin/xmltar -c -f test.id.16.gz.mv.xmltar.%04d.gz --multi-volume --starting-volume=1 --tape-length=1000000 --base16 --gzip /home/dbetz/git/xmltar
+ */
+
 #include <fstream>
 #include <iostream>
 #include <boost/format.hpp>

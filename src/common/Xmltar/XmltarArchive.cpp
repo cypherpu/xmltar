@@ -107,11 +107,9 @@ XmltarArchive::XmltarArchive(
 							= options_.archiveMemberCompression_->CompressString(
 									tmp
 								);
-						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
-						archiveCompression->Write(compressedDirectoryMember);
-						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
 						nextMember_=NextMember();
-						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 					}
 					else if (firstPass)
@@ -141,11 +139,9 @@ XmltarArchive::XmltarArchive(
 							= options_.archiveMemberCompression_->CompressString(
 									tmp
 								);
-						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
-						archiveCompression->Write(compressedDirectoryMember);
-						std::cerr << dbg << ": archiveCompression->QueuedWriteCount()=" << archiveCompression->QueuedWriteCount() << std::endl;
+						ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
 						nextMember_=NextMember();
-						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+						pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 						std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 					}
 					else if (firstPass)
@@ -202,7 +198,7 @@ XmltarArchive::XmltarArchive(
 					}
 
 					nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
-					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->QueuedWriteCount())+compressedArchiveTrailer.size();
+					pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 					if (nextMember_->IsComplete())
 						nextMember_=NextMember();
 					else
@@ -295,13 +291,11 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				transformations.push_back(std::make_shared<TransformLzip>("archiveCompression"));
 
 			transformations[0]->OpenDecompression();
-			transformations[0]->Write(bufString);
+			std::string readString=transformations[0]->ForceWrite(bufString);
 			char buffer[2014];
-			std::string readString=transformations[0]->Read();
 			while(ifs && readString.size()<5){
 				ifs.read(buffer,sizeof(buffer));
-				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				readString=transformations[0]->Read();
+				readString=transformations[0]->ForceWrite(std::string(buffer,ifs.gcount()));
 			}
 
 			if (readString.size()<5)
@@ -341,13 +335,11 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				transformations.push_back(std::make_shared<TransformLzip>("archiveCompression"));
 
 			transformations[0]->OpenDecompression();
-			transformations[0]->Write(bufString);
+			std::string readString=transformations[0]->ForceWrite(bufString);
 			char buffer[2014];
-			std::string readString=transformations[0]->Read();
 			while(ifs && readString.size()<5){
 				ifs.read(buffer,sizeof(buffer));
-				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				readString+=transformations[0]->Read();
+				readString+=transformations[0]->ForceWrite(std::string(buffer,ifs.gcount()));
 			}
 
 			if (readString.size()<5)
@@ -368,15 +360,12 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 
 			while(ifs){
 				ifs.read(buffer,sizeof(buffer));
-				transformations[0]->Write(std::string(buffer,ifs.gcount()));
-				transformations[1]->Write(transformations[0]->Read());
-				readString=transformations[1]->Read();
-				// std::cerr << readString;
+				readString=transformations[1]->ForceWrite(transformations[0]->ForceWrite(std::string(buffer,ifs.gcount())));
 				archiveParser.Parse(readString,false);
 			}
 
-			transformations[1]->Write(transformations[0]->Close());
-			readString=transformations[1]->Close();
+			readString=transformations[1]->ForceWrite(transformations[0]->Close());
+			readString+=transformations[1]->Close();
 			// std::cerr << readString;
 			archiveParser.Parse(readString,true);
 		}
