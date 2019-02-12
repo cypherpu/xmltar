@@ -168,6 +168,7 @@ XmltarArchive::XmltarArchive(
 					}
 				}
 				else if (nextMember_->isRegularFile()){
+					std::cerr << "********** isRegularFile" << std::endl;
 					size_t numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
 					std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0){

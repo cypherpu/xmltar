@@ -25,32 +25,32 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Increment_Value(verbosity_));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformIdentity("fileCompression")));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformIdentity("file:ident")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformGzip("fileCompression")));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformGzip("file:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-bzip2","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformBzip2("fileCompression")));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformBzip2("file:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-lzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_,  (Transform *) new TransformLzip("fileCompression")));
+			p.Assign_Value(fileCompression_,  (Transform *) new TransformLzip("file:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
-			p.Assign_Value(encoding_,(Transform *) new TransformHex("encoding")));
+			p.Assign_Value(encoding_,(Transform *) new TransformHex("encod:hex")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base64","base64 encode files before archiving",
-			p.Assign_Value(encoding_,(Transform *) new TransformHex("encoding")));
+			p.Assign_Value(encoding_,(Transform *) new TransformHex("encode:base64")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformGzip("archiveMemberCompression")));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformGzip(":member:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-bzip2","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformBzip2("archiveMemberCompression")));
+			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformBzip2(":member:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-lzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformLzip("archiveMemberCompression")));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformLzip(":member:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformGzip("archiveCompression")));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformGzip("archive:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--bzip2","compress archive",
-			p.Assign_Value(archiveCompression_, (Transform *) new TransformBzip2("archiveCompression")));
+			p.Assign_Value(archiveCompression_, (Transform *) new TransformBzip2("archive:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--lzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformLzip("archiveCompression")));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformLzip("archive:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));

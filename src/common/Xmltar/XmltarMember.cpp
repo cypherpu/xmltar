@@ -6,6 +6,7 @@
  */
 
 #include <memory>
+#include <iomanip>
 
 extern "C" {
 #include <unistd.h>
@@ -49,6 +50,7 @@ XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::pat
 
 void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
+		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
@@ -247,9 +249,11 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
-		throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");
+		// throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");
+		return 0;
 
 	size_t archiveBytes=options_.tape_length_.get()-committedBytes-pendingBytes;
+	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
 	size_t uncompressedArchiveBytes=archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
 	size_t uncompressedMemberBytes=options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes);
 	size_t encodedMemberBytes;
@@ -260,10 +264,12 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 	size_t precompressedBytes=options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
 
 	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedArchiveBytes=" << uncompressedArchiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedMemberBytes=" << uncompressedMemberBytes << std::endl;
-	std::cerr << dbg << ": encodedMemberBytes=" << encodedMemberBytes << " memberHeader_.size()=" << memberHeader_.size() << " memberTrailer_.size()=" << memberTrailer_.size() << std::endl;
-	std::cerr << dbg << ": precompressedBytes=" << precompressedBytes << std::endl;
+	std::cerr << dbg << ": uncompressedArchiveBytes= " << std::right << std::setw(6) << uncompressedArchiveBytes << std::endl;
+	std::cerr << dbg << ": uncompressedMemberBytes=  " << std::right << std::setw(6) << uncompressedMemberBytes << std::endl;
+	std::cerr << dbg << ": encodedMemberBytes=       " << std::right << std::setw(6) << encodedMemberBytes << std::endl;
+	std::cerr << dbg << ":     memberHeader_.size()=     " << std::right << std::setw(6) << memberHeader_.size() << std::endl;
+	std::cerr << dbg << ":     memberTrailer_.size()=    " << std::right << std::setw(6) << memberTrailer_.size() << std::endl;
+	std::cerr << dbg << ": precompressedBytes=       " << std::right << std::setw(6) << precompressedBytes << std::endl;
 
 	return precompressedBytes;
 #if 0

@@ -22,7 +22,9 @@ public:
 		return plaintextSize+(plaintextSize>>8)+50;
 	}
 	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize) override {
-		return compressedtextSize-(compressedtextSize>>13)-(compressedtextSize>>14)-25;
+		if (compressedtextSize>(compressedtextSize>>13)+(compressedtextSize>>14)+25)
+			return compressedtextSize-(compressedtextSize>>13)-(compressedtextSize>>14)-25;
+		else return 0;
 	}
 	char const *CompressionCommand() override { return "/usr/bin/gzip"; }
 	char const *CompressionName() override { return "gzip"; }
