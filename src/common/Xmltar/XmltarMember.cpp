@@ -80,18 +80,10 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 
 		ofs <<
 			archiveCompression->ForceWrite(
-				memberCompression->ForceWrite(
-					encoding->ForceWrite(
-						precompression->Close())));
+				memberCompression->ForceWriteAndClose(
+					encoding->ForceWriteAndClose(
+						precompression->ForceWriteAndClose(""))));
 
-		ofs <<
-			archiveCompression->ForceWrite(
-				memberCompression->ForceWrite(
-					encoding->Close()));
-
-		ofs <<
-			archiveCompression->ForceWrite(
-				memberCompression->Close());
 
 		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;

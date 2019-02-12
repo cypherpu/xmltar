@@ -182,9 +182,10 @@ std::string TransformProcess::Read(){
 	return result;
 }
 
-std::string TransformProcess::Close(){
+std::string TransformProcess::ForceWriteAndClose(std::string input){
 	std::string result;
 
+	result=ForceWrite(input);
 	a_.closeWrite();
 
 	while(process_){

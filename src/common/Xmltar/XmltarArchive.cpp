@@ -118,7 +118,7 @@ XmltarArchive::XmltarArchive(
 					else if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
-						ofs << archiveCompression->Close();
+						ofs << archiveCompression->ForceWriteAndClose("");
 						ofs.flush();
 						committedBytes+=archiveCompression->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
@@ -150,7 +150,7 @@ XmltarArchive::XmltarArchive(
 					else if (firstPass)
 						throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
 					else {
-						ofs << archiveCompression->Close();
+						ofs << archiveCompression->ForceWriteAndClose("");
 						ofs.flush();
 						committedBytes+=archiveCompression->ReadCount();
 						pendingBytes=compressedArchiveTrailer.size();
@@ -175,7 +175,7 @@ XmltarArchive::XmltarArchive(
 						if (firstPass)
 							throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
 						else {	// close off this archiveCompression to free up space
-							ofs << archiveCompression->Close();
+							ofs << archiveCompression->ForceWriteAndClose("");
 							committedBytes+=archiveCompression->ReadCount();
 							pendingBytes=compressedArchiveTrailer.size();
 							numberOfFileBytesThatCanBeArchived=nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,archiveCompression);
@@ -211,7 +211,7 @@ XmltarArchive::XmltarArchive(
 
 			}
 
-			ofs << archiveCompression->Close();
+			ofs << archiveCompression->ForceWriteAndClose("");
 			committedBytes+=archiveCompression->ReadCount();
 			pendingBytes=compressedArchiveTrailer.size();
 			std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
@@ -260,7 +260,7 @@ XmltarArchive::XmltarArchive(
 				xmltarMember=std::make_shared<XmltarMember>(options_,filepath);
 				xmltarMember->write(archiveCompression, std::numeric_limits<size_t>::max(), *ofs);
 			}
-			*ofs << archiveCompression->Close();
+			*ofs << archiveCompression->ForceWriteAndClose("");
 			*ofs << CompressedArchiveTrailer();
 		}
 	}
@@ -368,8 +368,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				archiveParser.Parse(readString,false);
 			}
 
-			readString=transformations[1]->ForceWrite(transformations[0]->Close());
-			readString+=transformations[1]->Close();
+			readString=transformations[1]->ForceWriteAndClose(transformations[0]->ForceWriteAndClose(""));
 			// std::cerr << readString;
 			archiveParser.Parse(readString,true);
 		}

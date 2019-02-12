@@ -71,7 +71,7 @@ void XmltarArchiveHandler::endElement(const XML_Char *name){
 	std::cerr << std::string('\t',elements_.size()) << "</" << name << ">" << std::endl;
 
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->Close();
+		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->ForceWriteAndClose("");
 		xmltarArchive_.ofs_.close();
 	}
 

@@ -45,7 +45,7 @@ public:
 	// void Write(std::string const & input){ data_+=input; write_count+=input.size(); }
 	std::string ForceWrite(std::string data) override { write_count+=data.size(); read_count+=data.size(); return data; }
 	std::string Read() override { std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
-	std::string Close() override { std::string tmp; std::swap(tmp,data_); read_count+=tmp.size(); return tmp; }
+	std::string ForceWriteAndClose(std::string input) override { return ForceWrite(input); }
 	size_t ReadCount() override { return read_count; }
 	size_t WriteCount() override { return write_count; }
 
