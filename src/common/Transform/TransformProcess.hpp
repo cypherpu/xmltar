@@ -38,12 +38,9 @@ public:
 
 	void OpenCompression() override;
 	void OpenDecompression() override;
-	// void Write(std::string const & input);
 	std::string ForceWrite(std::string input) override;
-	std::string Read() override;
 	std::string ForceWriteAndClose(std::string input) override;
 	size_t WriteCount() override;
-	// size_t QueuedWriteCount() override;
 	size_t ReadCount() override;
 
 	TransformProcess(std::string const & name)

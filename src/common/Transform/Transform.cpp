@@ -24,8 +24,7 @@
 // std::string Transform::CompressString(std::string const & s);
 // std::string Transform::DecompressString(std::string const & s);
 // void Transform::Open();
-// void Transform::Write(std::string & input);
-// std::string Transform::Read();
-// std::string Transform::Close();
+// void Transform::ForceWrite(std::string & input);
+// std::string Transform::ForceWriteClose();
 
 Transform::~Transform(){}

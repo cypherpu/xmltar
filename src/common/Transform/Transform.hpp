@@ -35,12 +35,9 @@ public:
 
 	virtual void OpenCompression()=0;
 	virtual void OpenDecompression()=0;
-	// virtual void Write(std::string const & input)=0;
 	virtual std::string ForceWrite(std::string input)=0;
-	virtual std::string Read()=0;
 	virtual std::string ForceWriteAndClose(std::string input)=0;
 	virtual size_t WriteCount()=0;
-	// virtual size_t QueuedWriteCount()=0;
 	virtual size_t ReadCount()=0;
 
 	std::string name(){ return name_; }

@@ -171,7 +171,7 @@ std::string TransformProcess::ForceWrite(std::string input){
 
 	return output;
 }
-
+#if 0
 std::string TransformProcess::Read(){
 	//std::cerr << name() << "::ReadBufferSize()=" << pipe_.Read1BufferSize()+pipe_.Read2BufferSize() << std::endl;
 	std::string result;
@@ -181,7 +181,7 @@ std::string TransformProcess::Read(){
 
 	return result;
 }
-
+#endif
 std::string TransformProcess::ForceWriteAndClose(std::string input){
 	std::string result;
 
