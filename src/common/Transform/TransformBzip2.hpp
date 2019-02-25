@@ -40,7 +40,18 @@ public:
 
 	TransformBzip2(std::string const & name)
 		: TransformProcess(name) {}
-	~TransformBzip2(){}
+	~TransformBzip2(){
+		std::cerr << "Calling TransformBzip2::~TransformBzip2" << std::endl;
+		if (a_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformBzip2::~TransformBzip2: opened read state a_" << name() << std::endl;
+		if (a_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformBzip2::~TransformBzip2: opened write state a_" << name() << std::endl;
+		if (b_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformBzip2::~TransformBzip2: opened read state b_" << name() << std::endl;
+		if (b_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformBzip2::~TransformBzip2: opened write state b_" << name() << std::endl;
+	}
+
 };
 
 #endif /* SRC_COMMON_TRANSFORM_TRANSFORMBZIP2_HPP_ */

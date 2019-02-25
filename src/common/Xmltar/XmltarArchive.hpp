@@ -24,6 +24,7 @@ public:
 };
 
 class XmltarArchive {
+protected:
 	XmltarOptions options_;
 	std::string filename_;
 	unsigned int volumeNumber_;
@@ -87,7 +88,5 @@ public:
 
 	friend XmltarArchiveHandler;
 };
-
-
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_ */

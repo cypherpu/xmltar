@@ -40,7 +40,18 @@ public:
 
 	TransformLzip(std::string const & name)
 		: TransformProcess(name){}
-	~TransformLzip(){}
+	~TransformLzip(){
+		std::cerr << "Calling TransformLzip::~TransformLzip" << std::endl;
+		if (a_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformLzip::~TransformLzip: opened read state a_" << name() << std::endl;
+		if (a_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformLzip::~TransformLzip: opened write state a_" << name() << std::endl;
+		if (b_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformLzip::~TransformLzip: opened read state b_" << name() << std::endl;
+		if (b_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformLzip::~TransformLzip: opened write state b_" << name() << std::endl;
+	}
+
 };
 
 #endif /* SRC_COMMON_TRANSFORM_TRANSFORMLZIP_HPP_ */

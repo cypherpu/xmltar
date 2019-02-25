@@ -12,99 +12,134 @@
 #include <string.h>			// strerror
 #include <fcntl.h>			// fcntl
 
+#include <iostream> 		// printf debugging
+
 #include <array>
 
-class Pipe {
-	int readfd_;
-	int writefd_;
+class Descriptor {
+public:
+	enum State { UNOPENED, OPENED, CLOSED };
 
-	size_t readCount_;
-	size_t writeCount_;
+	State state_;
+	int fd_;
+	size_t count_;
+
+	Descriptor()
+		: state_(UNOPENED), fd_(-1), count_(0) {}
+
+	void open(int fd){
+		state_=OPENED;
+		fd_=fd;
+		count_=0;
+		std::cerr << "Descriptor::open: fd_=" << fd_ << std::endl;
+	}
+
+	void close(){
+		//std::cerr << "Descriptor: " << fd_ << " closed" << std::endl;
+		state_=CLOSED;
+		if (::close(fd_))
+			throw std::runtime_error(std::string("Descriptor::close: ")+strerror(errno));
+		std::cerr << "Descriptor::close: fd_=" << fd_ << std::endl;
+	}
+
+	void closeAndDup(int newFd){
+		if (::close(newFd))
+			throw std::runtime_error(std::string("Descriptor::close: ")+strerror(errno));
+		if (dup(fd_)==-1)
+			throw std::runtime_error(std::string("Descriptor::close: cannot dup: ")+strerror(errno));
+		close();
+		open(newFd);
+	}
+
+	friend std::ostream & operator<<(std::ostream & os, State state){
+		if (state==UNOPENED) os << "UNOPENED";
+		else if (state==OPENED) os << "OPENED";
+		else if (state==CLOSED) os << "CLOSED";
+		else throw std::runtime_error("operator<<(std::ostream & os, State state): unknown state");
+
+		return os;
+	}
+};
+
+class Pipe {
+	Descriptor read_;
+	Descriptor write_;
 public:
 	Pipe()
-		: readfd_(-1), writefd_(-1), readCount_(0), writeCount_(0){}
+		: read_(), write_() {}
 
 	int pipe(){
 		int fds[2];
 		int result=::pipe(fds);
 
-		readfd_=fds[0];
-		writefd_=fds[1];
+		read_.open(fds[0]);
+		write_.open(fds[1]);
 
 		return result;
 	}
 
 	int readfd(){
-		return readfd_;
+		return read_.fd_;
+	}
+
+	Descriptor::State readState(){
+		return read_.state_;
 	}
 
 	int writefd(){
-		return writefd_;
+		return write_.fd_;
 	}
 
-	size_t readCount(){ return readCount_; }
+	Descriptor::State writeState(){
+		return write_.state_;
+	}
 
-	size_t writeCount(){ return writeCount_; }
+	size_t readCount(){ return read_.count_; }
+
+	size_t writeCount(){ return write_.count_; }
 
 	void closeRead(){
-		if (close(readfd_))
-			throw std::runtime_error(std::string("Pipe::closeRead: ")+strerror(errno));
+		read_.close();
 	}
 
 	void closeWrite(){
-		if (close(writefd_))
-			throw std::runtime_error(std::string("Pipe::closeWrite: ")+strerror(errno));
+		write_.close();
 	}
 
 	void stdin(){
-		if (close(0))
-			throw std::runtime_error(std::string("Pipe::stdin: cannot close stdin: ")+strerror(errno));
-		if (dup(readfd_)==-1)
-			throw std::runtime_error(std::string("Pipe::stdin: cannot dup: ")+strerror(errno));
-		if (close(readfd_))
-			throw std::runtime_error(std::string("Pipe::stdin: cannot close pipe read end: ")+strerror(errno));
+		read_.closeAndDup(0);
 	}
 
 	void stdout(){
-		if (close(1))
-			throw std::runtime_error(std::string("Pipe::stdout: cannot close stdout: ")+strerror(errno));
-		if (dup(writefd_)==-1)
-			throw std::runtime_error(std::string("Pipe::stdout: cannot dup: ")+strerror(errno));
-		if (close(writefd_))
-			throw std::runtime_error(std::string("Pipe::stdout: cannot close pipe write end: ")+strerror(errno));
+		write_.closeAndDup(1);
 	}
 
 	void stderr(){
-		if (close(2))
-			throw std::runtime_error(std::string("Pipe::stderr: cannot close stderr: ")+strerror(errno));
-		if (dup(writefd_)==-1)
-			throw std::runtime_error(std::string("Pipe::stderr: cannot dup: ")+strerror(errno));
-		if (close(writefd_))
-			throw std::runtime_error(std::string("Pipe::stderr: cannot close pipe write end: ")+strerror(errno));
+		write_.closeAndDup(2);
 	}
 
 	void nonblockingWrite(){
 		long int oldFlags;
 
-        if ((oldFlags=::fcntl(writefd_,F_GETFL))<0)
+        if ((oldFlags=::fcntl(write_.fd_,F_GETFL))<0)
             throw std::runtime_error(std::string("Pipe::nonblockingWrite: unable to ::fcntl(pipefd_.data()[1],F_GETFL): ")+strerror(errno));
-        if (::fcntl(writefd_,F_SETFL,oldFlags | O_NONBLOCK)<0)
+        if (::fcntl(write_.fd_,F_SETFL,oldFlags | O_NONBLOCK)<0)
             throw std::runtime_error(std::string("Pipe::nonblockingWrite: unable to ::fcntl(pipefd_.data()[1],F_SETFL,old_flags | O_NONBLOCK)")+strerror(errno));
 	}
 
 	void nonblockingRead(){
 		long int oldFlags;
 
-        if ((oldFlags=::fcntl(readfd_,F_GETFL))<0)
+        if ((oldFlags=::fcntl(read_.fd_,F_GETFL))<0)
             throw std::runtime_error("Pipe::nonblockingRead: unable to ::fcntl(pipefd_.data()[0],F_GETFL)");
-        if (::fcntl(readfd_,F_SETFL,oldFlags | O_NONBLOCK)<0)
+        if (::fcntl(read_.fd_,F_SETFL,oldFlags | O_NONBLOCK)<0)
             throw std::runtime_error("Pipe::nonblockingRead: unable to ::fcntl(pipefd_.data()[0],F_SETFL,old_flags | O_NONBLOCK)");
 	}
 
 	size_t read(char *buffer, size_t n){
 	    //if (read1DescriptorState_==DescriptorState::CLOSED) return 0;
 
-	    ssize_t result=::read(readfd_,buffer,n);
+	    ssize_t result=::read(read_.fd_,buffer,n);
 	    //read1DescriptorState_=DescriptorState::OPENED;
 
 	    if (result<0){
@@ -116,7 +151,7 @@ public:
 				throw std::runtime_error(std::string("Pipe::read: ")+strerror(errno));
 	    }
 
-	    readCount_+=result;
+	    read_.count_+=result;
 
 	    //if (result==0 && getChildState()==ChildState::EXITED) close_read1();
 
@@ -131,7 +166,7 @@ public:
 	}
 
 	ssize_t write(char const *data, size_t n){
-		ssize_t result=::write(writefd_,data,n);
+		ssize_t result=::write(write_.fd_,data,n);
 		// writeDescriptorState_=DescriptorState::OPENED;
 
 		if (result<0)
@@ -142,7 +177,7 @@ public:
 			else
 				throw std::runtime_error(std::string("Pipe::write: ")+strerror(errno));
 		else {
-			writeCount_+=result;
+			write_.count_+=result;
 
 			return result;
 		}

@@ -42,7 +42,17 @@ public:
 
 	TransformGzip(std::string const & name)
 		: TransformProcess(name) {}
-	~TransformGzip(){}
+	~TransformGzip(){
+		std::cerr << "Calling TransformGzip::~TransformGzip" << std::endl;
+		if (a_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformGzip::~TransformGzip: opened read state a_" << name() << std::endl;
+		if (a_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformGzip::~TransformGzip: opened write state a_" << name() << std::endl;
+		if (b_.readState()!=Descriptor::CLOSED)
+			std::cerr << "TransformGzip::~TransformGzip: opened read state b_" << name() << std::endl;
+		if (b_.writeState()!=Descriptor::CLOSED)
+			std::cerr << "TransformGzip::~TransformGzip: opened write state b_" << name() << std::endl;
+	}
 };
 
 #endif /* SRC_COMMON_TRANSFORM_TRANSFORMGZIP_HPP_ */

@@ -30,7 +30,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "XmltarInvocation.hpp"
 #include "XmltarMember.hpp"
-#include "Xmltar/XmltarArchive.hpp"
+#include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
+#include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
 
 XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	: version("Xmltar_0_0_1"), options_(options), pathCompare() {
@@ -99,13 +100,13 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 std::string filename=str(fmt);
 
                 std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
-                XmltarArchive xmltarArchive(options_,filename, volumeNumber, &filesToArchive, nextMember);
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename, volumeNumber, &filesToArchive, nextMember);
                 std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (!nextMember && xmltarArchive.ranOutOfFiles()) break;
+            	if (!nextMember && xmltarArchiveCreateMultiVolume.ranOutOfFiles()) break;
             }
 		}
 		else {	// !options_.multi_volume_
@@ -113,7 +114,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
             std::shared_ptr<XmltarMember> nextMember;
-            XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), 0, &filesToArchive,nextMember);
+            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, &filesToArchive,nextMember);
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
