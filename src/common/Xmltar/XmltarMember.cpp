@@ -26,6 +26,21 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
+static void ListFds(){
+	pid_t pid=getpid();
+
+	std::ostringstream oss;
+
+	oss << "/proc/" << pid << "/fd";
+
+	std::cerr << " ";
+	for(auto & p : boost::filesystem::directory_iterator(oss.str()) ){
+		std::cerr << p << " ";
+	}
+
+	std::cerr << std::endl;
+}
+
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
