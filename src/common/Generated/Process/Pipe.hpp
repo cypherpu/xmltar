@@ -31,6 +31,7 @@ public:
 		state_=OPENED;
 		fd_=fd;
 		count_=0;
+
 		std::cerr << "Descriptor::open: fd_=" << fd_ << std::endl;
 	}
 
