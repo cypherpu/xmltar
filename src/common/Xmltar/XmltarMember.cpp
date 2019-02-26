@@ -69,6 +69,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
+		ListFds();
 		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
 		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
 		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
@@ -120,6 +121,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+		ListFds();
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
