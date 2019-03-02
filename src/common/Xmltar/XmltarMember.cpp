@@ -17,29 +17,16 @@ extern "C" {
 #include <grp.h>
 }
 #include <boost/lexical_cast.hpp>
+#include <spdlog/spdlog.h>
 
 #include "Xmltar/XmltarMember.hpp"
 #include "Utilities/XMLEscapeAttribute.hpp"
 #include "Utilities/ToLocalTime.hpp"
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
+#include "Utilities/PrintOpenFileDescriptors.hpp"
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
-
-static void ListFds(){
-	pid_t pid=getpid();
-
-	std::ostringstream oss;
-
-	oss << "/proc/" << pid << "/fd";
-
-	std::cerr << " ";
-	for(auto & p : boost::filesystem::directory_iterator(oss.str()) ){
-		std::cerr << p << " ";
-	}
-
-	std::cerr << std::endl;
-}
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0) {
@@ -69,15 +56,22 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
-		ListFds();
+		PrintOpenFileDescriptors();
 		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
 		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
 		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
 
 		size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
+		PrintOpenFileDescriptors();
+		std::cerr << "********************************* precompression" << std::endl;
 		precompression->OpenCompression();
+		PrintOpenFileDescriptors();
+		std::cerr << "********************************* encoding" << std::endl;
 		encoding->OpenCompression();
+		PrintOpenFileDescriptors();
+		std::cerr << "********************************* member compression" << std::endl;
 		memberCompression->OpenCompression();
+		PrintOpenFileDescriptors();
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
@@ -121,7 +115,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
-		ListFds();
+		PrintOpenFileDescriptors();
 }
 
 size_t XmltarMember::MaximumSize(size_t n){

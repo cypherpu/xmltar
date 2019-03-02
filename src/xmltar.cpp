@@ -26,6 +26,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 #include <boost/format.hpp>
+#include <spdlog/spdlog.h>
 
 #include "common/Xmltar/XmltarInvocation.hpp"
 #include "Include/Incremental_File.hpp"
@@ -39,6 +40,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 int main(int argc, char const *argv[])
 {
+	spdlog::set_level(spdlog::level::debug);
+	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
+
 	try {
 		/*
 		TransformIdentity transformIdentity;
