@@ -10,6 +10,8 @@
 
 #include "Transform/TransformProcess.hpp"
 
+#if 0
+
 static char conversion[]={ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 class TransformHex : public Transform {
@@ -96,7 +98,7 @@ public:
 	~TransformHex(){}
 };
 
-#if 0
+#else
 
 class TransformHex  : public TransformProcess {
 public:
@@ -115,49 +117,6 @@ public:
 	std::vector<char const *> CompressionArguments() override { return std::vector<char const *>({"xxd","-ps"}); }
 	std::vector<char const *> DecompressionArguments() override { return std::vector<char const *>({"xxd","-ps","-r"}); }
 	std::vector<char const *> VersionArguments() override { return std::vector<char const *>({"xxd","-v"}); }
-	size_t EmptyCompressedSize() override { throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
-	size_t MinimumUsableCompressedSize() override { throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
-	std::string MinimumCompressionString() override { return ""; }
-	// std::string CompressString(std::string const & s);
-	// std::string DecompressString(std::string const & s);
-	Transform *clone() override { return new TransformHex(name()); }
-
-	TransformHex(std::string const & name)
-		: TransformProcess(name) {}
-	~TransformHex(){
-		std::cerr << "Calling TransformHex::~TransformHex" << std::endl;
-		if (a_.readState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened read state a_" << name() << std::endl;
-		if (a_.writeState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened write state a_" << name() << std::endl;
-		if (b_.readState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened read state b_" << name() << std::endl;
-		if (b_.writeState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened write state b_" << name() << std::endl;
-	}
-
-};
-
-#endif
-
-#if 0
-class TransformHex  : public TransformProcess {
-public:
-	// std::string ActualCompressorVersionString();
-	std::string ExpectedCompressorVersionString() override { return "hexdump from util-linux 2.32.1"; }
-	// std::string CorrectCompressorVersion();
-	std::string HeaderMagicNumber(std::string identity) override { return ""; }
-	std::string TrailerMagicNumber() override { return ""; }
-	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize) override {
-		// return 1+(2*plaintextSize-1)/60+2*plaintextSize;
-		return (60+2*plaintextSize-1)/60+2*plaintextSize;
-	}
-	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
-	char const *CompressionCommand() override { return "/usr/bin/hexdump"; }
-	char const *CompressionName() override { return "hexdump"; }
-	std::vector<char const *> CompressionArguments() override { return std::vector<char const *>({"hexdump","-e","'30/1 \"%02x\" \"\n\"'"}); }
-	std::vector<char const *> DecompressionArguments() override { return std::vector<char const *>({"xxd","-ps","-r"}); }
-	std::vector<char const *> VersionArguments() override { return std::vector<char const *>({"hexdump","--version"}); }
 	size_t EmptyCompressedSize() override { throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
 	size_t MinimumUsableCompressedSize() override { throw std::logic_error("TransformHex::EmptyArchiveSize: should not be called"); }
 	std::string MinimumCompressionString() override { return ""; }
