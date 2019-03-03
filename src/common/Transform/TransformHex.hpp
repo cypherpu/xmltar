@@ -109,9 +109,18 @@ public:
 	std::string TrailerMagicNumber() override { return ""; }
 	size_t MaximumCompressedtextSizeGivenPlaintextSize(size_t plaintextSize) override {
 		// return 1+(2*plaintextSize-1)/60+2*plaintextSize;
-		return (60+2*plaintextSize-1)/60+2*plaintextSize;
+		return (29+plaintextSize)/30+2*plaintextSize;
 	}
-	// size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize);
+	/*
+	 *    0         1                  2               3
+	 *    0     3,5,7,...,61         64-122         125-183
+	 *
+	 *
+	 */
+	size_t MinimumPlaintextSizeGivenCompressedtextSize(size_t compressedtextSize){
+		// return (compressedtextSize-(compressedtextSize+58)/61)/2;
+		return (compressedtextSize-(compressedtextSize+58)/61)/2;
+	}
 	char const *CompressionCommand() override { return "/usr/bin/xxd"; }
 	char const *CompressionName() override { return "xxd"; }
 	std::vector<char const *> CompressionArguments() override { return std::vector<char const *>({"xxd","-ps"}); }
@@ -127,15 +136,6 @@ public:
 	TransformHex(std::string const & name)
 		: TransformProcess(name) {}
 	~TransformHex(){
-		std::cerr << "Calling TransformHex::~TransformHex" << std::endl;
-		if (a_.readState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened read state a_" << name() << std::endl;
-		if (a_.writeState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened write state a_" << name() << std::endl;
-		if (b_.readState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened read state b_" << name() << std::endl;
-		if (b_.writeState()!=Descriptor::CLOSED)
-			std::cerr << "TransformHex::~TransformHex: opened write state b_" << name() << std::endl;
 	}
 
 };

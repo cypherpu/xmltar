@@ -6,10 +6,13 @@
  */
 
 #include <gmock/gmock.h>
+#include <spdlog/spdlog.h>
 
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  //::testing::GTEST_FLAG(filter) = "tA.*";
-  return RUN_ALL_TESTS();
+	::testing::InitGoogleTest(&argc, argv);
+	spdlog::set_level(spdlog::level::err);
+	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
+	//::testing::GTEST_FLAG(filter) = "tA.*";
+	return RUN_ALL_TESTS();
 }
 

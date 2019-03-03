@@ -175,19 +175,21 @@ std::string TransformProcess::ForceWrite(std::string input){
 std::string TransformProcess::ForceWriteAndClose(std::string input){
 	std::string result;
 
-	std::cerr << "Before ForceWrite" << std::endl;
+	spdlog::debug("Before ForceWrite");
 	result=ForceWrite(input);
 	a_.closeWrite();
 
-	std::cerr << "Before while" << std::endl;
+	spdlog::debug("Before while");
 	while(process_){
-		std::cerr << "while process read=" << b_.readState() << " write=" << a_.writeState() << std::endl;
+		spdlog::debug("while process read={} write={}", b_.readState(), a_.writeState());
 		result+=b_.read();
 		err_.read();
 	}
 
-	std::cerr << "Before err_.read" << std::endl;
-	result+=b_.read();
+	spdlog::debug("Before err_.read");
+	std::string tmp;
+	while((tmp=b_.read()).size())
+		result+=tmp;
 	err_.read();
 
 	b_.closeRead();
@@ -205,18 +207,5 @@ size_t TransformProcess::ReadCount(){
 }
 
 TransformProcess::~TransformProcess(){
-	std::cerr << "Calling TransformProcess::~TransformProcess" << std::endl;
-	if (a_.readState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened read state a_" << name() << std::endl;
-	if (a_.writeState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened write state a_" << name() << std::endl;
-	if (b_.readState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened read state b_" << name() << std::endl;
-	if (b_.writeState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened write state b_" << name() << std::endl;
-	if (err_.readState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened read state err_" << name() << std::endl;
-	if (err_.writeState()!=Descriptor::CLOSED)
-		std::cerr << "TransformProcess::~TransformProcess: opened write state err_" << name() << std::endl;
 }
 
