@@ -40,7 +40,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 int main(int argc, char const *argv[])
 {
-	spdlog::set_level(spdlog::level::debug);
+	spdlog::set_level(spdlog::level::info);
 	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
 
 	try {
