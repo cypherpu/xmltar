@@ -25,6 +25,11 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <fstream>
 #include <iostream>
+
+#include <string>
+#include <termios.h>
+#include <unistd.h>
+
 #include <boost/format.hpp>
 #include <spdlog/spdlog.h>
 
@@ -62,6 +67,23 @@ int main(int argc, char const *argv[])
 		if (!transformLzip.CorrectCompressorVersion())
 			throw std::runtime_error("main: wrong version 'lzip' command");
 		*/
+
+	    termios oldt;
+	    tcgetattr(STDIN_FILENO, &oldt);
+	    termios newt = oldt;
+	    newt.c_lflag &= ~ECHO;
+	    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+	    std::string s;
+	    std::cout << "Before getline" << std::endl;
+	    std::getline(std::cin, s);
+	    std::cout << "After getline" << std::endl;
+
+	    std::cout << s << std::endl;
+
+	    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+
 		XmltarOptions options;
 		options.ProcessOptions(argc, argv);
 
