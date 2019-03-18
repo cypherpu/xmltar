@@ -1,40 +1,17 @@
 /*
- * XmltarArchiveHandler.cpp
+ * XmltarArchiveExtractMultiVolume.cpp
  *
- *  Created on: Jan 7, 2019
+ *  Created on: Mar 16, 2019
  *      Author: dbetz
  */
 
-#include <iostream>
-
-#include <boost/lexical_cast.hpp>
 #include <filesystem>
 
-#include "Xmltar/XmltarArchiveHandler.hpp"
-#include "Xmltar/XmltarArchive.hpp"
+#include <boost/lexical_cast.hpp>
 
-extern "C" void XMLCALL StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
-	((XmltarArchiveHandler *) userData)->startElement(name,atts);
-}
+#include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 
-extern "C" void XMLCALL EndElementHandler(void *userData, const XML_Char *name){
-	((XmltarArchiveHandler *) userData)->endElement(name);
-}
-
-extern "C" void XMLCALL CharacterDataHandler(void *userData, XML_Char const *s, int len){
-	((XmltarArchiveHandler *) userData)->characterData(s,len);
-}
-
-XmltarArchiveHandler::XmltarArchiveHandler(XmltarArchive & xmltarArchive)
-	: xmltarArchive_(xmltarArchive){
-
-	parser_ = XML_ParserCreate(NULL);
-	XML_SetUserData(parser_, this);
-    XML_SetElementHandler(parser_, StartElementHandler, EndElementHandler);
-    XML_SetCharacterDataHandler(parser_, CharacterDataHandler);
-}
-
-void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **atts){
+void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_Char **atts){
 	elements_.push_back(Element(name,atts));
 
 	if (elements_.back().name_=="xmltar"){
@@ -59,27 +36,49 @@ void XmltarArchiveHandler::startElement(const XML_Char *name, const XML_Char **a
 	if (elements_.back().name_=="content" && elements_.back().attributes_.at("type")=="directory")
 			std::filesystem::create_directories(elements_.end()[-2].attributes_.at("name"));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchive_.ofs_.open(elements_.end()[-3].attributes_.at("name"));
-		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchive_.decoder_.reset(new TransformHex("decoder"));
-		xmltarArchive_.decoder_->OpenDecompression();
+		// FIXME - create directories leading to file
+		xmltarArchiveExtractMultiVolume_.ofs_.open(elements_.end()[-3].attributes_.at("name"));
+		xmltarArchiveExtractMultiVolume_.ofs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
+		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchiveExtractMultiVolume_.decoder_.reset(new TransformHex("decoder"));
+		xmltarArchiveExtractMultiVolume_.decoder_->OpenDecompression();
 	}
 
 	std::cerr << std::string('\t',elements_.size()) << "<" << name << ">" << std::endl;
 }
 
-void XmltarArchiveHandler::endElement(const XML_Char *name){
+void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 	std::cerr << std::string('\t',elements_.size()) << "</" << name << ">" << std::endl;
 
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->ForceWriteAndClose("");
-		xmltarArchive_.ofs_.close();
+		xmltarArchiveExtractMultiVolume_.ofs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose("");
+		xmltarArchiveExtractMultiVolume_.ofs_.close();
 	}
 
 	elements_.pop_back();
 }
 
-void XmltarArchiveHandler::characterData(XML_Char const *s, int len){
+void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchive_.ofs_ << xmltarArchive_.decoder_->ForceWrite(std::string(s,len));
+		xmltarArchiveExtractMultiVolume_.ofs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWrite(std::string(s,len));
 	}
 }
+
+XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
+	: ::XmltarArchive(opts,filename,nextMember_)
+{
+	std::cerr << "XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume: entering: filename=" << filename << std::endl;
+
+
+	XmltarMultiVolumeXmlHandler xmltarMultiVolumeHandler(*this);
+
+	std::ifstream ifs(filename);
+
+	XML_Char buffer[1024];
+	while(ifs){
+		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
+		std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
+		xmltarMultiVolumeHandler.Parse(buffer,ifs.gcount(),false);
+	}
+}
+
+

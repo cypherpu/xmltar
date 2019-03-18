@@ -29,7 +29,7 @@ extern "C" {
 #include "../Debug2/Debug2.hpp"
 
 XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
-	: options_(options), filepath_(filepath), nextByte_(0) {
+	: options_(options), filepath_(filepath), nextByte_(0), metadataWritten_(false) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=boost::filesystem::symlink_status(filepath_);
@@ -56,26 +56,20 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::ifstream ifs(filepath_.string());
 		ifs.seekg(nextByte_);
 
-		PrintOpenFileDescriptors();
 		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
 		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
 		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
 
 		size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
-		PrintOpenFileDescriptors();
-		std::cerr << "********************************* precompression" << std::endl;
 		precompression->OpenCompression();
-		PrintOpenFileDescriptors();
-		std::cerr << "********************************* encoding" << std::endl;
 		encoding->OpenCompression();
-		PrintOpenFileDescriptors();
-		std::cerr << "********************************* member compression" << std::endl;
 		memberCompression->OpenCompression();
-		PrintOpenFileDescriptors();
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
 		ofs << archiveCompression->ForceWrite(memberCompression->ForceWrite(memberHeader_));
+		metadataWritten_=true;
+	    memberHeader_=MemberHeader();
 		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
 
 		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
@@ -96,7 +90,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << "tmpPreCompression.size()=" << tmpPreCompression.size() << std::endl;
 		std::string tmpEncoding=encoding->ForceWriteAndClose(tmpPreCompression);
 		std::cerr << dbg << ": after tmpEncoding" << std::endl;
-		std::string tmpMemberCompression=memberCompression->ForceWriteAndClose(tmpEncoding);
+		std::string tmpMemberCompression=memberCompression->ForceWriteAndClose(tmpEncoding+memberTrailer_);
 
 		ofs <<
 			archiveCompression->ForceWrite(tmpMemberCompression);
@@ -115,7 +109,6 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
-		PrintOpenFileDescriptors();
 }
 
 size_t XmltarMember::MaximumSize(size_t n){
@@ -159,29 +152,31 @@ std::string XmltarMember::MemberHeader(){
 		attr_list.push_back(std::pair<std::string,std::string>(key,std::string(xattr_val.get(),val_size)));
 	};
 
-	s=s+options_.Tabs("\t\t\t")+"<meta-data>"+options_.Newline();
+	if (!metadataWritten_){
+		s=s+options_.Tabs("\t\t\t")+"<meta-data>"+options_.Newline();
 
-	for(unsigned int i=0; i<attr_list.size(); ++i)
-		s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
-			+XMLEscapeAttribute(attr_list[i].first)+"\" value=\""
-			+XMLEscapeAttribute(attr_list[i].second)+"\"/>"+options_.Newline();
+		for(unsigned int i=0; i<attr_list.size(); ++i)
+			s=s+options_.Tabs("\t\t\t\t")+"<extended-attribute key=\""
+				+XMLEscapeAttribute(attr_list[i].first)+"\" value=\""
+				+XMLEscapeAttribute(attr_list[i].second)+"\"/>"+options_.Newline();
 
-	struct passwd *pw=getpwuid(stat_buf.st_uid);
-	struct group *g=getgrgid(stat_buf.st_gid);
+		struct passwd *pw=getpwuid(stat_buf.st_uid);
+		struct group *g=getgrgid(stat_buf.st_gid);
 
-	s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\" localtime=\""+ToLocalTime(stat_buf.st_atime)+"\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\" localtime=\""+ToLocalTime(stat_buf.st_ctime)+"\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\" localtime=\""+ToLocalTime(stat_buf.st_mtime)+"\"/>"+options_.Newline();
 
-	s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
-	s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
-	if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
-		s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+options_.Newline();
+		s=s+options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+options_.Newline();
+		if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
+			s=s+options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+options_.Newline();
+		}
+		s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
+
+		s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 	}
-	s=s+options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+options_.Newline();
-
-	s=s+options_.Tabs("\t\t\t")+"</meta-data>"+options_.Newline();
 
     switch(f_type){
         case boost::filesystem::regular_file:

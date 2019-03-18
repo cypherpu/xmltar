@@ -26,6 +26,8 @@ class XmltarMember {
 	std::string memberTrailer_;
 	size_t nextByte_;
 
+	bool metadataWritten_;
+
 public:
 	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
 

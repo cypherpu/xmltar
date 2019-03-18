@@ -33,7 +33,7 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 
-#include "XmltarArchiveHandler.hpp"
+#include "Xmltar/XmlHandler.hpp"
 
 #include "../Debug2/Debug2.hpp"
 
@@ -79,7 +79,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 
 			if (!ifs)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" cannot be read");
-
+#if 0
 			char smallBuf[5];
 			ifs.read(smallBuf,sizeof(smallBuf));
 			if (!ifs)
@@ -116,8 +116,10 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 				transformations.push_back(std::make_shared<TransformBzip2>("memberCompression"));
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>("memberCompression"));
+#endif
 		}
 		else {
+#if 0
 			std:: ifstream ifs(filename);
 
 			if (!ifs)
@@ -163,7 +165,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 
 			// std::cerr << "readString=" << readString << std::endl;
 
-			XmltarArchiveHandler archiveParser(*this);
+			XmltarMultiVolumeXmlHandler archiveParser(*this);
 			archiveParser.Parse(readString,false);
 
 			while(ifs){
@@ -175,6 +177,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 			readString=transformations[1]->ForceWriteAndClose(transformations[0]->ForceWriteAndClose(""));
 			// std::cerr << readString;
 			archiveParser.Parse(readString,true);
+#endif
 		}
 	}
 }

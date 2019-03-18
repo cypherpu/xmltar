@@ -142,7 +142,7 @@
 				<buildArguments>-c '( ./pre-build.sh ; bazel build -s --verbose_failures --copt -g --cxxopt='-std=c++1z' --strip=never :all )'</buildArguments>
 				<buildTarget>all</buildTarget>
 				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
+				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 		</buildTargets>
