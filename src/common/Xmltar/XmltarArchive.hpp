@@ -33,9 +33,6 @@ protected:
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived_;
 	std::shared_ptr<XmltarMember> & nextMember_;
 public:
-	std::unique_ptr<Transform> decoder_;
-	std::ofstream ofs_;
-
 	XmltarArchive(
 		XmltarOptions & opts,
 		std::string filename,
