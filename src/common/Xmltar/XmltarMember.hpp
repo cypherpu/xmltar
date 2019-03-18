@@ -8,8 +8,10 @@
 #ifndef SRC_COMMON_XMLTAR_XMLTARMEMBER_HPP_
 #define SRC_COMMON_XMLTAR_XMLTARMEMBER_HPP_
 
+#include <filesystem>
+
 #include "Options/XmltarOptions.hpp"
-#include <Transform/Transform.hpp>
+#include "Transform/Transform.hpp"
 
 extern "C" {
 #include <sys/stat.h>
@@ -17,10 +19,10 @@ extern "C" {
 
 class XmltarMember {
 	XmltarOptions const  & options_;
-	boost::filesystem::path const filepath_;
+	std::filesystem::path const filepath_;
 	struct stat stat_buf;
-	boost::filesystem::file_status f_stat;
-	boost::filesystem::file_type f_type;
+	std::filesystem::file_status f_stat;
+	std::filesystem::file_type f_type;
 	off_t file_size;
 	std::string memberHeader_;
 	std::string memberTrailer_;
@@ -29,7 +31,7 @@ class XmltarMember {
 	bool metadataWritten_;
 
 public:
-	XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath);
+	XmltarMember(XmltarOptions const & options, std::filesystem::path const & filepath);
 
 	bool completed(){
 		// nextByte_ (size_t) is unsigned
@@ -59,10 +61,10 @@ public:
 		else
 			return nextByte_==(size_t) file_size;
 	}
-	boost::filesystem::path filepath(){ return filepath_; }
-	bool isDirectory(){ return f_type==boost::filesystem::file_type::directory_file; }
-	bool isSymLink(){ return f_type==boost::filesystem::file_type::symlink_file; }
-	bool isRegularFile(){ return f_type==boost::filesystem::file_type::regular_file; }
+	std::filesystem::path filepath(){ return filepath_; }
+	bool isDirectory(){ return f_type==std::filesystem::file_type::directory; }
+	bool isSymLink(){ return f_type==std::filesystem::file_type::symlink; }
+	bool isRegularFile(){ return f_type==std::filesystem::file_type::regular; }
 	size_t NextByte(){ return nextByte_; }
 	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
 };

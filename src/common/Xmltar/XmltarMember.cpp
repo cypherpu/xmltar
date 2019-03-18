@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <iomanip>
+#include <fstream>
 
 extern "C" {
 #include <unistd.h>
@@ -28,19 +29,19 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, boost::filesystem::path const & filepath)
+XmltarMember::XmltarMember(XmltarOptions const & options, std::filesystem::path const & filepath)
 	: options_(options), filepath_(filepath), nextByte_(0), metadataWritten_(false) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
-    f_stat=boost::filesystem::symlink_status(filepath_);
+    f_stat=std::filesystem::symlink_status(filepath_);
 
-    if (!boost::filesystem::exists(f_stat))
+    if (!std::filesystem::exists(f_stat))
         throw "Archive_Member::Archive_Member: source file does not exist: "+filepath_.string();
 
     f_type=f_stat.type();
 
-    if (boost::filesystem::is_regular(f_stat))
-        file_size=boost::filesystem::file_size(filepath_);
+    if (std::filesystem::is_regular_file(f_stat))
+        file_size=std::filesystem::file_size(filepath_);
     else file_size=0;
 
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
@@ -179,7 +180,7 @@ std::string XmltarMember::MemberHeader(){
 	}
 
     switch(f_type){
-        case boost::filesystem::regular_file:
+        case std::filesystem::file_type::regular:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
             s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
 
@@ -187,10 +188,10 @@ std::string XmltarMember::MemberHeader(){
 
             s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(nextByte_)+"\">"+options_.Newline();
             break;
-        case boost::filesystem::directory_file:
+        case std::filesystem::file_type::directory:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
             break;
-        case boost::filesystem::symlink_file:
+        case std::filesystem::file_type::symlink:
         {
             s=s+options_.Tabs("\t\t\t")+"<content type=\"symlink\">"+options_.Newline();
             std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
@@ -199,23 +200,23 @@ std::string XmltarMember::MemberHeader(){
             s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+XMLEscapeAttribute(std::string(p.get(),stat_buf.st_size))+"\"/>"+options_.Newline();
         }
             break;
-        case boost::filesystem::block_file:
+        case std::filesystem::file_type::block:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"block\"/>"+options_.Newline();
             break;
-        case boost::filesystem::character_file:
+        case std::filesystem::file_type::character:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"character\"/>"+options_.Newline();
             break;
-        case boost::filesystem::fifo_file:
+        case std::filesystem::file_type::fifo:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"fifo\"/>"+options_.Newline();
             break;
-        case boost::filesystem::socket_file:
+        case std::filesystem::file_type::socket:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"socket\"/>"+options_.Newline();
             break;
-        case boost::filesystem::type_unknown:
-        case boost::filesystem::status_unknown:
-        case boost::filesystem::file_not_found:
+        case std::filesystem::file_type::none:
+        case std::filesystem::file_type::unknown:
+        case std::filesystem::file_type::not_found:
         default:
-            throw "Archive_Member::Generate_Header: unable to stat file";
+            throw std::runtime_error("Archive_Member::Generate_Header: unable to stat file");
             break;
     }
 
@@ -226,11 +227,11 @@ std::string XmltarMember::MemberTrailer(){
     std::string s;
 
     // only include a content section if the file is a regular file
-    if (f_type==boost::filesystem::regular_file){
+    if (f_type==std::filesystem::file_type::regular){
         s=s+options_.Newline();
         s=s+options_.Tabs("\t\t\t\t")+"</stream>"+options_.Newline();
     }
-    if (f_type==boost::filesystem::regular_file || f_type==boost::filesystem::symlink_file){
+    if (f_type==std::filesystem::file_type::regular || f_type==std::filesystem::file_type::symlink){
         s=s+options_.Tabs("\t\t\t")+"</content>"+options_.Newline();
     }
     s=s+options_.Tabs("\t\t")+"</file>"+options_.Newline();

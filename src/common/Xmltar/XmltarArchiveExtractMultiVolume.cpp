@@ -6,6 +6,8 @@
  */
 
 #include <filesystem>
+#include <fstream>
+#include <iostream>
 
 #include <boost/lexical_cast.hpp>
 

@@ -10,6 +10,8 @@
 
 #include <queue>
 #include <ios>
+#include <fstream>
+#include <iostream>
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
@@ -28,7 +30,7 @@ protected:
 	XmltarOptions options_;
 	std::string filename_;
 	unsigned int volumeNumber_;
-	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived_;
 	std::shared_ptr<XmltarMember> & nextMember_;
 public:
 	std::unique_ptr<Transform> decoder_;
@@ -38,7 +40,7 @@ public:
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
+		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 		std::shared_ptr<XmltarMember> & nextMember
 	);
 
@@ -74,12 +76,12 @@ public:
 			return std::shared_ptr<XmltarMember>();
 		}
 
-		boost::filesystem::path const filepath=filesToBeArchived_->top();
+		std::filesystem::path const filepath=filesToBeArchived_->top();
 		filesToBeArchived_->pop();
-		boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
+		std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
 
-		if (boost::filesystem::is_directory(f_stat)){
-			for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+		if (std::filesystem::is_directory(f_stat)){
+			for(auto & p : std::filesystem::directory_iterator(filepath) ){
 				filesToBeArchived_->push(p);
 			}
 		}

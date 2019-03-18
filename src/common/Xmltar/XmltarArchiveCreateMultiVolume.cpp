@@ -6,6 +6,8 @@
  */
 
 #include <iomanip>
+#include <fstream>
+#include <iostream>
 
 #include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
 #include "Debug2/Debug2.hpp"
@@ -14,7 +16,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
+		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 		std::shared_ptr<XmltarMember> & nextMember
 	)
 	: XmltarArchive(opts,filename,volumeNumber,filesToBeArchived,nextMember)

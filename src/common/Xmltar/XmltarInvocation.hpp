@@ -28,8 +28,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <queue>
 #include <algorithm>
 
-#include <boost/filesystem.hpp>
-
 #include "Options/XmltarOptions.hpp"
 #include "Debug/Debug.hpp"
 #include "Utilities/PathCompare.hpp"

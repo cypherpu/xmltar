@@ -49,16 +49,16 @@ public:
 	std::shared_ptr<Transform> archiveCompression_;
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
-	boost::optional<boost::filesystem::path> listed_incremental_file_;
+	boost::optional<std::filesystem::path> listed_incremental_file_;
 	boost::optional<bool> compress_listed_incremental_file_;
-	boost::optional<boost::filesystem::path> files_from_;
-	boost::optional<std::vector<boost::filesystem::path>> exclude_files_;
+	boost::optional<std::filesystem::path> files_from_;
+	boost::optional<std::vector<std::filesystem::path>> exclude_files_;
 	boost::optional<std::string> archiveMemberTag_;
 	boost::optional<bool> tabs_;
 	boost::optional<bool> newlines_;
 	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
 	boost::optional<unsigned int> starting_sequence_number_;						// starting_volume;
-	boost::optional<std::vector<boost::filesystem::path>> source_files_;
+	boost::optional<std::vector<std::filesystem::path>> source_files_;
 
 	std::string current_xmltar_file_name_;
 	unsigned int current_sequence_number_;

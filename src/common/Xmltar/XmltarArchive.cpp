@@ -62,7 +62,7 @@ XmltarArchive::XmltarArchive(
 	XmltarOptions & opts,
 	std::string filename,
 	unsigned int volumeNumber,
-	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 	std::shared_ptr<XmltarMember> & nextMember
 )
 	: options_(opts), filename_(filename), volumeNumber_(volumeNumber), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)

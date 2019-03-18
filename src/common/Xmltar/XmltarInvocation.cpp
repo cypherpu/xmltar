@@ -51,16 +51,16 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_.get() << std::endl;
 		if (options_.source_files_) std::cerr << "Source file size=" << options_.source_files_.get().size() << std::endl;
 		if (options_.exclude_files_)
-			for(std::vector<boost::filesystem::path>::iterator i=options_.exclude_files_.get().begin(); i!=options_.exclude_files_.get().end(); ++i)
+			for(std::vector<std::filesystem::path>::iterator i=options_.exclude_files_.get().begin(); i!=options_.exclude_files_.get().end(); ++i)
 				std::cerr << "Exclude file=" << *i << std::endl;
 		if (options_.source_files_)
-			for(std::vector<boost::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i)
+			for(std::vector<std::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i)
 				std::cerr << "Source file=" << *i << std::endl;
 		if (options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
 		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
-	std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived(pathCompare);
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeArchived(pathCompare);
 	if (options_.source_files_)
 		for(auto & i : options_.source_files_.get())
 			filesToBeArchived.push(i);
@@ -70,7 +70,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (ifs){
 			std::string line;
 			while(std::getline(ifs,line))
-				filesToBeArchived.push(boost::filesystem::path(line));
+				filesToBeArchived.push(std::filesystem::path(line));
 		}
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
@@ -81,7 +81,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	boost::optional<Snapshot> snapshot;
 	if (options_.listed_incremental_file_){
 		snapshot=Snapshot();
-		if (boost::filesystem::exists(options_.listed_incremental_file_.get())){
+		if (std::filesystem::exists(options_.listed_incremental_file_.get())){
 			snapshot.get().
 					Load(options_.listed_incremental_file_.get().string());
 		}

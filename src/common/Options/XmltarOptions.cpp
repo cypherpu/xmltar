@@ -85,8 +85,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 
 	for(std::vector<std::string>::iterator i=remaining_args.begin(); i!=remaining_args.end(); ++i){
 		if (!source_files_)
-			source_files_=std::vector<boost::filesystem::path>();
-		source_files_.get().push_back(boost::filesystem::path(*i));
+			source_files_=std::vector<std::filesystem::path>();
+		source_files_.get().push_back(std::filesystem::path(*i));
 	}
 
 	if (starting_sequence_number_)

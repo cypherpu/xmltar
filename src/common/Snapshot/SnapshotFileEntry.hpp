@@ -8,13 +8,13 @@
 #ifndef SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_
 #define SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_
 
-#include <boost/filesystem.hpp>
 #include <vector>
 #include <string>
+#include <filesystem>
 
 class SnapshotFileEntry {
 public:
-	boost::filesystem::path pathname_;
+	std::filesystem::path pathname_;
 	time_t lastBackupEpochTime_;
 	std::string lastBackupAsciiTime_;
 	std::vector<unsigned int> volumeNumbers_;

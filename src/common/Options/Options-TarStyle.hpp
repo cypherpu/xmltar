@@ -25,8 +25,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <map>
 #include <iostream>
-
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace Parse_Opts {
 
@@ -108,14 +107,14 @@ public:
  * we need a template specialization for std::string args, to handle
  * the case in which the argument might contain a filename
  */
-template <> class Action_Assign_Args<boost::filesystem::path> : public Action {
-	boost::filesystem::path& destination;
+template <> class Action_Assign_Args<std::filesystem::path> : public Action {
+	std::filesystem::path& destination;
 public:
-	Action_Assign_Args(boost::filesystem::path& dest)
+	Action_Assign_Args(std::filesystem::path& dest)
 		: destination(dest) { }
 	~Action_Assign_Args(void) { }
 	void Do_Action(std::string s){
-		destination=boost::filesystem::path(s);
+		destination=std::filesystem::path(s);
 	}
 };
 
@@ -227,26 +226,26 @@ public:
 	}
 };
 
-template <> class Action_Append_Args<boost::filesystem::path> : public Action {
-	std::vector<boost::filesystem::path>& destination;
+template <> class Action_Append_Args<std::filesystem::path> : public Action {
+	std::vector<std::filesystem::path>& destination;
 public:
-	Action_Append_Args(std::vector< boost::filesystem::path>& dest)
+	Action_Append_Args(std::vector< std::filesystem::path>& dest)
 		: destination(dest) { }
 	~Action_Append_Args(void) { }
 	void Do_Action(std::string s){
-		destination.push_back(boost::filesystem::path(s));
+		destination.push_back(std::filesystem::path(s));
 	}
 };
 
-template <> class Action_Append_Args<boost::optional<boost::filesystem::path>> : public Action {
-	boost::optional<std::vector<boost::filesystem::path>>& destination;
+template <> class Action_Append_Args<boost::optional<std::filesystem::path>> : public Action {
+	boost::optional<std::vector<std::filesystem::path>>& destination;
 public:
-	Action_Append_Args(boost::optional<std::vector<boost::filesystem::path>>& dest)
+	Action_Append_Args(boost::optional<std::vector<std::filesystem::path>>& dest)
 		: destination(dest) { }
 	~Action_Append_Args(void) { }
 	void Do_Action(std::string s){
-		if (!destination) destination=std::vector<boost::filesystem::path>();
-		destination.get().push_back(boost::filesystem::path(s));
+		if (!destination) destination=std::vector<std::filesystem::path>();
+		destination.get().push_back(std::filesystem::path(s));
 	}
 };
 

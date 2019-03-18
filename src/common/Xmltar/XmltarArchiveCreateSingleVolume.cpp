@@ -5,6 +5,8 @@
  *      Author: dbetz
  */
 
+#include <fstream>
+
 #include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
 #include "Debug2/Debug2.hpp"
 
@@ -12,7 +14,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> *filesToBeArchived,
+		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 		std::shared_ptr<XmltarMember> & nextMember
 	)
 	: XmltarArchive(opts,filename,volumeNumber,filesToBeArchived,nextMember)
@@ -36,12 +38,12 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	for( ; filesToBeArchived->size(); ){
 		std::cerr << dbg << "XmltarArchive::XmltarArchive: " << filesToBeArchived->top() << std::endl;
 
-		boost::filesystem::path const filepath=filesToBeArchived_->top();
+		std::filesystem::path const filepath=filesToBeArchived_->top();
 		filesToBeArchived->pop();
-		boost::filesystem::file_status f_stat=boost::filesystem::symlink_status(filepath);
+		std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
 
-		if (boost::filesystem::is_directory(f_stat)){
-			for(auto & p : boost::filesystem::directory_iterator(filepath) ){
+		if (std::filesystem::is_directory(f_stat)){
+			for(auto & p : std::filesystem::directory_iterator(filepath) ){
 				filesToBeArchived->push(p);
 			}
 		}
