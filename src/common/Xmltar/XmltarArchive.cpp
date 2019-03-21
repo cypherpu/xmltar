@@ -23,7 +23,7 @@ extern "C" {
 #include <boost/random/uniform_int.hpp>
 
 #include "Xmltar/XmltarArchive.hpp"
-#include "Xmltar/XmltarMember.hpp"
+#include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/ToHexDigit.hpp"
 
 #include "Transform/TransformIdentity.hpp"
@@ -62,16 +62,15 @@ XmltarArchive::XmltarArchive(
 	XmltarOptions & opts,
 	std::string filename,
 	unsigned int volumeNumber,
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
-	std::shared_ptr<XmltarMember> & nextMember
+	std::shared_ptr<XmltarMemberCreate> & nextMember
 )
-	: options_(opts), filename_(filename), volumeNumber_(volumeNumber), filesToBeArchived_(filesToBeArchived), nextMember_(nextMember)
+	: options_(opts), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
-XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMember> & nextMember)
-: options_(opts), filename_(filename), volumeNumber_(0), filesToBeArchived_(nullptr), nextMember_(nextMember)
+XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
+: options_(opts), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
 		if (options_.multi_volume_){

@@ -29,8 +29,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Options/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
-#include "XmltarInvocation.hpp"
-#include "XmltarMember.hpp"
+#include "Xmltar/XmltarInvocation.hpp"
+#include "Xmltar/XmltarMemberCreate.hpp"
 #include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
 #include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
@@ -94,28 +94,28 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 
             if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
             size_t volumeNumber=options_.starting_sequence_number_.get();
-            std::shared_ptr<XmltarMember> nextMember;
+            std::shared_ptr<XmltarMemberCreate> nextMember;
 
             for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
                 boost::format fmt(options_.base_xmltar_file_name_.get());
                 fmt % volumeNumber;
                 std::string filename=str(fmt);
 
-                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
+                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename, volumeNumber, &filesToBeArchived, nextMember);
-                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?nextMember->NextByte():0) << std::endl;
+                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (!nextMember && xmltarArchiveCreateMultiVolume.ranOutOfFiles()) break;
+            	if (!nextMember && filesToBeArchived.empty()) break;
             }
 		}
 		else {	// !options_.multi_volume_
 			if (!options_.base_xmltar_file_name_)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
-            std::shared_ptr<XmltarMember> nextMember;
+            std::shared_ptr<XmltarMemberCreate> nextMember;
             XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, &filesToBeArchived,nextMember);
 		}
 	}
@@ -150,7 +150,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 
 			if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
 			size_t volumeNumber=options_.starting_sequence_number_.get();
-			std::shared_ptr<XmltarMember> nextMember;
+			std::shared_ptr<XmltarMemberCreate> nextMember;
 
 			for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
 				boost::format fmt(options_.base_xmltar_file_name_.get());
@@ -162,7 +162,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 			}
 		}
 		else {
-			std::shared_ptr<XmltarMember> nextMember;
+			std::shared_ptr<XmltarMemberCreate> nextMember;
 			XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), nextMember);
 		}
 	}

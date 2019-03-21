@@ -20,7 +20,7 @@ extern "C" {
 #include <boost/lexical_cast.hpp>
 #include <spdlog/spdlog.h>
 
-#include "Xmltar/XmltarMember.hpp"
+#include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/XMLEscapeAttribute.hpp"
 #include "Utilities/ToLocalTime.hpp"
 #include "Utilities/ToDecimalInt.hpp"
@@ -29,8 +29,8 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
-XmltarMember::XmltarMember(XmltarOptions const & options, std::filesystem::path const & filepath)
-	: options_(options), filepath_(filepath), nextByte_(0), metadataWritten_(false) {
+XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::filesystem::path const & filepath)
+	: options_(options), filepath_(filepath), metadataWritten_(false) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=std::filesystem::symlink_status(filepath_);
@@ -40,8 +40,10 @@ XmltarMember::XmltarMember(XmltarOptions const & options, std::filesystem::path 
 
     f_type=f_stat.type();
 
-    if (std::filesystem::is_regular_file(f_stat))
+    if (std::filesystem::is_regular_file(f_stat)){
         file_size=std::filesystem::file_size(filepath_);
+        ifs_.reset(new std::ifstream(filepath_.string()));
+    }
     else file_size=0;
 
     if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
@@ -51,17 +53,17 @@ XmltarMember::XmltarMember(XmltarOptions const & options, std::filesystem::path 
     memberTrailer_=MemberTrailer();
 }
 
-void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
-		std::ifstream ifs(filepath_.string());
-		ifs.seekg(nextByte_);
+		// std::ifstream ifs(filepath_.string());
+		// ifs.seekg(nextByte_);
 
 		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
 		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
 		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
 
-		size_t numberOfBytesToArchive=std::min(file_size-nextByte_,(size_t)numberOfFileBytesThatCanBeArchived);
+		size_t numberOfBytesToArchive=std::min(file_size-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
 		precompression->OpenCompression();
 		encoding->OpenCompression();
 		memberCompression->OpenCompression();
@@ -73,14 +75,14 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 	    memberHeader_=MemberHeader();
 		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
 
-		for( size_t i=numberOfBytesToArchive; ifs && i>0; i-=ifs.gcount(),nextByte_+=ifs.gcount()){
-			ifs.read(buf,std::min((size_t)i,sizeof(buf)));
+		for( size_t i=numberOfBytesToArchive; *ifs_ && i>0; i-=ifs_->gcount()){
+			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
 			ofs <<
 				archiveCompression->ForceWrite(
 					memberCompression->ForceWrite(
 						encoding->ForceWrite(
 							precompression->ForceWrite(
-								std::string(buf,ifs.gcount())))));
+								std::string(buf,ifs_->gcount())))));
 		}
 
 		std::cerr << dbg << ": after read" << std::endl;
@@ -112,7 +114,7 @@ void XmltarMember::write(std::shared_ptr<Transform> archiveCompression, size_t n
 		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
 }
 
-size_t XmltarMember::MaximumSize(size_t n){
+size_t XmltarMemberCreate::MaximumSize(size_t n){
 	return
 			options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
 				memberHeader_.size()
@@ -124,11 +126,11 @@ size_t XmltarMember::MaximumSize(size_t n){
 
 }
 
-size_t XmltarMember::MemberSize(){
+size_t XmltarMemberCreate::MemberSize(){
 	return MaximumSize(file_size);
 }
 
-std::string XmltarMember::MemberHeader(){
+std::string XmltarMemberCreate::MemberHeader(){
     std::string s;
 
     s=s+options_.Tabs("\t\t")+"<file name=\"" + XMLEscapeAttribute(filepath_.relative_path().string()) + "\">"+options_.Newline();
@@ -186,7 +188,7 @@ std::string XmltarMember::MemberHeader(){
 
             s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName();
 
-            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(nextByte_)+"\">"+options_.Newline();
+            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(ifs_->tellg())+"\">"+options_.Newline();
             break;
         case std::filesystem::file_type::directory:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
@@ -223,7 +225,7 @@ std::string XmltarMember::MemberHeader(){
     return s;
 }
 
-std::string XmltarMember::MemberTrailer(){
+std::string XmltarMemberCreate::MemberTrailer(){
     std::string s;
 
     // only include a content section if the file is a regular file
@@ -239,15 +241,15 @@ std::string XmltarMember::MemberTrailer(){
     return s;
 }
 
-std::string XmltarMember::CompressedMemberHeader(){
+std::string XmltarMemberCreate::CompressedMemberHeader(){
 	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
 }
 
-std::string XmltarMember::CompressedMemberTrailer(){
+std::string XmltarMemberCreate::CompressedMemberTrailer(){
 	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
 }
 
-size_t XmltarMember::MinimumSize(){
+size_t XmltarMemberCreate::MinimumSize(){
 	return
 			options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
 				memberHeader_.size()
@@ -258,7 +260,7 @@ size_t XmltarMember::MinimumSize(){
 			);
 }
 
-size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
@@ -297,7 +299,7 @@ size_t XmltarMember::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, s
 #endif
 }
 
-bool XmltarMember::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	std::cerr << "XmltarMember::CanArchiveDirectory:"
@@ -326,7 +328,7 @@ bool XmltarMember::CanArchiveDirectory(size_t committedBytes, size_t pendingByte
 	return numberOfFileBytesThatCanBeArchived;
 }
 
-bool XmltarMember::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived

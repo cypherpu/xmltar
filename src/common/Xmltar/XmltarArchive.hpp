@@ -15,7 +15,7 @@
 
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/PathCompare.hpp"
-#include "Xmltar/XmltarMember.hpp"
+#include "Xmltar/XmltarMemberCreate.hpp"
 
 class XmltarArchiveHandler;
 
@@ -30,21 +30,25 @@ protected:
 	XmltarOptions options_;
 	std::string filename_;
 	unsigned int volumeNumber_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived_;
-	std::shared_ptr<XmltarMember> & nextMember_;
+	std::shared_ptr<XmltarMemberCreate> & nextMember_;
 public:
+	/**
+	 * Single volume constructor - no volume number needed
+	 */
+	XmltarArchive(
+		XmltarOptions & opts,
+		std::string filename,
+		std::shared_ptr<XmltarMemberCreate> & nextMember
+	);
+
+	/**
+	 * Multi volume constructor - requires volume number
+	 */
 	XmltarArchive(
 		XmltarOptions & opts,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
-		std::shared_ptr<XmltarMember> & nextMember
-	);
-
-	XmltarArchive(
-		XmltarOptions & opts,
-		std::string filename,
-		std::shared_ptr<XmltarMember> & nextMember
+		std::shared_ptr<XmltarMemberCreate> & nextMember
 	);
 
 	PartialFileRead create(unsigned int volumeNumber);
@@ -61,30 +65,6 @@ public:
 
 	bool static IsPaddingTrailer(std::string s);
 	bool IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::off_type offset);
-	bool ranOutOfFiles(){
-		return filesToBeArchived_->empty();
-	}
-	bool ranOutOfSpace(){
-
-	}
-
-	std::shared_ptr<XmltarMember> NextMember(){
-		if (filesToBeArchived_->empty()){
-			return std::shared_ptr<XmltarMember>();
-		}
-
-		std::filesystem::path const filepath=filesToBeArchived_->top();
-		filesToBeArchived_->pop();
-		std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
-
-		if (std::filesystem::is_directory(f_stat)){
-			for(auto & p : std::filesystem::directory_iterator(filepath) ){
-				filesToBeArchived_->push(p);
-			}
-		}
-
-		return std::make_shared<XmltarMember>(options_,filepath);
-	}
 
 	friend XmltarArchiveHandler;
 };
