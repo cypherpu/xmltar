@@ -47,9 +47,9 @@ public:
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
 	bool IsComplete(){
-		ifs_->peek();
-
-		return !*ifs_;
+		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size << std::endl;
+		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;
+		return ifs_->tellg()==file_size;
 	}
 	std::ifstream & Ifs(){ return *ifs_; }
 	std::filesystem::path filepath(){ return filepath_; }

@@ -78,7 +78,7 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarOptions &
 	XML_Char buffer[1024];
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-		std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
+		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 		xmltarMultiVolumeHandler.Parse(buffer,ifs.gcount(),false);
 	}
 }

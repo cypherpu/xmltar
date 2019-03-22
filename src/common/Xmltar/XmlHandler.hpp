@@ -21,7 +21,7 @@ public:
 	XmlHandler();
 
 	void Parse(XML_Char *buffer, size_t count, bool done){
-		std::cerr << "Parsing \"" << std::string(buffer,count) << "\"" << std::endl;
+		//std::cerr << "Parsing \"" << std::string(buffer,count) << "\"" << std::endl;
 		if (XML_Parse(parser_, buffer, count, done) == XML_STATUS_ERROR) {
 			std::cerr << "Error: " << XML_ErrorString(XML_GetErrorCode(parser_))
 						<< " at line=" << XML_GetCurrentLineNumber(parser_) << " character=" << XML_GetCurrentColumnNumber(parser_) << std::endl;
@@ -30,7 +30,7 @@ public:
 	}
 
 	void Parse(std::string const & buff, bool done){
-		std::cerr << "Parsing \"" << buff << "\"" << std::endl;
+		//std::cerr << "Parsing \"" << buff << "\"" << std::endl;
 		if (XML_Parse(parser_, buff.c_str(), buff.size(), done) == XML_STATUS_ERROR) {
 			std::cerr << "Error: " << XML_ErrorString(XML_GetErrorCode(parser_))
 						<< " at line=" << XML_GetCurrentLineNumber(parser_) << " character=" << XML_GetCurrentColumnNumber(parser_) << std::endl;
