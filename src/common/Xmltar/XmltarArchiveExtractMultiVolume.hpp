@@ -45,7 +45,7 @@ public:
 class XmltarArchiveExtractMultiVolume : public XmltarArchive {
 public:
 	std::unique_ptr<Transform> decoder_;
-	std::ofstream ofs_;
+	std::fstream fs_;
 
 public:
 	XmltarArchiveExtractMultiVolume(

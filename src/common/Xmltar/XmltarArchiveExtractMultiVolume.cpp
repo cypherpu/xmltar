@@ -39,21 +39,23 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 			std::filesystem::create_directories(elements_.end()[-2].attributes_.at("name"));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
 		// FIXME - create directories leading to file
-		xmltarArchiveExtractMultiVolume_.ofs_.open(elements_.end()[-3].attributes_.at("name"));
-		xmltarArchiveExtractMultiVolume_.ofs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
+		xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::app);
+		// xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::in | std::fstream::out);
+		std::cerr << std::string('\t',elements_.size()) << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
+		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchiveExtractMultiVolume_.decoder_.reset(new TransformHex("decoder"));
 		xmltarArchiveExtractMultiVolume_.decoder_->OpenDecompression();
 	}
 
-	std::cerr << std::string('\t',elements_.size()) << "<" << name << ">" << std::endl;
+	std::cerr << std::string(elements_.size(),'\t') << "<" << name << ">" << std::endl;
 }
 
 void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 	std::cerr << std::string('\t',elements_.size()) << "</" << name << ">" << std::endl;
 
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractMultiVolume_.ofs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose("");
-		xmltarArchiveExtractMultiVolume_.ofs_.close();
+		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose("");
+		xmltarArchiveExtractMultiVolume_.fs_.close();
 	}
 
 	elements_.pop_back();
@@ -61,7 +63,7 @@ void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 
 void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractMultiVolume_.ofs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWrite(std::string(s,len));
+		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.decoder_->ForceWrite(std::string(s,len));
 	}
 }
 

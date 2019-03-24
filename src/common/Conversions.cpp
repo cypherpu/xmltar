@@ -35,7 +35,7 @@ int String_To_Integer(std::string s){
 	return result;
 }
 
-#if 1
+#if 0
 std::string String_To_XML_Attribute_Value(std::string s){
 	std::string result;
 
