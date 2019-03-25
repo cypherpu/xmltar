@@ -194,13 +194,12 @@ std::string XmltarMemberCreate::MemberHeader(){
             s=s+options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+options_.Newline();
             break;
         case std::filesystem::file_type::symlink:
-        {
-            s=s+options_.Tabs("\t\t\t")+"<content type=\"symlink\">"+options_.Newline();
-            std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
-            if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
-                throw "Archive_Member::Generate_Metadata: symbolic link size changed";
-            s+=options_.Tabs("\t\t\t\t")+"<symlink target=\""+EncodeStringToXMLSafeString(std::string(p.get(),stat_buf.st_size))+"\"/>"+options_.Newline();
-        }
+			{
+				std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
+				if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
+					throw "Archive_Member::Generate_Metadata: symbolic link size changed";
+				s=s+options_.Tabs("\t\t\t")+"<content type=\"symlink\" target=\""+EncodeStringToXMLSafeString(std::string(p.get(),stat_buf.st_size))+"\"/>"+options_.Newline();
+			}
             break;
         case std::filesystem::file_type::block:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"block\"/>"+options_.Newline();
