@@ -51,6 +51,7 @@ public:
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
 	boost::optional<bool> compress_listed_incremental_file_;
+	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
 	boost::optional<std::vector<std::filesystem::path>> exclude_files_;
 	boost::optional<std::string> archiveMemberTag_;

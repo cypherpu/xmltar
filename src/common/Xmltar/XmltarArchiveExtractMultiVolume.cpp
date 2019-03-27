@@ -38,8 +38,13 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 	if (elements_.back().name_=="content" && elements_.back().attributes_.at("type")=="directory")
 			std::filesystem::create_directories(elements_.end()[-2].attributes_.at("name"));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		// FIXME - create directories leading to file
+		// create directories leading to file
+		//std::cerr << "XmltarMultiVolumeXmlHandler::startElement: before create directories" << std::endl;
+		std::filesystem::path p=std::filesystem::path(elements_.end()[-3].attributes_.at("name"));
+		if (p.has_parent_path())
+			std::filesystem::create_directories(p.parent_path());
 		// FIXME - investigate file open flags
+		//std::cerr << "XmltarMultiVolumeXmlHandler::startElement: before open" << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::app);
 		// xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::in | std::fstream::out);
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
@@ -47,6 +52,7 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchiveExtractMultiVolume_.decoder_.reset(new TransformHex("decoder"));
 		xmltarArchiveExtractMultiVolume_.decoder_->OpenDecompression();
 		if (elements_.back().attributes_.at("pre-compression")=="gzip") xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformGzip("decoder"));
+		else if (elements_.back().attributes_.at("pre-compression")=="lzip") xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformLzip("decoder"));
 		else xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformIdentity("decoder"));
 		xmltarArchiveExtractMultiVolume_.fileDecompression_->OpenDecompression();
 	}
@@ -58,7 +64,11 @@ void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 	std::cerr << std::string(elements_.size(),'\t') << "</" << name << ">" << std::endl;
 
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.fileDecompression_->ForceWriteAndClose(xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose(""));
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::endElement: decoding" << std::endl;
+		std::string tmp=xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose("");
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::endElement: file decompression" << std::endl;
+		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.fileDecompression_->ForceWriteAndClose(tmp);
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::endElement: closing" << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.close();
 	}
 
@@ -67,7 +77,11 @@ void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 
 void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.fileDecompression_->ForceWrite(xmltarArchiveExtractMultiVolume_.decoder_->ForceWrite(std::string(s,len)));
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::characterData: decoding" <<std::endl;
+		std::string tmp=xmltarArchiveExtractMultiVolume_.decoder_->ForceWrite(std::string(s,len));
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::characterData: file decompression" <<std::endl;
+		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.fileDecompression_->ForceWrite(tmp);
+		//std::cerr << std::string(elements_.size(),'\t') << "XmltarMultiVolumeXmlHandler::characterData: leaving" <<std::endl;
 	}
 }
 

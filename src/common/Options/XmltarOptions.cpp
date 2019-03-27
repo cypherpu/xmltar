@@ -56,6 +56,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Args(listed_incremental_file_));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--compress-listed-incremental","compress listed-incremental file",
 			p.Assign_Value(compress_listed_incremental_file_,true));
+	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
+			p.Assign_Args(dump_level_));
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-f","--file","specify archive to create/append/list/extract",
 			p.Assign_Args(base_xmltar_file_name_));

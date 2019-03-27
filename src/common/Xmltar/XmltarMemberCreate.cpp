@@ -232,7 +232,7 @@ std::string XmltarMemberCreate::MemberTrailer(){
         s=s+options_.Newline();
         s=s+options_.Tabs("\t\t\t\t")+"</stream>"+options_.Newline();
     }
-    if (f_type==std::filesystem::file_type::regular || f_type==std::filesystem::file_type::symlink){
+    if (f_type==std::filesystem::file_type::regular){
         s=s+options_.Tabs("\t\t\t")+"</content>"+options_.Newline();
     }
     s=s+options_.Tabs("\t\t")+"</file>"+options_.Newline();
