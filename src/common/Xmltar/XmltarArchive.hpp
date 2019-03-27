@@ -18,6 +18,7 @@
 #include "Xmltar/XmltarMemberCreate.hpp"
 
 class XmltarArchiveHandler;
+class XmltarMultiVolumeXmlHandler;
 
 class PartialFileRead {
 public:
@@ -67,6 +68,7 @@ public:
 	bool IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::off_type offset);
 
 	friend XmltarArchiveHandler;
+	friend XmltarMultiVolumeXmlHandler;
 };
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_ */

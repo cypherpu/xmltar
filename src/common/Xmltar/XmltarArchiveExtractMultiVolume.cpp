@@ -47,11 +47,11 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::app);
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
-		if (elements_.back().attributes_.at("encoding")=="xxd") xmltarArchiveExtractMultiVolume_.decoder_.reset(new TransformHex("decoder"));
+
+		xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.options_.encoding_->clone());
 		xmltarArchiveExtractMultiVolume_.decoder_->OpenDecompression();
-		if (elements_.back().attributes_.at("pre-compression")=="gzip") xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformGzip("decoder"));
-		else if (elements_.back().attributes_.at("pre-compression")=="lzip") xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformLzip("decoder"));
-		else xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(new TransformIdentity("decoder"));
+
+		xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.options_.fileCompression_->clone());
 		xmltarArchiveExtractMultiVolume_.fileDecompression_->OpenDecompression();
 	}
 
