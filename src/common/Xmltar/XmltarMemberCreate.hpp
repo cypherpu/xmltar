@@ -15,6 +15,8 @@ extern "C" {
 #include <sys/stat.h>
 }
 
+#include <cryptopp/sha3.h>
+
 #include "Options/XmltarOptions.hpp"
 #include "Transform/Transform.hpp"
 
@@ -29,10 +31,13 @@ class XmltarMemberCreate {
 	std::string memberTrailer_;
 	std::shared_ptr<std::ifstream> ifs_;
 
+	CryptoPP::SHA3_512 hash_;
+
 	bool metadataWritten_;
 
 public:
 	XmltarMemberCreate(XmltarOptions const & options, std::filesystem::path const & filepath);
+	~XmltarMemberCreate();
 
 	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 

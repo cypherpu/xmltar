@@ -19,6 +19,8 @@ extern "C" {
 }
 #include <boost/lexical_cast.hpp>
 #include <spdlog/spdlog.h>
+#include <cryptopp/sha3.h>
+#include <cryptopp/hex.h>
 
 #include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/XMLSafeString.hpp"
@@ -53,6 +55,23 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
     memberTrailer_=MemberTrailer();
 }
 
+XmltarMemberCreate::~XmltarMemberCreate(){
+	CryptoPP::byte digest[CryptoPP::SHA3_512::DIGESTSIZE];
+
+	hash_.Final(digest);
+
+	CryptoPP::HexEncoder encoder;
+	std::string output;
+
+	encoder.Attach( new CryptoPP::StringSink( output ) );
+	encoder.Put( digest, sizeof(digest) );
+	encoder.MessageEnd();
+
+	if (options_.listed_incremental_file_)
+		;
+	std::cerr << "Digest=" << output << std::endl;
+}
+
 void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
@@ -77,6 +96,7 @@ void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, si
 
 		for( size_t i=numberOfBytesToArchive; *ifs_ && i>0; i-=ifs_->gcount()){
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
+			hash_.Update(reinterpret_cast<CryptoPP::byte *>(&buf[0]),ifs_->gcount());
 			ofs <<
 				archiveCompression->ForceWrite(
 					memberCompression->ForceWrite(

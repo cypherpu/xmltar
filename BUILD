@@ -40,6 +40,8 @@ cc_binary(
 				"-lxerces-c",
 				"-lexpat",
 				"-lboost_date_time",
+				"-lcryptopp",
+				"-lpthread",
 				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
 				"-lstdc++fs"
 				]
