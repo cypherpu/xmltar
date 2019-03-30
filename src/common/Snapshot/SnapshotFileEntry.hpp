@@ -12,12 +12,12 @@
 #include <string>
 #include <filesystem>
 
+#include "Snapshot/SnapshotEvent.hpp"
+
 class SnapshotFileEntry {
 public:
 	std::filesystem::path pathname_;
-	time_t lastBackupEpochTime_;
-	std::string lastBackupAsciiTime_;
-	std::vector<unsigned int> volumeNumbers_;
+	std::vector<SnapshotEvent> snapshotEvents_;
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_ */

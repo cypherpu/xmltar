@@ -85,6 +85,15 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 			snapshot.get().
 					Load(options_.listed_incremental_file_.get().string());
 		}
+		options_.incrementalFileOfs_.reset(new std::ofstream);
+		options_.incrementalFileOfs_->open(options_.listed_incremental_file_.get().string());
+
+		*options_.incrementalFileOfs_.get()
+				<< 	"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+					"<listed-incremental xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">"
+				<< std::endl;
+
+		snapshot.get().dump(*options_.incrementalFileOfs_.get());
 	}
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){

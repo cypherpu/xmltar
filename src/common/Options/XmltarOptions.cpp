@@ -55,7 +55,7 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--compress-listed-incremental","compress listed-incremental file",
-			p.Assign_Value(compress_listed_incremental_file_,true));
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformGzip("gzip")));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
 			p.Assign_Args(dump_level_));
 
@@ -130,7 +130,7 @@ std::string XmltarOptions::toXMLString(){
 	if (listed_incremental_file_)
 		oss << Tabs("\t\t\t") << "<option>--listed-incremental=" << listed_incremental_file_.get().string() << "</option>" << std::endl;
 
-	if (compress_listed_incremental_file_)
+	if (incrementalFileCompression_->CompressionName()!=std::string("identity"))
 		oss << Tabs("\t\t\t") << "<option>--compress-listed-incremental</option>" << std::endl;
 
 	if (files_from_)

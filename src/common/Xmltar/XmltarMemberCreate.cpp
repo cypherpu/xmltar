@@ -56,20 +56,24 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
-	CryptoPP::byte digest[CryptoPP::SHA3_512::DIGESTSIZE];
+	if (options_.listed_incremental_file_){
+		CryptoPP::byte digest[CryptoPP::SHA3_512::DIGESTSIZE];
 
-	hash_.Final(digest);
+		hash_.Final(digest);
 
-	CryptoPP::HexEncoder encoder;
-	std::string output;
+		CryptoPP::HexEncoder encoder;
+		std::string output;
 
-	encoder.Attach( new CryptoPP::StringSink( output ) );
-	encoder.Put( digest, sizeof(digest) );
-	encoder.MessageEnd();
+		encoder.Attach( new CryptoPP::StringSink( output ) );
+		encoder.Put( digest, sizeof(digest) );
+		encoder.MessageEnd();
 
-	if (options_.listed_incremental_file_)
-		;
-	std::cerr << "Digest=" << output << std::endl;
+		*options_.incrementalFileOfs_.get()
+			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
+			<< "\t\t" << SnapshotEvent()
+			<< "\t</file>" << std::endl;
+		std::cerr << "Digest=" << output << std::endl;
+	}
 }
 
 void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){

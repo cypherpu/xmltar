@@ -24,6 +24,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #define XMLTAROPTIONS_HPP_
 
 #include <limits>
+#include <fstream>
 
 #include <boost/optional.hpp>
 
@@ -34,6 +35,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Transform/TransformBzip2.hpp"
 #include "Transform/TransformLzip.hpp"
 #include "Transform/TransformHex.hpp"
+#include "Snapshot/Snapshot.hpp"
 
 class XmltarOptions {
 public:
@@ -50,7 +52,7 @@ public:
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
-	boost::optional<bool> compress_listed_incremental_file_;
+	std::shared_ptr<Transform> incrementalFileCompression_;
 	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
 	boost::optional<std::vector<std::filesystem::path>> exclude_files_;
@@ -63,6 +65,9 @@ public:
 
 	std::string current_xmltar_file_name_;
 	unsigned int current_sequence_number_;
+	boost::optional<Snapshot> snapshot_;
+	std::shared_ptr<std::ofstream> incrementalFileOfs_;
+	time_t invocationTime_;
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
@@ -71,11 +76,14 @@ public:
 		  archiveMemberCompression_(new TransformIdentity("archiveMemberCompression")),
 		  archiveCompression_(new TransformIdentity("archiveCompression")),
           tape_length_(), stop_after_(),
-		  listed_incremental_file_(), compress_listed_incremental_file_(),
+		  listed_incremental_file_(),
+		  incrementalFileCompression_(new TransformIdentity("listed-incremental-compression")),
+		  dump_level_(),
 		  files_from_(), exclude_files_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
 		  base_xmltar_file_name_(), starting_sequence_number_(), source_files_(),
-		  current_xmltar_file_name_(), current_sequence_number_() { }
+		  current_xmltar_file_name_(), current_sequence_number_(), incrementalFileOfs_(),
+		  invocationTime_(time(nullptr)){ }
 
     void ProcessOptions(int argc, char const *argv[]);
 
