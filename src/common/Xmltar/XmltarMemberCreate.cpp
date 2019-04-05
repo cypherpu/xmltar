@@ -53,6 +53,8 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
 
     memberHeader_=MemberHeader();
     memberTrailer_=MemberTrailer();
+
+    startingVolume_=options_.current_volume_;
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
@@ -70,7 +72,7 @@ XmltarMemberCreate::~XmltarMemberCreate(){
 
 		*options_.incrementalFileOfs_.get()
 			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
-			<< "\t\t" << SnapshotEvent()
+			<< "\t\t" << SnapshotEvent(options_.invocationTime_,startingVolume_,output,options_.dump_level_.get()) << std::endl
 			<< "\t</file>" << std::endl;
 		std::cerr << "Digest=" << output << std::endl;
 	}

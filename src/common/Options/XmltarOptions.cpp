@@ -62,7 +62,7 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	p.Add_Option(Parse_Opts::ARGS_1,"-f","--file","specify archive to create/append/list/extract",
 			p.Assign_Args(base_xmltar_file_name_));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--exclude","specify PATTERN to exclude files from archiving",
-			p.Append_Args(exclude_files_));
+			p.Append_Args(excludeFileGlobs_));
 	p.Add_Option(Parse_Opts::ARGS_0,"-M","--multi-volume","work with multivolume archives",
 			p.Assign_Value(multi_volume_,true));
 	bool tape_length_option=false;
@@ -71,7 +71,7 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(multi_volume_,true),
 			p.Assign_Value(tape_length_option,true));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--starting-volume","starting volume number of a multivolume archive",
-			p.Assign_Args(starting_sequence_number_));
+			p.Assign_Args(starting_volume_));
 	p.Add_Option(Parse_Opts::ARGS_1,"-T","--files-from","specify source of files to archive",
 			p.Assign_Args(files_from_));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--stop-after","stop archiving additional files once n volumes have been created",
@@ -86,13 +86,11 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	std::vector<std::string> remaining_args=p.Parse(argc,argv);
 
 	for(std::vector<std::string>::iterator i=remaining_args.begin(); i!=remaining_args.end(); ++i){
-		if (!source_files_)
-			source_files_=std::vector<std::filesystem::path>();
-		source_files_.get().push_back(std::filesystem::path(*i));
+		sourceFileGlobs_.push_back(*i);
 	}
 
-	if (starting_sequence_number_)
-		current_sequence_number_=starting_sequence_number_.get();
+	if (starting_volume_)
+		current_volume_=starting_volume_.get();
 }
 
 std::string XmltarOptions::toXMLString(){
@@ -136,9 +134,9 @@ std::string XmltarOptions::toXMLString(){
 	if (files_from_)
 		oss << Tabs("\t\t\t") << "<option>--files-from=" << files_from_.get().string() << "</option>" << std::endl;
 
-	if (exclude_files_)
-		for(auto & i : exclude_files_.get())
-			oss << Tabs("\t\t\t") << "<option>--exclude-files=" << i.string() << "</option>" << std::endl;
+	if (excludeFileGlobs_.size())
+		for(auto & i : excludeFileGlobs_)
+			oss << Tabs("\t\t\t") << "<option>--exclude-files=" << i << "</option>" << std::endl;
 
 	if (archiveMemberTag_)
 		oss << Tabs("\t\t\t") << "<option>--archive-member-tag=" << archiveMemberTag_.get() << "</option>" << std::endl;
@@ -152,12 +150,12 @@ std::string XmltarOptions::toXMLString(){
 	if (base_xmltar_file_name_)
 		oss << Tabs("\t\t\t") << "<option>--file=" << base_xmltar_file_name_.get() << "</option>" << std::endl;
 
-	if (starting_sequence_number_)
-		oss << Tabs("\t\t\t") << "<option>--starting-volume=" << starting_sequence_number_.get() << "</option>" << std::endl;
+	if (starting_volume_)
+		oss << Tabs("\t\t\t") << "<option>--starting-volume=" << starting_volume_.get() << "</option>" << std::endl;
 
-	if (source_files_)
-		for(auto & i : source_files_.get())
-			oss << Tabs("\t\t\t") << "<option>" << i.string() << "</option>" << std::endl;
+	if (sourceFileGlobs_.size())
+		for(auto & i : sourceFileGlobs_)
+			oss << Tabs("\t\t\t") << "<option>" << i << "</option>" << std::endl;
 
 	oss << Tabs("\t\t") << "</options>" << std::endl;
 

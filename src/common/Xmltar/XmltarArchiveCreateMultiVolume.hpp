@@ -16,7 +16,7 @@ public:
 	XmltarArchiveCreateMultiVolume(
 		XmltarOptions & opts,
 		std::string filename,
-		unsigned int volumeNumber,
+		// unsigned int volumeNumber,
 		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	);

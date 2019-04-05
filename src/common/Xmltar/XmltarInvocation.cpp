@@ -45,24 +45,24 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (options_.operation_==XmltarOptions::EXTRACT) std::cerr << "Operation=EXTRACT" << std::endl;
 		std::cerr << "verbosity=" << options_.verbosity_.get() << std::endl;
 		if (options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
-		if (options_.starting_sequence_number_) std::cerr << "starting_sequence_number=" << options_.starting_sequence_number_.get() << std::endl;
+		if (options_.starting_volume_) std::cerr << "starting_volume=" << options_.starting_volume_.get() << std::endl;
 		if (options_.tape_length_) std::cerr << "tape length=" << options_.tape_length_.get() << std::endl;
 		if (options_.stop_after_) std::cerr << "stop after=" << options_.stop_after_.get() << std::endl;
 		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_.get() << std::endl;
-		if (options_.source_files_) std::cerr << "Source file size=" << options_.source_files_.get().size() << std::endl;
-		if (options_.exclude_files_)
-			for(std::vector<std::filesystem::path>::iterator i=options_.exclude_files_.get().begin(); i!=options_.exclude_files_.get().end(); ++i)
-				std::cerr << "Exclude file=" << *i << std::endl;
-		if (options_.source_files_)
-			for(std::vector<std::filesystem::path>::iterator i=options_.source_files_.get().begin(); i!=options_.source_files_.get().end(); ++i)
-				std::cerr << "Source file=" << *i << std::endl;
+		if (options_.sourceFileGlobs_.size()) std::cerr << "Source file size=" << options_.sourceFileGlobs_.size() << std::endl;
+		if (options_.excludeFileGlobs_.size())
+			for(auto & i : options_.excludeFileGlobs_)
+				std::cerr << "Exclude file=" << i << std::endl;
+		if (options_.sourceFileGlobs_.size())
+			for(auto & i : options_.sourceFileGlobs_)
+				std::cerr << "Source file=" << i << std::endl;
 		if (options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
 		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeArchived(pathCompare);
-	if (options_.source_files_)
-		for(auto & i : options_.source_files_.get())
+	if (options_.sourceFileGlobs_.size())
+		for(auto & i : options_.sourceFileGlobs_)
 			filesToBeArchived.push(i);
 	else if (options_.files_from_){
 		std::ifstream ifs(options_.files_from_.get().string());
@@ -98,21 +98,21 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
 		if (options_.multi_volume_){
-			if (!options_.starting_sequence_number_)
-				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
+			if (!options_.starting_volume_)
+				throw std::logic_error("XmltarRun::XmltarRun: must specify starting volume number to create multivolume archive");
 
             if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
-            size_t volumeNumber=options_.starting_sequence_number_.get();
+            options_.current_volume_=options_.starting_volume_.get();
             std::shared_ptr<XmltarMemberCreate> nextMember;
 
-            for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
+            for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++options_.current_volume_){
                 boost::format fmt(options_.base_xmltar_file_name_.get());
-                fmt % volumeNumber;
+                fmt % options_.current_volume_;
                 std::string filename=str(fmt);
 
-                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
-                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename, volumeNumber, &filesToBeArchived, nextMember);
-                std::cerr << "*********" << volumeNumber << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
+                std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename,/* options_.current_volume_,*/ &filesToBeArchived, nextMember);
+                std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
@@ -126,6 +126,12 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 
             std::shared_ptr<XmltarMemberCreate> nextMember;
             XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, &filesToBeArchived,nextMember);
+		}
+
+		if (options_.listed_incremental_file_){
+			*options_.incrementalFileOfs_.get()
+					<<  "</listed-incremental>"
+					<< std::endl;
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
@@ -154,16 +160,16 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	}
 	if (options_.operation_ && options_.operation_==XmltarOptions::EXTRACT){
 		if (options_.multi_volume_){
-			if (!options_.starting_sequence_number_)
+			if (!options_.starting_volume_)
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
 
 			if (!options_.stop_after_) options_.stop_after_=std::numeric_limits<size_t>::max();
-			size_t volumeNumber=options_.starting_sequence_number_.get();
+			options_.current_volume_=options_.starting_volume_.get();
 			std::shared_ptr<XmltarMemberCreate> nextMember;
 
-			for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++volumeNumber){
+			for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++options_.current_volume_){
 				boost::format fmt(options_.base_xmltar_file_name_.get());
-				fmt % volumeNumber;
+				fmt % options_.current_volume_;
 				std::string filename=str(fmt);
 
 				if (!std::filesystem::exists(filename)) break;

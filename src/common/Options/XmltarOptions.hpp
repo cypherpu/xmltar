@@ -55,16 +55,16 @@ public:
 	std::shared_ptr<Transform> incrementalFileCompression_;
 	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
-	boost::optional<std::vector<std::filesystem::path>> exclude_files_;
+	std::vector<std::string> excludeFileGlobs_;
 	boost::optional<std::string> archiveMemberTag_;
 	boost::optional<bool> tabs_;
 	boost::optional<bool> newlines_;
 	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
-	boost::optional<unsigned int> starting_sequence_number_;						// starting_volume;
-	boost::optional<std::vector<std::filesystem::path>> source_files_;
+	boost::optional<unsigned int> starting_volume_;						// starting_volume;
+	std::vector<std::string> sourceFileGlobs_;
 
 	std::string current_xmltar_file_name_;
-	unsigned int current_sequence_number_;
+	size_t current_volume_;
 	boost::optional<Snapshot> snapshot_;
 	std::shared_ptr<std::ofstream> incrementalFileOfs_;
 	time_t invocationTime_;
@@ -79,10 +79,10 @@ public:
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new TransformIdentity("listed-incremental-compression")),
 		  dump_level_(),
-		  files_from_(), exclude_files_(),
+		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
-		  base_xmltar_file_name_(), starting_sequence_number_(), source_files_(),
-		  current_xmltar_file_name_(), current_sequence_number_(), incrementalFileOfs_(),
+		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(),
+		  current_xmltar_file_name_(), current_volume_(), incrementalFileOfs_(),
 		  invocationTime_(time(nullptr)){ }
 
     void ProcessOptions(int argc, char const *argv[]);
