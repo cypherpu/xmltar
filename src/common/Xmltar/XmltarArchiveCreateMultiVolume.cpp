@@ -15,11 +15,9 @@
 XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		XmltarOptions & opts,
 		std::string filename,
-		// unsigned int volumeNumber,
-		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> *filesToBeArchived,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	)
-	: XmltarArchive(opts,filename,/*volumeNumber,*/nextMember), filesToBeArchived_(filesToBeArchived)
+	: XmltarArchive(opts,filename,/*volumeNumber,*/nextMember)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
@@ -43,7 +41,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 
 	archiveCompression->OpenCompression();
 
-	if (!filesToBeArchived->empty() && !nextMember_)
+	if (!options_.filesToBeIncluded_.empty() && !nextMember_)
 		nextMember_=NextMember();
 
 	for(bool firstPass=true; nextMember_; firstPass=false){

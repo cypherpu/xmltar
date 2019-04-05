@@ -28,7 +28,7 @@ public:
 
 class XmltarArchive {
 protected:
-	XmltarOptions options_;
+	XmltarOptions & options_;
 	std::string filename_;
 	unsigned int volumeNumber_;
 	std::shared_ptr<XmltarMemberCreate> & nextMember_;

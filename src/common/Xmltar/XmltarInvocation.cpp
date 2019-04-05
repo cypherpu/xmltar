@@ -26,6 +26,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/format.hpp>
 #include <boost/random.hpp>
 
+#include "Utilities/Glob.hpp"
 #include "Options/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
@@ -36,7 +37,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 
 XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
-	: version("Xmltar_0_0_1"), options_(options), pathCompare() {
+	: version("Xmltar_0_0_1"), options_(options) {
 
 	if (options_.verbosity_==3){
 		if (options_.operation_==XmltarOptions::APPEND) std::cerr << "Operation=APPEND" << std::endl;
@@ -60,17 +61,18 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeArchived(pathCompare);
-	if (options_.sourceFileGlobs_.size())
-		for(auto & i : options_.sourceFileGlobs_)
-			filesToBeArchived.push(i);
+	if (options_.sourceFileGlobs_.size()){
+		std::vector<std::string> tmp=BashGlob(options_.sourceFileGlobs_);
+		for(auto & i : tmp)
+			options_.filesToBeIncluded_.push(std::filesystem::path(i));
+	}
 	else if (options_.files_from_){
 		std::ifstream ifs(options_.files_from_.get().string());
 
 		if (ifs){
 			std::string line;
 			while(std::getline(ifs,line))
-				filesToBeArchived.push(std::filesystem::path(line));
+				options_.filesToBeIncluded_.push(std::filesystem::path(line));
 		}
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
@@ -111,13 +113,13 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
                 std::string filename=str(fmt);
 
                 std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
-                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename,/* options_.current_volume_,*/ &filesToBeArchived, nextMember);
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename,/* options_.current_volume_,*/ nextMember);
                 std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (!nextMember && filesToBeArchived.empty()) break;
+            	if (!nextMember && options_.filesToBeIncluded_.empty()) break;
             }
 		}
 		else {	// !options_.multi_volume_
@@ -125,7 +127,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
             std::shared_ptr<XmltarMemberCreate> nextMember;
-            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, &filesToBeArchived,nextMember);
+            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, nextMember);
 		}
 
 		if (options_.listed_incremental_file_){

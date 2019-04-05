@@ -30,14 +30,11 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Options/XmltarOptions.hpp"
 #include "Debug/Debug.hpp"
-#include "Utilities/PathCompare.hpp"
 
 class XmltarInvocation {
 private:
 	std::string version;
     XmltarOptions options_;
-    PathCompare pathCompare;
-    // std::priority_queue<boost::filesystem::path,std::vector<boost::filesystem::path>,PathCompare> filesToBeArchived_;
 
 public:
     XmltarInvocation(XmltarOptions const & options);

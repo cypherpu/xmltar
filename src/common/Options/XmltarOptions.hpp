@@ -25,6 +25,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits>
 #include <fstream>
+#include <queue>
 
 #include <boost/optional.hpp>
 
@@ -36,6 +37,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Transform/TransformLzip.hpp"
 #include "Transform/TransformHex.hpp"
 #include "Snapshot/Snapshot.hpp"
+#include "Utilities/PathCompare.hpp"
 
 class XmltarOptions {
 public:
@@ -68,6 +70,10 @@ public:
 	boost::optional<Snapshot> snapshot_;
 	std::shared_ptr<std::ofstream> incrementalFileOfs_;
 	time_t invocationTime_;
+
+	PathCompare pathCompare_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeIncluded_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeExcluded_;
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
