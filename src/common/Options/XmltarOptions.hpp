@@ -72,8 +72,9 @@ public:
 	time_t invocationTime_;
 
 	PathCompare pathCompare_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeIncluded_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,PathCompare> filesToBeExcluded_;
+
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
