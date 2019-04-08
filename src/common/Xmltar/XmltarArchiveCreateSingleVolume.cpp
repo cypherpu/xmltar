@@ -33,26 +33,38 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	archiveCompression->OpenCompression();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << "XmltarArchive::XmltarArchive: " << options_.filesToBeIncluded_.size() << std::endl;
-	std::shared_ptr<XmltarMemberCreate> xmltarMember;
-	for( ; !options_.filesToBeIncluded_.empty(); ){
+
+	nextMember_=NextMember();
+
+	for( ; nextMember_; nextMember_=NextMember()){
 		std::cerr << dbg << "XmltarArchive::XmltarArchive: " << options_.filesToBeIncluded_.top() << std::endl;
 
-		std::filesystem::path const filepath=options_.filesToBeIncluded_.top();
-		options_.filesToBeIncluded_.pop();
-		std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
+		if (nextMember_->isDirectory()){
+			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+			std::string compressedDirectoryMember
+				= options_.archiveMemberCompression_->CompressString(
+						tmp
+					);
+			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
+			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+		}
+		else if (nextMember_->isSymLink()){
+			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+			std::string compressedDirectoryMember
+				= options_.archiveMemberCompression_->CompressString(
+						tmp
+					);
+			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
+			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+		}
+		else if (nextMember_->isRegularFile()){
+			std::cerr << "********** isRegularFile" << std::endl;
+			std::cerr << dbg << ": archiving " << nextMember_->filepath().string() << std::endl;
 
-		if (std::filesystem::is_directory(f_stat)){
-			for(auto & p : std::filesystem::directory_iterator(filepath) ){
-				options_.filesToBeIncluded_.push(p);
-			}
+			nextMember_->write(archiveCompression,std::numeric_limits<size_t>::max(),*ofs);
 		}
 
-		xmltarMember=std::make_shared<XmltarMemberCreate>(options_,filepath);
-		xmltarMember->write(archiveCompression, std::numeric_limits<size_t>::max(), *ofs);
 	}
 	*ofs << archiveCompression->ForceWriteAndClose("");
 	*ofs << CompressedArchiveTrailer();
 }
-
-
-
