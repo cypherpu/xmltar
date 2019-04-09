@@ -32,12 +32,12 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	}
 	archiveCompression->OpenCompression();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
-	std::cerr << dbg << "XmltarArchive::XmltarArchive: " << options_.filesToBeIncluded_.size() << std::endl;
+	std::cerr << dbg << ": " << options_.filesToBeIncluded_.size() << std::endl;
 
 	nextMember_=NextMember();
 
 	for( ; nextMember_; nextMember_=NextMember()){
-		std::cerr << dbg << "XmltarArchive::XmltarArchive: " << options_.filesToBeIncluded_.top() << std::endl;
+		std::cerr << dbg << ": " << nextMember_->filepath() << std::endl;
 
 		if (nextMember_->isDirectory()){
 			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();

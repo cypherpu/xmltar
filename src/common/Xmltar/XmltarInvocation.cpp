@@ -80,6 +80,12 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	else if (options_.operation_==XmltarOptions::CREATE || options_.operation_==XmltarOptions::APPEND)
 		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
+	if (options_.excludeFileGlobs_.size()){
+		std::vector<std::string> tmp=BashGlob(options_.excludeFileGlobs_);
+		for(auto & i : tmp)
+			options_.filesToBeExcluded_.push(std::filesystem::path(i));
+	}
+
 	boost::optional<Snapshot> snapshot;
 	if (options_.listed_incremental_file_){
 		snapshot=Snapshot();

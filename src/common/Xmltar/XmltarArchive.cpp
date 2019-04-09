@@ -25,6 +25,7 @@ extern "C" {
 #include "Xmltar/XmltarArchive.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/ToHexDigit.hpp"
+#include "Utilities/IsPrefixPath.hpp"
 
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"
@@ -179,6 +180,58 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 #endif
 		}
 	}
+}
+
+std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
+	if (options_.filesToBeIncluded_.empty())
+		return std::shared_ptr<XmltarMemberCreate>();
+
+	/*
+	 * Files to be included in the archive are archived in path order.
+	 * As files are included, we would like to erase excluded paths which
+	 * could not possibly be relevant to any further included paths.
+	 * as possible. It is not sufficient to merely erase excluded paths which
+	 * are less than the current included path - we should not erase the excluded
+	 * path "/bin" just because it is less than "/bin/foo"; we must also ensure
+	 * the excluded path is not a path prefix of the included path.
+	 */
+	std::filesystem::path filepath;
+	for( ; !options_.filesToBeIncluded_.empty(); ){
+		filepath=options_.filesToBeIncluded_.top();
+		options_.filesToBeIncluded_.pop();
+		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+					<< "considering " << filepath.string() << std::endl;
+		while(!options_.filesToBeExcluded_.empty() &&
+			options_.filesToBeExcluded_.top()<filepath &&
+			!IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+						<< "discarding exclude file " << options_.filesToBeExcluded_.top().string() << std::endl;
+			options_.filesToBeExcluded_.pop();
+		}
+
+		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+					<< "filesToBeExcluded.top()=" << (options_.filesToBeExcluded_.size()?options_.filesToBeExcluded_.top().string():"") << std::endl;
+
+		if (options_.filesToBeExcluded_.empty())
+			break;
+		if (IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+			std::cerr	<< "########### XmltarArchiveCreateSingleVolume::NextMember: "
+						<< "discarding include file " << filepath << std::endl;
+			continue;
+		}
+		else break;
+	}
+
+	std::cerr << "NextMember=" << filepath << std::endl;
+	std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
+
+	if (std::filesystem::is_directory(f_stat)){
+		for(auto & p : std::filesystem::directory_iterator(filepath) ){
+			options_.filesToBeIncluded_.push(p);
+		}
+	}
+
+	return std::make_shared<XmltarMemberCreate>(options_,filepath);
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

@@ -52,6 +52,8 @@ public:
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	);
 
+	std::shared_ptr<XmltarMemberCreate> NextMember();
+
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);
 

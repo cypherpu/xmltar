@@ -89,6 +89,10 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 		sourceFileGlobs_.push_back(*i);
 	}
 
+	for(std::vector<std::string>::iterator i=excludeFileGlobs_.begin(); i!=excludeFileGlobs_.end(); ++i){
+		std::cerr << "ExcludeFileGlobs=" << *i << std::endl;
+	}
+
 	if (starting_volume_)
 		current_volume_=starting_volume_.get();
 }
