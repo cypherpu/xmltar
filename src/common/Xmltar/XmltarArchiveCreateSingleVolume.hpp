@@ -21,9 +21,8 @@ public:
 	);
 
 	std::shared_ptr<XmltarMemberCreate> NextMember(){
-		if (options_.filesToBeIncluded_.empty()){
+		if (options_.filesToBeIncluded_.empty())
 			return std::shared_ptr<XmltarMemberCreate>();
-		}
 
 		/*
 		 * Files to be included in the archive are archived in path order.
@@ -38,15 +37,26 @@ public:
 		for( ; !options_.filesToBeIncluded_.empty(); ){
 			filepath=options_.filesToBeIncluded_.top();
 			options_.filesToBeIncluded_.pop();
+			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+						<< "considering " << filepath.string() << std::endl;
 			while(!options_.filesToBeExcluded_.empty() &&
 				options_.filesToBeExcluded_.top()<filepath &&
-				!IsPrefixPath(options_.filesToBeExcluded_.top(),filepath))
+				!IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+				std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+							<< "discarding exclude file " << options_.filesToBeExcluded_.top().string() << std::endl;
 				options_.filesToBeExcluded_.pop();
+			}
+
+			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
+						<< "filesToBeExcluded.top()=" << (options_.filesToBeExcluded_.size()?options_.filesToBeExcluded_.top().string():"") << std::endl;
 
 			if (options_.filesToBeExcluded_.empty())
 				break;
-			if (IsPrefixPath(options_.filesToBeExcluded_.top(),filepath))
+			if (IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+				std::cerr	<< "########### XmltarArchiveCreateSingleVolue::NextMember: "
+							<< "discarding include file " << options_.filesToBeIncluded_.top().string() << std::endl;
 				options_.filesToBeIncluded_.pop();
+			}
 			else break;
 		}
 
