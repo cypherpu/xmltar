@@ -43,8 +43,10 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
     f_type=f_stat.type();
 
     if (std::filesystem::is_regular_file(f_stat)){
+    	std::cerr << "########### is regular file" << std::endl;
         file_size=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
+    	std::cerr << "########### running sha3sum512_" << std::endl;
         sha3sum512_.run();
     }
     else file_size=0;
@@ -59,19 +61,22 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
-	CryptoPP::byte digest[CryptoPP::SHA3_512::DIGESTSIZE];
-
-	hash_.Final(digest);
-
-	CryptoPP::HexEncoder encoder;
 	std::string output;
 
-	encoder.Attach( new CryptoPP::StringSink( output ) );
-	encoder.Put( digest, sizeof(digest) );
-	encoder.MessageEnd();
+	if (std::filesystem::is_regular_file(f_stat)){
+		CryptoPP::byte digest[CryptoPP::SHA3_512::DIGESTSIZE];
 
-	std::cerr << "##########" << sha3sum512_.ForceWriteAndClose("") << std::endl;
-	std::cerr << "##########" << output << std::endl;
+		hash_.Final(digest);
+
+		CryptoPP::HexEncoder encoder;
+
+		encoder.Attach( new CryptoPP::StringSink( output ) );
+		encoder.Put( digest, sizeof(digest) );
+		encoder.MessageEnd();
+
+		std::cerr << "##########" << sha3sum512_.ForceWriteAndClose("") << std::endl;
+		std::cerr << "##########" << output << std::endl;
+    }
 
 	if (options_.listed_incremental_file_){
 		*options_.incrementalFileOfs_.get()
@@ -107,7 +112,7 @@ void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, si
 		for( size_t i=numberOfBytesToArchive; *ifs_ && i>0; i-=ifs_->gcount()){
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
 			hash_.Update(reinterpret_cast<CryptoPP::byte *>(&buf[0]),ifs_->gcount());
-			sha3sum512_.ForceWrite(std::string(&buf[0],ifs_->gcount()));
+			sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
 				archiveCompression->ForceWrite(
 					memberCompression->ForceWrite(
