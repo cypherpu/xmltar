@@ -19,6 +19,7 @@ extern "C" {
 
 #include "Options/XmltarOptions.hpp"
 #include "Transform/Transform.hpp"
+#include "Transform/ProcessSha3sum512.hpp"
 
 class XmltarMemberCreate {
 	XmltarOptions const  & options_;
@@ -33,6 +34,7 @@ class XmltarMemberCreate {
 	size_t startingVolume_;
 
 	CryptoPP::SHA3_512 hash_;
+	ProcessSha3sum512 sha3sum512_;
 
 	bool metadataWritten_;
 
