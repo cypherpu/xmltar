@@ -18,6 +18,23 @@ class XmlHandler
 {
 	XML_Parser parser_;
 public:
+	class Element {
+	public:
+		std::string name_;
+		std::map<std::string,std::string> attributes_;
+		std::string characterData_;
+
+		Element(const XML_Char *name, const XML_Char **atts)
+			: name_(name) {
+			for(size_t i=0; atts[i]!=nullptr; i+=2)
+				if (attributes_.find(atts[i])==attributes_.end())
+					attributes_[atts[i]]=atts[i+1];
+				else throw std::logic_error("Element::Element: identical attribute names");
+		}
+	};
+
+	std::vector<Element> elements_;
+
 	XmlHandler();
 
 	void Parse(XML_Char *buffer, size_t count, bool done){
@@ -40,6 +57,18 @@ public:
 
 	virtual ~XmlHandler(){
 		XML_ParserFree(parser_);
+	}
+
+	void startElementSetup(const XML_Char *name, const XML_Char **atts){
+		elements_.push_back(Element(name,atts));
+		startElement(name,atts);
+	}
+	void endElementTeardown(const XML_Char *name){
+		endElement(name);
+		elements_.pop_back();
+	}
+	void characterDataSetup(XML_Char const *s, int len){
+		characterData(s,len);
 	}
 
 	virtual void startElement(const XML_Char *name, const XML_Char **atts){}

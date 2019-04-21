@@ -14,15 +14,15 @@
 #include "Xmltar/XmltarArchive.hpp"
 
 extern "C" void XMLCALL StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts){
-	((XmlHandler *) userData)->startElement(name,atts);
+	((XmlHandler *) userData)->startElementSetup(name,atts);
 }
 
 extern "C" void XMLCALL EndElementHandler(void *userData, const XML_Char *name){
-	((XmlHandler *) userData)->endElement(name);
+	((XmlHandler *) userData)->endElementTeardown(name);
 }
 
 extern "C" void XMLCALL CharacterDataHandler(void *userData, XML_Char const *s, int len){
-	((XmlHandler *) userData)->characterData(s,len);
+	((XmlHandler *) userData)->characterDataSetup(s,len);
 }
 
 XmlHandler::XmlHandler(){

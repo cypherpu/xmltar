@@ -15,7 +15,7 @@ std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent)
 			"volume-number=\"" << snapshotEvent.volumeNumber_ << "\" "
 			"sha3-512=\"" << snapshotEvent.sha3_512_ << "\" "
 			"dump-level=\"" << snapshotEvent.dumpLevel_ << "\""
-			<< ">";
+			<< "/>";
 
 	return os;
 }

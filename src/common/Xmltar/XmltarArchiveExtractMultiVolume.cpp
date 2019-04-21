@@ -14,8 +14,6 @@
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 
 void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_Char **atts){
-	elements_.push_back(Element(name,atts));
-
 	if (elements_.back().name_=="xmltar"){
 		if (elements_.size()!=1) throw std::domain_error("XmltarArchiveHandler::startElement: \"xmltar\" wrong nesting level");
 	}
@@ -66,7 +64,6 @@ void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 		xmltarArchiveExtractMultiVolume_.fs_.close();
 	}
 
-	elements_.pop_back();
 }
 
 void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){

@@ -14,23 +14,6 @@
 class XmltarArchiveExtractMultiVolume;
 
 class XmltarMultiVolumeXmlHandler : public XmlHandler {
-	class Element {
-	public:
-		std::string name_;
-		std::map<std::string,std::string> attributes_;
-		std::string characterData_;
-
-		Element(const XML_Char *name, const XML_Char **atts)
-			: name_(name) {
-			for(size_t i=0; atts[i]!=nullptr; i+=2)
-				if (attributes_.find(atts[i])==attributes_.end())
-					attributes_[atts[i]]=atts[i+1];
-				else throw std::logic_error("Element::Element: identical attribute names");
-		}
-	};
-
-	std::vector<Element> elements_;
-
 	XmltarArchiveExtractMultiVolume & xmltarArchiveExtractMultiVolume_;
 public:
 	XmltarMultiVolumeXmlHandler(XmltarArchiveExtractMultiVolume & xmltarArchiveExtractMultiVolume)

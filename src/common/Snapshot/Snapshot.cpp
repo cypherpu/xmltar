@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "Snapshot/Snapshot.hpp"
-#include "Snapshot/SnapshotHandler.hpp"
 
 Snapshot::Snapshot(){
 }
