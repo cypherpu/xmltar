@@ -26,6 +26,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/format.hpp>
 #include <boost/random.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include "Utilities/Glob.hpp"
 #include "Options/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
@@ -35,6 +37,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
 #include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
+#include "Xmltar/XmltarArchiveExtractSingleVolume.hpp"
 
 XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	: version("Xmltar_0_0_1"), options_(options) {
@@ -61,6 +64,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
 	}
 
+	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
 	if (options_.sourceFileGlobs_.size()){
 		std::vector<std::string> tmp=BashGlob(options_.sourceFileGlobs_);
 		for(auto & i : tmp)
@@ -80,18 +84,19 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	else if (options_.operation_==XmltarOptions::CREATE || options_.operation_==XmltarOptions::APPEND)
 		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
+	spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
 	if (options_.excludeFileGlobs_.size()){
 		std::vector<std::string> tmp=BashGlob(options_.excludeFileGlobs_);
 		for(auto & i : tmp)
 			options_.filesToBeExcluded_.push(std::filesystem::path(i));
 	}
 
-	boost::optional<Snapshot> snapshot;
+	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
+	boost::optional<Snapshot> snapshot(options_);
 	if (options_.listed_incremental_file_){
-		snapshot=Snapshot();
 		if (std::filesystem::exists(options_.listed_incremental_file_.get())){
 			snapshot.get().
-					Load(options_.listed_incremental_file_.get().string());
+					load(options_.listed_incremental_file_.get().string());
 		}
 		options_.incrementalFileOfs_.reset(new std::ofstream);
 		options_.incrementalFileOfs_->open(options_.listed_incremental_file_.get().string());
@@ -186,7 +191,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 		}
 		else {
 			std::shared_ptr<XmltarMemberCreate> nextMember;
-			XmltarArchive xmltarArchive(options_,options_.base_xmltar_file_name_.get(), nextMember);
+			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(options_,options_.base_xmltar_file_name_.get(), nextMember);
 		}
 	}
 

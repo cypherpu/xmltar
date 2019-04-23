@@ -49,7 +49,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 int main(int argc, char const *argv[])
 {
-	spdlog::set_level(spdlog::level::info);
+	spdlog::set_level(spdlog::level::debug);
 	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
 
 	try {
@@ -155,11 +155,13 @@ int main(int argc, char const *argv[])
 
 
 
-
+	    spdlog::debug("Before XmltarOptions");
 		XmltarOptions options;
 		options.ProcessOptions(argc, argv);
 
+	    spdlog::debug("Before XmltarInvocation");
 		XmltarInvocation xmltarInvocation(options);
+	    spdlog::debug("After XmltarInvocation");
 	}
 	catch (char const *msg){
 		std::cerr << msg << std::endl;

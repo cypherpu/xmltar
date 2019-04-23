@@ -9,11 +9,11 @@
 #define SRC_COMMON_XMLTAR_XMLTARARCHIVEEXTRACTMULTIVOLUME_HPP_
 
 #include "Xmltar/XmltarArchive.hpp"
-#include "Xmltar/XmlHandler.hpp"
+#include "XmlParser/XmlParser.hpp"
 
 class XmltarArchiveExtractMultiVolume;
 
-class XmltarMultiVolumeXmlHandler : public XmlHandler {
+class XmltarMultiVolumeXmlHandler : public XmlParser {
 	XmltarArchiveExtractMultiVolume & xmltarArchiveExtractMultiVolume_;
 public:
 	XmltarMultiVolumeXmlHandler(XmltarArchiveExtractMultiVolume & xmltarArchiveExtractMultiVolume)

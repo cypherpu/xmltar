@@ -34,7 +34,7 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 
-#include "Xmltar/XmlHandler.hpp"
+#include "XmlParser/XmlParser.hpp"
 
 #include "../Debug2/Debug2.hpp"
 

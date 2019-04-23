@@ -1,12 +1,12 @@
 /*
- * SnapshotXmlHandler.hpp
+ * SnapshotXmlParser.hpp
  *
  *  Created on: Nov 20, 2017
  *      Author: dbetz
  */
 
-#ifndef SRC_COMMON_SNAPSHOT_SNAPSHOTXMLHANDLER_HPP_
-#define SRC_COMMON_SNAPSHOT_SNAPSHOTXMLHANDLER_HPP_
+#ifndef SRC_COMMON_SNAPSHOT_SNAPSHOTXMLPARSER_HPP_
+#define SRC_COMMON_SNAPSHOT_SNAPSHOTXMLPARSER_HPP_
 
 #include <string>
 #include <vector>
@@ -16,15 +16,15 @@
 class Snapshot;
 
 #include "Snapshot/Snapshot.hpp"
-#include "Xmltar/XmlHandler.hpp"
-#include "Generated/Transform/Transform.hpp"
+#include "XmlParser/XmlParser.hpp"
+#include "Transform/Transform.hpp"
 
-class SnapshotXmlHandler : public XmlHandler {
+class SnapshotXmlParser : public XmlParser {
 	std::unique_ptr<Transform> fileDecompression_;
 	std::fstream fs_;
 	Snapshot & snapshot_;
 public:
-	SnapshotXmlHandler(Snapshot & snapshot)
+	SnapshotXmlParser(Snapshot & snapshot)
 		: snapshot_(snapshot){
 	}
 
@@ -33,4 +33,4 @@ public:
 	virtual void characterData(XML_Char const *s, int len) override;
 };
 
-#endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTXMLHANDLER_HPP_ */
+#endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTXMLPARSER_HPP_ */

@@ -54,8 +54,12 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
-	p.Add_Option(Parse_Opts::ARGS_0,  "","--compress-listed-incremental","compress listed-incremental file",
+	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-gzip","gzip listed-incremental file",
 			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformGzip("gzip")));
+	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-bzip2","bzip2 listed-incremental file",
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformBzip2("bzip2")));
+	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-lzip","lzip listed-incremental file",
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformLzip("lzip")));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
 			p.Assign_Args(dump_level_));
 

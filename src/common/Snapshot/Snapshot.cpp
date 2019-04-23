@@ -8,15 +8,40 @@
 #include <iostream>
 
 #include "Snapshot/Snapshot.hpp"
+#include "Snapshot/SnapshotXmlParser.hpp"
+#include "Options/XmltarOptions.hpp"
 
-Snapshot::Snapshot(){
+Snapshot::Snapshot(XmltarOptions & options)
+	: options_(options) {
 }
 
-Snapshot::Snapshot(std::string const & xmlFile){
-	Load(xmlFile);
+Snapshot::Snapshot(XmltarOptions & options, std::string const & xmlFilename)
+	: options_(options) {
+	load(xmlFilename);
 }
 
-void Snapshot::Load(std::string const & xmlFile){
+void Snapshot::load(std::string const & xmlFilename){
+	std::ifstream ifs(xmlFilename);
+
+	XML_Char buffer[1024];
+
+	std::shared_ptr<Transform> archiveDecompression(options_.archiveCompression_->clone());
+
+	archiveDecompression->OpenDecompression();
+
+	SnapshotXmlParser snapshotXmlParser(*this);
+	std::string tmp;
+	while(ifs){
+		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
+
+		tmp=archiveDecompression->ForceWrite(std::string(buffer,ifs.gcount()));
+		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
+		snapshotXmlParser.Parse(tmp,false);
+	}
+
+	tmp=archiveDecompression->ForceWriteAndClose("");
+	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
+	snapshotXmlParser.Parse(tmp,false);
 }
 
 void Snapshot::dump(std::ostream & os){

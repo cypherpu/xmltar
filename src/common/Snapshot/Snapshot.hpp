@@ -13,15 +13,17 @@
 
 #include "Snapshot/SnapshotFileEntry.hpp"
 
-class Snapshot {
+class XmltarOptions;
 
+class Snapshot {
+	XmltarOptions & options_;
 public:
 	std::vector<SnapshotFileEntry> fileEntries_;
 
-	Snapshot();
-	Snapshot(std::string const & xmlFile);
+	Snapshot(XmltarOptions & options);
+	Snapshot(XmltarOptions & options, std::string const & xmlFile);
 
-	void Load(std::string const & xmlFile);
+	void load(std::string const & xmlFile);
 	void dump(std::ostream & os);
 };
 

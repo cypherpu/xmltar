@@ -19,6 +19,7 @@
 
 class XmltarArchiveHandler;
 class XmltarMultiVolumeXmlHandler;
+class XmltarSingleVolumeXmlHandler;
 
 class PartialFileRead {
 public:
@@ -71,6 +72,7 @@ public:
 
 	friend XmltarArchiveHandler;
 	friend XmltarMultiVolumeXmlHandler;
+	friend XmltarSingleVolumeXmlHandler;
 };
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVE_HPP_ */
