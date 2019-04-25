@@ -39,7 +39,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractSingleVolume.hpp"
 
-XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
+XmltarInvocation::XmltarInvocation(XmltarOptions & options)
 	: version("Xmltar_0_0_1"), options_(options) {
 
 	if (options_.verbosity_==3){
@@ -92,12 +92,14 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 	}
 
 	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
-	boost::optional<Snapshot> snapshot(options_);
 	if (options_.listed_incremental_file_){
-		if (std::filesystem::exists(options_.listed_incremental_file_.get())){
-			snapshot.get().
-					load(options_.listed_incremental_file_.get().string());
-		}
+		if (!(options_.operation_ && options_.operation_==XmltarOptions::CREATE))
+			throw std::runtime_error("XmltarInvocation: must use incremental file with create");
+
+		options_.snapshot_.reset(new Snapshot(options_));
+
+
+#if 0
 		options_.incrementalFileOfs_.reset(new std::ofstream);
 		options_.incrementalFileOfs_->open(options_.listed_incremental_file_.get().string());
 
@@ -107,6 +109,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options)
 				<< std::endl;
 
 		snapshot.get().dump(*options_.incrementalFileOfs_.get());
+#endif
 	}
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){

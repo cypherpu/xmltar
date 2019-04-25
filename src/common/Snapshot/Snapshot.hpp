@@ -18,13 +18,7 @@ class XmltarOptions;
 class Snapshot {
 	XmltarOptions & options_;
 public:
-	std::vector<SnapshotFileEntry> fileEntries_;
-
 	Snapshot(XmltarOptions & options);
-	Snapshot(XmltarOptions & options, std::string const & xmlFile);
-
-	void load(std::string const & xmlFile);
-	void dump(std::ostream & os);
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

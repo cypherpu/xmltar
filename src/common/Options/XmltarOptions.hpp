@@ -62,12 +62,12 @@ public:
 	boost::optional<bool> tabs_;
 	boost::optional<bool> newlines_;
 	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
-	boost::optional<unsigned int> starting_volume_;						// starting_volume;
+	boost::optional<unsigned int> starting_volume_;				// starting_volume;
 	std::vector<std::string> sourceFileGlobs_;
 
 	std::string current_xmltar_file_name_;
 	size_t current_volume_;
-	boost::optional<Snapshot> snapshot_;
+	std::unique_ptr<Snapshot> snapshot_;
 	std::shared_ptr<std::ofstream> incrementalFileOfs_;
 	time_t invocationTime_;
 

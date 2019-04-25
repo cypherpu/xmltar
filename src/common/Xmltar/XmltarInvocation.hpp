@@ -34,10 +34,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 class XmltarInvocation {
 private:
 	std::string version;
-    XmltarOptions options_;
+    XmltarOptions & options_;
 
 public:
-    XmltarInvocation(XmltarOptions const & options);
+    XmltarInvocation(XmltarOptions & options);
 
 	bool Exclude_File(std::string);
 	void Add_To_Archive(void);

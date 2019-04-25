@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <filesystem>
 
 #include "Snapshot/Snapshot.hpp"
 #include "Snapshot/SnapshotXmlParser.hpp"
@@ -13,13 +14,14 @@
 
 Snapshot::Snapshot(XmltarOptions & options)
 	: options_(options) {
+	std::filesystem::path tempDir=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_dir_XXXXXXX");
+	std::filesystem::path tempFile=TemporaryFile(tempDir / "xmltar_snapshot_XXXXXX");
+
 }
 
-Snapshot::Snapshot(XmltarOptions & options, std::string const & xmlFilename)
-	: options_(options) {
-	load(xmlFilename);
-}
 
+
+#if 0
 void Snapshot::load(std::string const & xmlFilename){
 	std::ifstream ifs(xmlFilename);
 
@@ -52,3 +54,4 @@ void Snapshot::dump(std::ostream & os){
 		}
 	}
 }
+#endif
