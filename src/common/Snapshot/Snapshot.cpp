@@ -11,15 +11,18 @@
 #include "Snapshot/Snapshot.hpp"
 #include "Snapshot/SnapshotXmlParser.hpp"
 #include "Options/XmltarOptions.hpp"
+#include "Utilities/TemporaryFile.hpp"
 
 Snapshot::Snapshot(XmltarOptions & options)
 	: options_(options) {
-	std::filesystem::path tempDir=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_dir_XXXXXXX");
-	std::filesystem::path tempFile=TemporaryFile(tempDir / "xmltar_snapshot_XXXXXX");
+	tempFile_=TemporaryFile(std::filesystem::temp_directory_path() / "xmltar_snapshot_XXXXXX");
 
+	tempOfs_.open(tempFile_.string());
 }
 
+Snapshot::~Snapshot(){
 
+}
 
 #if 0
 void Snapshot::load(std::string const & xmlFilename){
