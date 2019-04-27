@@ -20,6 +20,7 @@ extern "C" {
 #include <boost/lexical_cast.hpp>
 #include <spdlog/spdlog.h>
 
+#include "Xmltar/XmltarGlobals.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/XMLSafeString.hpp"
 #include "Utilities/ToLocalTime.hpp"
@@ -29,8 +30,8 @@ extern "C" {
 #include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
-XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::filesystem::path const & filepath)
-	: options_(options), filepath_(filepath), metadataWritten_(false) {
+XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath)
+	: options_(options), globals_(globals), filepath_(filepath), metadataWritten_(false) {
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=std::filesystem::symlink_status(filepath_);
@@ -55,7 +56,7 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, std::files
     memberHeader_=MemberHeader();
     memberTrailer_=MemberTrailer();
 
-    startingVolume_=options_.current_volume_;
+    startingVolume_=globals_.current_volume_;
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
@@ -66,9 +67,9 @@ XmltarMemberCreate::~XmltarMemberCreate(){
     }
 
 	if (options_.listed_incremental_file_){
-		(*options_.snapshot_).tempOfs_
+		(*globals_.snapshot_).tempOfs_
 			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
-			<< "\t\t" << SnapshotEvent(options_.invocationTime_,startingVolume_,output,options_.dump_level_.get()) << std::endl
+			<< "\t\t" << SnapshotEvent(globals_.invocationTime_,startingVolume_,output,options_.dump_level_.get()) << std::endl
 			<< "\t</file>" << std::endl;
 		std::cerr << "Digest=" << output << std::endl;
 	}

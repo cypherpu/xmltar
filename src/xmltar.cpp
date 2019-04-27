@@ -37,9 +37,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <cryptopp/aes.h>
 #include <cryptopp/filters.h>
 
-#include "common/Xmltar/XmltarInvocation.hpp"
+#include "Xmltar/XmltarInvocation.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarGlobals.hpp"
 
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"
@@ -157,9 +158,9 @@ int main(int argc, char const *argv[])
 	    spdlog::debug("Before XmltarOptions");
 		XmltarOptions options;
 		options.ProcessOptions(argc, argv);
-
+		XmltarGlobals globals(options);
 	    spdlog::debug("Before XmltarInvocation");
-		XmltarInvocation xmltarInvocation(options);
+		XmltarInvocation xmltarInvocation(options,globals);
 	    spdlog::debug("After XmltarInvocation");
 	}
 	catch (char const *msg){

@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarGlobals.hpp"
 #include "Utilities/PathCompare.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"
 
@@ -29,7 +30,8 @@ public:
 
 class XmltarArchive {
 protected:
-	XmltarOptions & options_;
+	XmltarOptions const & options_;
+	XmltarGlobals & globals_;
 	std::string filename_;
 	unsigned int volumeNumber_;
 	std::shared_ptr<XmltarMemberCreate> & nextMember_;
@@ -38,7 +40,8 @@ public:
 	 * Single volume constructor - no volume number needed
 	 */
 	XmltarArchive(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	);
@@ -47,7 +50,8 @@ public:
 	 * Multi volume constructor - requires volume number
 	 */
 	XmltarArchive(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
 		std::shared_ptr<XmltarMemberCreate> & nextMember

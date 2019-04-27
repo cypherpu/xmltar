@@ -13,7 +13,7 @@
 #include "Options/XmltarOptions.hpp"
 #include "Utilities/TemporaryFile.hpp"
 
-Snapshot::Snapshot(XmltarOptions & options)
+Snapshot::Snapshot(XmltarOptions const & options)
 	: options_(options) {
 	tempFile_=TemporaryFile(std::filesystem::temp_directory_path() / "xmltar_snapshot_XXXXXX");
 

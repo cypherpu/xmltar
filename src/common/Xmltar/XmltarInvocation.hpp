@@ -30,14 +30,16 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Options/XmltarOptions.hpp"
 #include "Debug/Debug.hpp"
+#include "Xmltar/XmltarGlobals.hpp"
 
 class XmltarInvocation {
 private:
 	std::string version;
-    XmltarOptions & options_;
+    XmltarOptions const & options_;
+    XmltarGlobals & globals_;
 
 public:
-    XmltarInvocation(XmltarOptions & options);
+    XmltarInvocation(XmltarOptions const & options, XmltarGlobals & globals);
 };
 
 #endif // COMMON_XMLTAR_XMLTARINVOCATION_HPP_

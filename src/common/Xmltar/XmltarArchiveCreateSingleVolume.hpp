@@ -13,7 +13,8 @@
 class XmltarArchiveCreateSingleVolume : public XmltarArchive {
 public:
 	XmltarArchiveCreateSingleVolume(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
 		std::shared_ptr<XmltarMemberCreate> & nextMember

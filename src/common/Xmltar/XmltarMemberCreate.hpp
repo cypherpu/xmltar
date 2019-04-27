@@ -21,6 +21,7 @@ extern "C" {
 
 class XmltarMemberCreate {
 	XmltarOptions const  & options_;
+	XmltarGlobals & globals_;
 	std::filesystem::path const filepath_;
 	struct stat stat_buf;
 	std::filesystem::file_status f_stat;
@@ -36,7 +37,7 @@ class XmltarMemberCreate {
 	bool metadataWritten_;
 
 public:
-	XmltarMemberCreate(XmltarOptions const & options, std::filesystem::path const & filepath);
+	XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath);
 	~XmltarMemberCreate();
 
 	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);

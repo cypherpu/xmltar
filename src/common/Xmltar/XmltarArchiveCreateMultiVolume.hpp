@@ -13,7 +13,8 @@
 class XmltarArchiveCreateMultiVolume : public XmltarArchive {
 public:
 	XmltarArchiveCreateMultiVolume(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	);

@@ -36,8 +36,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Transform/TransformBzip2.hpp"
 #include "Transform/TransformLzip.hpp"
 #include "Transform/TransformHex.hpp"
-#include "Snapshot/Snapshot.hpp"
-#include "Utilities/PathCompare.hpp"
 
 class XmltarOptions {
 public:
@@ -65,31 +63,19 @@ public:
 	boost::optional<unsigned int> starting_volume_;				// starting_volume;
 	std::vector<std::string> sourceFileGlobs_;
 
-	std::string current_xmltar_file_name_;
-	size_t current_volume_;
-	std::unique_ptr<Snapshot> snapshot_;
-	time_t invocationTime_;
-
-	PathCompare pathCompare_;
-
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;
-
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
 		  fileCompression_(new TransformIdentity("fileCompression")),
 		  encoding_(new TransformHex("encoding")),
 		  archiveMemberCompression_(new TransformIdentity("archiveMemberCompression")),
 		  archiveCompression_(new TransformIdentity("archiveCompression")),
-          tape_length_(), stop_after_(),
+          tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new TransformIdentity("listed-incremental-compression")),
 		  dump_level_(),
 		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
-		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(),
-		  current_xmltar_file_name_(), current_volume_(),
-		  invocationTime_(time(nullptr)){ }
+		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(){ }
 
     void ProcessOptions(int argc, char const *argv[]);
 

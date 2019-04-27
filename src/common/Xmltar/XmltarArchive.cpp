@@ -60,18 +60,19 @@ public:
 };
 
 XmltarArchive::XmltarArchive(
-	XmltarOptions & opts,
+	XmltarOptions const & opts,
+	XmltarGlobals & globals,
 	std::string filename,
 	unsigned int volumeNumber,
 	std::shared_ptr<XmltarMemberCreate> & nextMember
 )
-	: options_(opts), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
+	: options_(opts), globals_(globals), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
-XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
-: options_(opts), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
+XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
+: options_(opts), globals_(globals), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
 		if (options_.multi_volume_){
@@ -183,7 +184,7 @@ XmltarArchive::XmltarArchive(XmltarOptions & opts, std::string filename, std::sh
 }
 
 std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
-	if (options_.filesToBeIncluded_.empty())
+	if (globals_.filesToBeIncluded_.empty())
 		return std::shared_ptr<XmltarMemberCreate>();
 
 	/*
@@ -196,25 +197,25 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 	 * the excluded path is not a path prefix of the included path.
 	 */
 	std::filesystem::path filepath;
-	for( ; !options_.filesToBeIncluded_.empty(); ){
-		filepath=options_.filesToBeIncluded_.top();
-		options_.filesToBeIncluded_.pop();
+	for( ; !globals_.filesToBeIncluded_.empty(); ){
+		filepath=globals_.filesToBeIncluded_.top();
+		globals_.filesToBeIncluded_.pop();
 		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
 					<< "considering " << filepath.string() << std::endl;
-		while(!options_.filesToBeExcluded_.empty() &&
-			options_.filesToBeExcluded_.top()<filepath &&
-			!IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+		while(!globals_.filesToBeExcluded_.empty() &&
+				globals_.filesToBeExcluded_.top()<filepath &&
+			!IsPrefixPath(globals_.filesToBeExcluded_.top(),filepath)){
 			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding exclude file " << options_.filesToBeExcluded_.top().string() << std::endl;
-			options_.filesToBeExcluded_.pop();
+						<< "discarding exclude file " << globals_.filesToBeExcluded_.top().string() << std::endl;
+			globals_.filesToBeExcluded_.pop();
 		}
 
 		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "filesToBeExcluded.top()=" << (options_.filesToBeExcluded_.size()?options_.filesToBeExcluded_.top().string():"") << std::endl;
+					<< "filesToBeExcluded.top()=" << (globals_.filesToBeExcluded_.size()?globals_.filesToBeExcluded_.top().string():"") << std::endl;
 
-		if (options_.filesToBeExcluded_.empty())
+		if (globals_.filesToBeExcluded_.empty())
 			break;
-		if (IsPrefixPath(options_.filesToBeExcluded_.top(),filepath)){
+		if (IsPrefixPath(globals_.filesToBeExcluded_.top(),filepath)){
 			std::cerr	<< "########### XmltarArchiveCreateSingleVolume::NextMember: "
 						<< "discarding include file " << filepath << std::endl;
 			continue;
@@ -227,11 +228,11 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 
 	if (std::filesystem::is_directory(f_stat)){
 		for(auto & p : std::filesystem::directory_iterator(filepath) ){
-			options_.filesToBeIncluded_.push(p);
+			globals_.filesToBeIncluded_.push(p);
 		}
 	}
 
-	return std::make_shared<XmltarMemberCreate>(options_,filepath);
+	return std::make_shared<XmltarMemberCreate>(options_,globals_,filepath);
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

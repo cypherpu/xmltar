@@ -13,11 +13,12 @@
 #include "Debug2/Debug2.hpp"
 
 XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	)
-	: XmltarArchive(opts,filename,/*volumeNumber,*/nextMember)
+	: XmltarArchive(opts,globals,filename,nextMember)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
@@ -26,7 +27,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
 
 	std::ofstream ofs(filename_);
-	std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,options_.current_volume_);
+	std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,globals_.current_volume_);
 	std::string compressedArchiveTrailer=CompressedArchiveTrailer();
 
 	if (options_.tape_length_.get()<compressedArchiveHeader.size()+compressedArchiveTrailer.size())
@@ -41,7 +42,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 
 	archiveCompression->OpenCompression();
 
-	if (!options_.filesToBeIncluded_.empty() && !nextMember_)
+	if (!globals_.filesToBeIncluded_.empty() && !nextMember_)
 		nextMember_=NextMember();
 
 	for(bool firstPass=true; nextMember_; firstPass=false){

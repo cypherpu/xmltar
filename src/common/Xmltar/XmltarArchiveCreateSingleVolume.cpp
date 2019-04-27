@@ -11,12 +11,13 @@
 #include "Debug2/Debug2.hpp"
 
 XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
-		XmltarOptions & opts,
+		XmltarOptions const & opts,
+		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
 		std::shared_ptr<XmltarMemberCreate> & nextMember
 	)
-	: XmltarArchive(opts,filename,volumeNumber,nextMember)
+	: XmltarArchive(opts,globals,filename,volumeNumber,nextMember)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume");
 	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
@@ -32,7 +33,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	}
 	archiveCompression->OpenCompression();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
-	std::cerr << dbg << ": " << options_.filesToBeIncluded_.size() << std::endl;
+	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
 	nextMember_=NextMember();
 

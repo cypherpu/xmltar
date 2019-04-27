@@ -18,11 +18,11 @@ class XmltarOptions;
 
 class Snapshot {
 public:
-	XmltarOptions & options_;
+	XmltarOptions const & options_;
 	std::filesystem::path tempFile_;
 	std::ofstream tempOfs_;
 public:
-	Snapshot(XmltarOptions & options);
+	Snapshot(XmltarOptions const & options);
 
 	~Snapshot();
 };
