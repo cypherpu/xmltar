@@ -7,7 +7,7 @@
 
 #include <gmock/gmock.h>
 
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 
 TEST(XmltarTest,Options1)
 {

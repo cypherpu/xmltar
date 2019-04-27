@@ -15,7 +15,7 @@
 
 #include "Snapshot/Snapshot.hpp"
 #include "Utilities/PathCompare.hpp"
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 
 class XmltarGlobals {
 public:

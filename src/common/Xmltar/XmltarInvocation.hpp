@@ -28,7 +28,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <queue>
 #include <algorithm>
 
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 #include "Debug/Debug.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 

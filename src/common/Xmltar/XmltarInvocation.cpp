@@ -29,7 +29,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <spdlog/spdlog.h>
 
 #include "Utilities/Glob.hpp"
-#include "Options/Options-TarStyle.hpp"
+#include "Utilities/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
 #include "Xmltar/XmltarInvocation.hpp"

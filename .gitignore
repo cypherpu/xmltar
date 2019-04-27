@@ -3,3 +3,7 @@
 /xmltar
 /.settings
 /xmltar.out
+/bazel-bin/
+/bazel-genfiles/
+/bazel-out/
+/bazel-testlogs/

@@ -10,7 +10,7 @@
 
 #include "Snapshot/Snapshot.hpp"
 #include "Snapshot/SnapshotXmlParser.hpp"
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 #include "Utilities/TemporaryFile.hpp"
 
 Snapshot::Snapshot(XmltarOptions const & options)

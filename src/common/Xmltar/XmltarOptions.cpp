@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 
 void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	Parse_Opts::Option_Parser p;

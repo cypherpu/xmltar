@@ -13,7 +13,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "Options/XmltarOptions.hpp"
+#include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 #include "Utilities/PathCompare.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"

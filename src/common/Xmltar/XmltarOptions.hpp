@@ -29,7 +29,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/optional.hpp>
 
-#include "Options/Options-TarStyle.hpp"
+#include "Utilities/Options-TarStyle.hpp"
 #include "Transform/Transform.hpp"
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"
