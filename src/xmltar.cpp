@@ -38,7 +38,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <cryptopp/filters.h>
 
 #include "common/Xmltar/XmltarInvocation.hpp"
-#include "Include/Incremental_File.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Options/XmltarOptions.hpp"
 
