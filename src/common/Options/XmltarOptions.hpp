@@ -68,7 +68,6 @@ public:
 	std::string current_xmltar_file_name_;
 	size_t current_volume_;
 	std::unique_ptr<Snapshot> snapshot_;
-	std::shared_ptr<std::ofstream> incrementalFileOfs_;
 	time_t invocationTime_;
 
 	PathCompare pathCompare_;
@@ -89,7 +88,7 @@ public:
 		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
 		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(),
-		  current_xmltar_file_name_(), current_volume_(), incrementalFileOfs_(),
+		  current_xmltar_file_name_(), current_volume_(),
 		  invocationTime_(time(nullptr)){ }
 
     void ProcessOptions(int argc, char const *argv[]);

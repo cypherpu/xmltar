@@ -17,6 +17,7 @@
 class XmltarOptions;
 
 class Snapshot {
+public:
 	XmltarOptions & options_;
 	std::filesystem::path tempFile_;
 	std::ofstream tempOfs_;

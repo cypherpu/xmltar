@@ -97,19 +97,6 @@ XmltarInvocation::XmltarInvocation(XmltarOptions & options)
 			throw std::runtime_error("XmltarInvocation: must use incremental file with create");
 
 		options_.snapshot_.reset(new Snapshot(options_));
-
-
-#if 0
-		options_.incrementalFileOfs_.reset(new std::ofstream);
-		options_.incrementalFileOfs_->open(options_.listed_incremental_file_.get().string());
-
-		*options_.incrementalFileOfs_.get()
-				<< 	"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-					"<listed-incremental xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">"
-				<< std::endl;
-
-		snapshot.get().dump(*options_.incrementalFileOfs_.get());
-#endif
 	}
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
@@ -127,7 +114,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions & options)
                 std::string filename=str(fmt);
 
                 std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
-                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename,/* options_.current_volume_,*/ nextMember);
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,filename, nextMember);
                 std::cerr << "*********" << options_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
@@ -142,12 +129,6 @@ XmltarInvocation::XmltarInvocation(XmltarOptions & options)
 
             std::shared_ptr<XmltarMemberCreate> nextMember;
             XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,options_.base_xmltar_file_name_.get(), 0, nextMember);
-		}
-
-		if (options_.listed_incremental_file_){
-			*options_.incrementalFileOfs_.get()
-					<<  "</listed-incremental>"
-					<< std::endl;
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){

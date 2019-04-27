@@ -18,10 +18,18 @@ Snapshot::Snapshot(XmltarOptions & options)
 	tempFile_=TemporaryFile(std::filesystem::temp_directory_path() / "xmltar_snapshot_XXXXXX");
 
 	tempOfs_.open(tempFile_.string());
+
+	tempOfs_
+		<<	"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+			"<listed-incremental xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">\n";
 }
 
 Snapshot::~Snapshot(){
+	tempOfs_
+		<<	"</listed-incremental>";
+	tempOfs_.close();
 
+	std::filesystem::rename(tempFile_,options_.listed_incremental_file_.get());
 }
 
 #if 0
