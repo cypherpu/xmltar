@@ -38,12 +38,6 @@ private:
 
 public:
     XmltarInvocation(XmltarOptions & options);
-
-	bool Exclude_File(std::string);
-	void Add_To_Archive(void);
-	void Extract(void);
-	bool Matches_Archive_Member(std::string);
-	XmltarOptions const & Options(){ return options_; }
 };
 
 #endif // COMMON_XMLTAR_XMLTARINVOCATION_HPP_
