@@ -32,12 +32,19 @@ void Snapshot::MergeSnapshotFiles(){
 	}
 
 	for(size_t i=0; i<incrementalFiles.size(); ){
-			while(incrementalFiles[i]->incrementalSnapshotIfs_ && incrementalFiles[i]->incrementalSnapshotParser_.fileEntries_.size()){
-				XML_Char buffer[1024];
-				incrementalFiles[i]->incrementalSnapshotIfs_.read(buffer,sizeof(buffer)/sizeof(*buffer));
-				std::string tmp=incrementalFiles[i]->incrementalSnapshotDecompression_->ForceWrite(std::string(buffer,incrementalFiles[i]->incrementalSnapshotIfs_.gcount()));
-				incrementalFiles[i]->incrementalSnapshotParser_.Parse(tmp,false);
-			}
+		while(incrementalFiles[i]->incrementalSnapshotIfs_ && incrementalFiles[i]->incrementalSnapshotParser_.fileEntries_.size()==0){
+			XML_Char buffer[1024];
+			incrementalFiles[i]->incrementalSnapshotIfs_.read(buffer,sizeof(buffer)/sizeof(*buffer));
+			std::string tmp=incrementalFiles[i]->incrementalSnapshotDecompression_->ForceWrite(std::string(buffer,incrementalFiles[i]->incrementalSnapshotIfs_.gcount()));
+			incrementalFiles[i]->incrementalSnapshotParser_.Parse(tmp,false);
+		}
+
+		if (!incrementalFiles[i]->incrementalSnapshotIfs_){
+			incrementalFiles[i]->incrementalSnapshotIfs_.close();
+			std::string tmp=incrementalFiles[i]->incrementalSnapshotDecompression_->ForceWriteAndClose("");
+			incrementalFiles[i]->incrementalSnapshotParser_.Parse(tmp,true);
+			if (!incrementalFiles[i]->incrementalSnapshotParser_.fileEntries==0)
+		}
 	}
 }
 
