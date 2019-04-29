@@ -96,7 +96,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 		if (!(options_.operation_ && options_.operation_==XmltarOptions::CREATE))
 			throw std::runtime_error("XmltarInvocation: must use incremental file with create");
 
-		globals_.snapshot_.reset(new Snapshot(options_));
+		globals_.snapshot_.reset(new Snapshot(options_,globals_));
 	}
 
 	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){

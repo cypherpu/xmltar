@@ -4,25 +4,27 @@
 # dot -Tpng < graph.in > graph.png
 # nautilus graph.png
 
-#cc_binary(
-#	name = "Xmltar.Test",
-#	srcs = ["src/Xmltar.Test.cpp"]
-#			+glob(["src/common/**/*.cpp"] )
-#			+glob(["src/common/**/*.hpp"])
-#			,
-#	includes = [],
-#	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
-#	linkopts = [
-#				"-lgtest",
-#				"-lboost_filesystem",
-#				"-lboost_system",
-#				"-lxerces-c",
-#				"-lexpat",
-#				"-lboost_date_time",
-#				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
-#				"-lstdc++fs"
-#				]
-#)
+cc_binary(
+	name = "Xmltar.Test",
+	srcs = ["src/Xmltar.Test.cpp"]
+			+glob(["src/common/**/*.cpp"] )
+			+glob(["src/common/**/*.hpp"])
+			,
+	includes = [],
+	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	linkopts = [
+				"-lgtest",
+				"-lboost_filesystem",
+				"-lboost_system",
+				"-lxerces-c",
+				"-lexpat",
+				"-lboost_date_time",
+				"-lcryptopp",
+				"-lpthread",
+				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
+				"-lstdc++fs"
+				]
+)
 
 cc_binary(
 	name = "xmltar",

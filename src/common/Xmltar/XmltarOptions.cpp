@@ -96,6 +96,9 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	for(std::vector<std::string>::iterator i=excludeFileGlobs_.begin(); i!=excludeFileGlobs_.end(); ++i){
 		std::cerr << "ExcludeFileGlobs=" << *i << std::endl;
 	}
+
+	if (listed_incremental_file_ && !dump_level_)
+		throw std::logic_error("XmltarOptions::ProcessOptions: must specify dump level for listed-incremental");
 }
 
 std::string XmltarOptions::toXMLString(){

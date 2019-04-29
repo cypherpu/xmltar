@@ -63,7 +63,6 @@ void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
 		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.fileDecompression_->ForceWriteAndClose(xmltarArchiveExtractMultiVolume_.decoder_->ForceWriteAndClose(""));
 		xmltarArchiveExtractMultiVolume_.fs_.close();
 	}
-
 }
 
 void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){

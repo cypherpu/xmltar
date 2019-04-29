@@ -67,9 +67,9 @@ XmltarMemberCreate::~XmltarMemberCreate(){
     }
 
 	if (options_.listed_incremental_file_){
-		(*globals_.snapshot_).tempOfs_
+		(*globals_.snapshot_).incrementalSnapshotFileOfs_
 			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
-			<< "\t\t" << SnapshotEvent(globals_.invocationTime_,startingVolume_,output,options_.dump_level_.get()) << std::endl
+			<< "\t\t" << SnapshotEvent(globals_.invocationTime_,options_.dump_level_.get(),startingVolume_,output) << std::endl
 			<< "\t</file>" << std::endl;
 		std::cerr << "Digest=" << output << std::endl;
 	}

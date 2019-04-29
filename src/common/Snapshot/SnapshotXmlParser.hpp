@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <fstream>
+#include <deque>
 
 class Snapshot;
 
@@ -20,12 +21,12 @@ class Snapshot;
 #include "Transform/Transform.hpp"
 
 class SnapshotXmlParser : public XmlParser {
-	std::unique_ptr<Transform> fileDecompression_;
 	std::fstream fs_;
-	Snapshot & snapshot_;
 public:
-	SnapshotXmlParser(Snapshot & snapshot)
-		: snapshot_(snapshot){
+	std::vector<std::shared_ptr<SnapshotEvent>> events_;
+	std::deque<std::shared_ptr<SnapshotFileEntry>> fileEntries_;
+public:
+	SnapshotXmlParser(){
 	}
 
 	virtual void startElement(const XML_Char *name, const XML_Char **atts) override;
