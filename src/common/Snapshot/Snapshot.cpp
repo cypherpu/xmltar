@@ -44,6 +44,7 @@ void Snapshot::MergeSnapshotFiles(){
 			std::string tmp=incrementalFiles[i]->incrementalSnapshotDecompression_->ForceWriteAndClose("");
 			incrementalFiles[i]->incrementalSnapshotParser_.Parse(tmp,true);
 			if (!incrementalFiles[i]->incrementalSnapshotParser_.fileEntries==0)
+				;
 		}
 	}
 }
