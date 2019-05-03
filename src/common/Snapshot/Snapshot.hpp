@@ -25,8 +25,9 @@ public:
 	XmltarOptions const & options_;
 	XmltarGlobals & globals_;
 	std::vector<std::filesystem::path> incrementalSnapshotFilePaths_;
-	std::ofstream incrementalSnapshotFileOfs_;
-	std::shared_ptr<Transform> incrementalFileCompressions_;
+	std::filesystem::path temporarySnapshotFilePath_;
+	std::ofstream temporarySnapshotFileOfs_;
+	std::shared_ptr<Transform> temporaryFileCompression_;
 public:
 	Snapshot(XmltarOptions const & options, XmltarGlobals & globals);
 
