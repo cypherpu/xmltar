@@ -14,7 +14,6 @@
 #include <filesystem>
 
 #include "Snapshot/Snapshot.hpp"
-#include "Utilities/PathCompare.hpp"
 #include "Xmltar/XmltarOptions.hpp"
 
 class XmltarGlobals {
@@ -23,8 +22,6 @@ public:
 	size_t current_volume_;
 	std::unique_ptr<Snapshot> snapshot_;
 	time_t invocationTime_;
-
-	PathCompare pathCompare_;
 
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;

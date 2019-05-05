@@ -15,7 +15,6 @@
 
 #include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
-#include "Utilities/PathCompare.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"
 
 class XmltarArchiveHandler;

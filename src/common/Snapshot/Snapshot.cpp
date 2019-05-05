@@ -37,8 +37,17 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 		}
 	}
 
+	std::ofstream ofs(targetPath);
+	std::shared_ptr<Transform> targetCompression(compression->clone());
+
+	ofs << targetCompression->ForceWrite(
+			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+			"<snapshot xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">\n"
+	);
+
 	for( ; ; ){
 		for(size_t i=0; i<incrementalFiles.size(); ){
+			std::cerr << "i=" << i << std::endl;
 			if (incrementalFiles[i]->incrementalSnapshotIfs_){
 				while(incrementalFiles[i]->incrementalSnapshotParser_.fileEntries_.size()==0){
 					XML_Char buffer[1024];
@@ -58,15 +67,18 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 				incrementalFiles.erase(incrementalFiles.begin()+i);
 				continue;
 			}
+			else ++i;
 		}
 
 		if (incrementalFiles.size()==0) break;
 
 		std::filesystem::path smallestPathname=incrementalFiles[0]->incrementalSnapshotParser_.fileEntries_.front()->pathname_;
 
-		for(size_t i=1; i<incrementalFiles.size(); )
+		for(size_t i=1; i<incrementalFiles.size(); ++i)
 			if (incrementalFiles[i]->incrementalSnapshotParser_.fileEntries_.front()->pathname_<smallestPathname)
 				smallestPathname=incrementalFiles[i]->incrementalSnapshotParser_.fileEntries_.front()->pathname_;
+
+		std::cerr << "smallestPathname=" << smallestPathname << std::endl;
 
 		SnapshotFileEntry snapshotFileEntry(smallestPathname);
 
@@ -77,8 +89,13 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 
 				i->incrementalSnapshotParser_.fileEntries_.erase(i->incrementalSnapshotParser_.fileEntries_.begin());
 			}
+
+		std::ostringstream oss;
+		oss << snapshotFileEntry;
+		ofs << targetCompression->ForceWrite(oss.str());
 	}
 
+	targetCompression->ForceWriteAndClose("</snapshot>");
 }
 
 void Snapshot::MergeSnapshotFiles(){

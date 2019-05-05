@@ -36,4 +36,6 @@ public:
 	void MergeSnapshotFiles();
 };
 
+void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<Transform> compression);
+
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */
