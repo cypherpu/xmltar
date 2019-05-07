@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include <boost/format.hpp>
+
 #include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 #include "Snapshot/Snapshot.hpp"
@@ -40,10 +42,7 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 	std::ofstream ofs(targetPath);
 	std::shared_ptr<Transform> targetCompression(compression->clone());
 
-	ofs << targetCompression->ForceWrite(
-			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-			"<snapshot xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">\n"
-	);
+	ofs << targetCompression->ForceWrite(Snapshot::Prologue());
 
 	for( ; ; ){
 		for(size_t i=0; i<incrementalFiles.size(); ){
@@ -104,110 +103,32 @@ void Snapshot::MergeSnapshotFiles(){
 Snapshot::Snapshot(XmltarOptions const & options, XmltarGlobals & globals)
 	: options_(options), globals_(globals) {
 
-	temporaryFileCompression_.reset(options_.incrementalFileCompression_->clone());
-	temporaryFileCompression_->OpenCompression();
-
-	temporarySnapshotFilePath_=TemporaryFile(std::filesystem::temp_directory_path() / "xmltar_incremental_snapshot_XXXXXX");
-
-	temporarySnapshotFileOfs_.open(temporarySnapshotFilePath_.string());
-
-	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWrite(
-			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-			"<snapshot xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">\n"
-	);
+	temporarySnapshotDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
 }
 
 Snapshot::~Snapshot(){
-	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose("</snapshot>");
+	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
 	temporarySnapshotFileOfs_.close();
-
-#if 0
-	/* open and merge permanent listed incremental file and temporary listed incremental file */
-
-	std::filesystem::path newSnapshotFilePath=TemporaryFile(std::filesystem::temp_directory_path() / "xmltar_new_snapshot_XXXXXX");
-
-	std::ifstream temporarySnapshotFilePath_(tempoararySnapshotFilePath_.string());
-	std::ifstream snapshotFileIfs(options_.listed_incremental_file_.get());
-	std::ofstream newSnapshoFileOfs(newSnapshotFilePath.string());
-
-	SnapshotXmlParser incrementalSnapshotParser;
-	SnapshotXmlParser snapshotFileParser;
-
-	std::shared_ptr<Transform> incrementalSnapshotDecompression(options_.incrementalFileCompression_->clone());
-	std::shared_ptr<Transform> snapshotFileDecompression(options_.incrementalFileCompression_->clone());
-
-	incrementalSnapshotDecompression->OpenDecompression();
-	snapshotFileDecompression->OpenDecompression();
-
-	XML_Char buffer[1024];
-
-	std::string tmp;
-	for( ; ; ){
-		if (incrementalSnapshotParser.fileEntries_.size()==0 && incrementalSnapshotFileIfs_){
-			incrementalSnapshotFileIfs_.read(buffer,sizeof(buffer)/sizeof(*buffer));
-			tmp=incrementalSnapshotDecompression->ForceWrite(std::string(buffer,incrementalSnapshotFileIfs_.gcount()));
-			incrementalSnapshotParser.Parse(tmp,false);
-		}
-		if (snapshotFileParser.fileEntries_.size()==0 && snapshotFileIfs){
-			snapshotFileIfs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-			tmp=snapshotFileDecompression->ForceWrite(std::string(buffer,snapshotFileIfs.gcount()));
-			snapshotFileParser.Parse(tmp,false);
-		}
-	}
-	std::string tmp;
-	while(ifs){
-		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-
-		tmp=memberDecompression->ForceWrite(archiveDecompression->ForceWrite(std::string(buffer,ifs.gcount())));
-		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-		xmltarSingleVolumeHandler.Parse(tmp,false);
-	}
-
-	tmp=memberDecompression->ForceWriteAndClose(archiveDecompression->ForceWriteAndClose(""));
-	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-	xmltarSingleVolumeHandler.Parse(tmp,false);
-#endif
 
 #if 0
 	std::filesystem::rename(newSnapshotFilePath,options_.listed_incremental_file_.get());
 #endif
 }
 
-#if 0
-void Snapshot::load(std::string const & xmlFilename){
-	std::ifstream ifs(xmlFilename);
-
-	XML_Char buffer[1024];
-
-	std::shared_ptr<Transform> archiveDecompression(options_.archiveCompression_->clone());
-
-	archiveDecompression->OpenDecompression();
-
-	SnapshotXmlParser snapshotXmlParser(*this);
-	std::string tmp;
-	while(ifs){
-		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-
-		tmp=archiveDecompression->ForceWrite(std::string(buffer,ifs.gcount()));
-		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-		snapshotXmlParser.Parse(tmp,false);
-	}
-
-	tmp=archiveDecompression->ForceWriteAndClose("");
-	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-	snapshotXmlParser.Parse(tmp,false);
-}
-
-void Snapshot::dump(std::ostream & os){
-	for(auto & i : fileEntries_){
-		os << "\t<file name=\"" << i.pathname_.string() << "\">\n";
-		for(auto & j : i.snapshotEvents_){
-			os << "\t\t" << j << "\n";
-		}
-	}
-}
-
 void Snapshot::NewTemporarySnapshotFile(){
+	if (temporarySnapshotFilePaths_.size()){
+		temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
+		temporarySnapshotFileOfs_.close();
+	}
 
+    boost::format fmt("snapshot_%06d");
+    fmt % temporarySnapshotFilePaths_.size();
+	temporarySnapshotFilePaths_.push_back(temporarySnapshotDirPath_ / str(fmt));
+
+	temporaryFileCompression_.reset(options_.incrementalFileCompression_->clone());
+	temporaryFileCompression_->OpenCompression();
+
+	temporarySnapshotFileOfs_.open(temporarySnapshotFilePaths_.back());
+
+	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWrite(Prologue());
 }
-#endif

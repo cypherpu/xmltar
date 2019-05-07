@@ -23,8 +23,10 @@ public:
 	std::unique_ptr<Snapshot> snapshot_;
 	time_t invocationTime_;
 
+	std::vector<std::filesystem::path> globsToBeIncluded_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedComplete_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedTruncated_;
 
 	XmltarGlobals(XmltarOptions const & options)
 		: current_xmltar_file_name_(), current_volume_(),

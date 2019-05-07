@@ -26,6 +26,7 @@ extern "C" {
 #include "Xmltar/XmltarMemberCreate.hpp"
 #include "Utilities/ToHexDigit.hpp"
 #include "Utilities/IsPrefixPath.hpp"
+#include "Utilities/Glob.hpp"
 
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformGzip.hpp"
@@ -184,9 +185,19 @@ XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals
 }
 
 std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
+	while(globals_.filesToBeIncluded_.empty() && globals_.globsToBeIncluded_.size()){
+		std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
+		for(auto & i : tmp)
+			globals_.filesToBeIncluded_.push(std::filesystem::path(i));
+
+		globals_.globsToBeIncluded_.erase(globals_.globsToBeIncluded_.begin());
+	}
+
 	if (globals_.filesToBeIncluded_.empty())
 		return std::shared_ptr<XmltarMemberCreate>();
 
+	globals_.snapshot_->NewTemporarySnapshotFile();
+	globals_.filesToBeExcludedTruncated_=globals_.filesToBeExcludedComplete_;
 	/*
 	 * Files to be included in the archive are archived in path order.
 	 * As files are included, we would like to erase excluded paths which
@@ -202,20 +213,20 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 		globals_.filesToBeIncluded_.pop();
 		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
 					<< "considering " << filepath.string() << std::endl;
-		while(!globals_.filesToBeExcluded_.empty() &&
-				globals_.filesToBeExcluded_.top()<filepath &&
-			!IsPrefixPath(globals_.filesToBeExcluded_.top(),filepath)){
+		while(!globals_.filesToBeExcludedTruncated_.empty() &&
+				globals_.filesToBeExcludedTruncated_.top()<filepath &&
+			!IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
 			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding exclude file " << globals_.filesToBeExcluded_.top().string() << std::endl;
-			globals_.filesToBeExcluded_.pop();
+						<< "discarding exclude file " << globals_.filesToBeExcludedTruncated_.top().string() << std::endl;
+			globals_.filesToBeExcludedTruncated_.pop();
 		}
 
 		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "filesToBeExcluded.top()=" << (globals_.filesToBeExcluded_.size()?globals_.filesToBeExcluded_.top().string():"") << std::endl;
+					<< "filesToBeExcludedTruncated_.top()=" << (globals_.filesToBeExcludedTruncated_.size()?globals_.filesToBeExcludedTruncated_.top().string():"") << std::endl;
 
-		if (globals_.filesToBeExcluded_.empty())
+		if (globals_.filesToBeExcludedTruncated_.empty())
 			break;
-		if (IsPrefixPath(globals_.filesToBeExcluded_.top(),filepath)){
+		if (IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
 			std::cerr	<< "########### XmltarArchiveCreateSingleVolume::NextMember: "
 						<< "discarding include file " << filepath << std::endl;
 			continue;

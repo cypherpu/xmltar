@@ -66,9 +66,8 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 
 	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
 	if (options_.sourceFileGlobs_.size()){
-		std::vector<std::string> tmp=BashGlob(options_.sourceFileGlobs_);
-		for(auto & i : tmp)
-			globals_.filesToBeIncluded_.push(std::filesystem::path(i));
+		for(auto & i : options_.sourceFileGlobs_)
+			globals_.globsToBeIncluded_.push_back(i);
 	}
 	else if (options_.files_from_){
 		std::ifstream ifs(options_.files_from_.get().string());
@@ -76,7 +75,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 		if (ifs){
 			std::string line;
 			while(std::getline(ifs,line))
-				globals_.filesToBeIncluded_.push(std::filesystem::path(line));
+				globals_.globsToBeIncluded_.push_back(std::filesystem::path(line));
 		}
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
@@ -88,7 +87,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 	if (options_.excludeFileGlobs_.size()){
 		std::vector<std::string> tmp=BashGlob(options_.excludeFileGlobs_);
 		for(auto & i : tmp)
-			globals_.filesToBeExcluded_.push(std::filesystem::path(i));
+			globals_.filesToBeExcludedComplete_.push(std::filesystem::path(i));
 	}
 
 	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
