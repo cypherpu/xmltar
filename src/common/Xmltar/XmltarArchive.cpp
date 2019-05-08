@@ -196,7 +196,8 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 	if (globals_.filesToBeIncluded_.empty())
 		return std::shared_ptr<XmltarMemberCreate>();
 
-	globals_.snapshot_->NewTemporarySnapshotFile();
+	if (globals_.snapshot_.get()!=nullptr)
+		globals_.snapshot_->NewTemporarySnapshotFile();
 	globals_.filesToBeExcludedTruncated_=globals_.filesToBeExcludedComplete_;
 	/*
 	 * Files to be included in the archive are archived in path order.
