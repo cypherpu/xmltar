@@ -94,7 +94,8 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 		ofs << targetCompression->ForceWrite(oss.str());
 	}
 
-	targetCompression->ForceWriteAndClose("</snapshot>");
+	ofs << targetCompression->ForceWriteAndClose("</snapshot>");
+	ofs.close();
 }
 
 void Snapshot::MergeSnapshotFiles(){
@@ -110,9 +111,12 @@ Snapshot::~Snapshot(){
 	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
 	temporarySnapshotFileOfs_.close();
 
-#if 0
-	std::filesystem::rename(newSnapshotFilePath,options_.listed_incremental_file_.get());
-#endif
+	temporarySnapshotFilePaths_.insert(temporarySnapshotFilePaths_.begin(),options_.listed_incremental_file_.get());
+
+	std::filesystem::path sum=temporarySnapshotDirPath_ / "sum";
+	MergeSnapshotFilesHelper(temporarySnapshotFilePaths_, sum, options_.incrementalFileCompression_);
+
+	std::filesystem::rename(sum,options_.listed_incremental_file_.get());
 }
 
 void Snapshot::NewTemporarySnapshotFile(){
