@@ -185,22 +185,25 @@ XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals
 }
 
 std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
-	while(globals_.filesToBeIncluded_.empty() && globals_.globsToBeIncluded_.size()){
-		std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
-		for(auto & i : tmp)
-			globals_.filesToBeIncluded_.push(std::filesystem::path(i));
+	if(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
+		while(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
+			std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
+			for(auto & i : tmp)
+				globals_.filesToBeIncluded_.push(std::filesystem::path(i));
 
-		globals_.globsToBeIncluded_.erase(globals_.globsToBeIncluded_.begin());
+			globals_.globsToBeIncluded_.erase(globals_.globsToBeIncluded_.begin());
+		}
+
+		if (globals_.filesToBeIncluded_.empty())
+			return std::shared_ptr<XmltarMemberCreate>();
+
+		if (globals_.snapshot_.get()!=nullptr)
+			globals_.snapshot_->NewTemporarySnapshotFile();
 	}
 
-	if (globals_.filesToBeIncluded_.empty())
-		return std::shared_ptr<XmltarMemberCreate>();
-
-	if (globals_.snapshot_.get()!=nullptr)
-		globals_.snapshot_->NewTemporarySnapshotFile();
 	globals_.filesToBeExcludedTruncated_=globals_.filesToBeExcludedComplete_;
 	/*
-	 * Files to be included in the archive are archived in path order.
+	 * Files to be included in the archive are archived in command-line order.
 	 * As files are included, we would like to erase excluded paths which
 	 * could not possibly be relevant to any further included paths.
 	 * as possible. It is not sufficient to merely erase excluded paths which
