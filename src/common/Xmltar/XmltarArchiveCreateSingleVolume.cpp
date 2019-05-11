@@ -15,7 +15,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::unique_ptr<XmltarMemberCreate> & nextMember
 	)
 	: XmltarArchive(opts,globals,filename,volumeNumber,nextMember)
 {
@@ -35,9 +35,9 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
-	nextMember_=NextMember();
+	NextMember();
 
-	for( ; nextMember_; nextMember_=NextMember()){
+	for( ; nextMember_; NextMember()){
 		std::cerr << dbg << ": " << nextMember_->filepath() << std::endl;
 
 		if (nextMember_->isDirectory()){

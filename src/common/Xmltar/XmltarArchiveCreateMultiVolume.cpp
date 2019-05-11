@@ -16,7 +16,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::unique_ptr<XmltarMemberCreate> & nextMember
 	)
 	: XmltarArchive(opts,globals,filename,nextMember)
 {
@@ -43,7 +43,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	archiveCompression->OpenCompression();
 
 	if (!globals_.filesToBeIncluded_.empty() && !nextMember_)
-		nextMember_=NextMember();
+		NextMember();
 
 	for(bool firstPass=true; nextMember_; firstPass=false){
 		std::cerr << dbg << ": ##########" << std::endl;
@@ -60,7 +60,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 							tmp
 						);
 				ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
-				nextMember_=NextMember();
+				NextMember();
 				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 			}
@@ -92,7 +92,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 							tmp
 						);
 				ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
-				nextMember_=NextMember();
+				NextMember();
 				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 			}
@@ -153,7 +153,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			nextMember_->write(archiveCompression,numberOfFileBytesThatCanBeArchived,ofs);
 			pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 			if (nextMember_->IsComplete())
-				nextMember_=NextMember();
+				NextMember();
 			else
 				nextMember_->RecalculateMemberHeader();
 		}

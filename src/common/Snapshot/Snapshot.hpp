@@ -24,8 +24,9 @@ class Snapshot {
 public:
 	XmltarOptions const & options_;
 	XmltarGlobals & globals_;
-	std::vector<std::filesystem::path> temporarySnapshotFilePaths_;
 	std::filesystem::path temporarySnapshotDirPath_;
+	std::vector<std::filesystem::path> temporarySnapshotFilePaths_;
+
 	std::ofstream temporarySnapshotFileOfs_;
 	std::shared_ptr<Transform> temporaryFileCompression_;
 

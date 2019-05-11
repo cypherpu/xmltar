@@ -65,14 +65,14 @@ XmltarArchive::XmltarArchive(
 	XmltarGlobals & globals,
 	std::string filename,
 	unsigned int volumeNumber,
-	std::shared_ptr<XmltarMemberCreate> & nextMember
+	std::unique_ptr<XmltarMemberCreate> & nextMember
 )
 	: options_(opts), globals_(globals), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
-XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
+XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::unique_ptr<XmltarMemberCreate> & nextMember)
 : options_(opts), globals_(globals), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
@@ -184,8 +184,12 @@ XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals
 	}
 }
 
-std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
+void XmltarArchive::NextMember(){
+	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
+	nextMember_.reset();
+
 	if(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
+		std::cerr << "XmltarArchive::NextMember(): replenish files to be included" << std::endl;
 		while(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
 			std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
 			for(auto & i : tmp)
@@ -195,7 +199,7 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 		}
 
 		if (globals_.filesToBeIncluded_.empty())
-			return std::shared_ptr<XmltarMemberCreate>();
+			return;
 
 		if (globals_.snapshot_.get()!=nullptr)
 			globals_.snapshot_->NewTemporarySnapshotFile();
@@ -247,7 +251,7 @@ std::shared_ptr<XmltarMemberCreate> XmltarArchive::NextMember(){
 		}
 	}
 
-	return std::make_shared<XmltarMemberCreate>(options_,globals_,filepath);
+	nextMember_.reset(new XmltarMemberCreate(options_,globals_,filepath));
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

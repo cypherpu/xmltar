@@ -120,7 +120,8 @@ Snapshot::~Snapshot(){
 }
 
 void Snapshot::NewTemporarySnapshotFile(){
-	if (temporarySnapshotFilePaths_.size()){
+	if (!temporarySnapshotFilePaths_.empty()){
+		std::cerr << "Snapshot::NewTemporarySnapshotFile: closing " << temporarySnapshotFilePaths_.back() << std::endl;
 		temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
 		temporarySnapshotFileOfs_.close();
 	}
@@ -128,6 +129,8 @@ void Snapshot::NewTemporarySnapshotFile(){
     boost::format fmt("snapshot_%06d");
     fmt % temporarySnapshotFilePaths_.size();
 	temporarySnapshotFilePaths_.push_back(temporarySnapshotDirPath_ / str(fmt));
+
+	std::cerr << "Snapshot::NewTemporarySnapshotFile: opening " << temporarySnapshotFilePaths_.back() << std::endl;
 
 	temporaryFileCompression_.reset(options_.incrementalFileCompression_->clone());
 	temporaryFileCompression_->OpenCompression();

@@ -104,7 +104,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting volume number to create multivolume archive");
 
             globals_.current_volume_=options_.starting_volume_.get();
-            std::shared_ptr<XmltarMemberCreate> nextMember;
+            std::unique_ptr<XmltarMemberCreate> nextMember;
 
             for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++globals_.current_volume_){
                 boost::format fmt(options_.base_xmltar_file_name_.get());
@@ -125,7 +125,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 			if (!options_.base_xmltar_file_name_)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
-            std::shared_ptr<XmltarMemberCreate> nextMember;
+            std::unique_ptr<XmltarMemberCreate> nextMember;
             XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,globals_,options_.base_xmltar_file_name_.get(), 0, nextMember);
 		}
 	}

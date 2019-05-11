@@ -17,7 +17,7 @@ public:
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::unique_ptr<XmltarMemberCreate> & nextMember
 	);
 };
 

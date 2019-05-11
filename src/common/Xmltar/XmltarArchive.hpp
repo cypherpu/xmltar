@@ -33,7 +33,7 @@ protected:
 	XmltarGlobals & globals_;
 	std::string filename_;
 	unsigned int volumeNumber_;
-	std::shared_ptr<XmltarMemberCreate> & nextMember_;
+	std::unique_ptr<XmltarMemberCreate> & nextMember_;
 public:
 	/**
 	 * Single volume constructor - no volume number needed
@@ -42,7 +42,7 @@ public:
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::unique_ptr<XmltarMemberCreate> & nextMember
 	);
 
 	/**
@@ -53,10 +53,10 @@ public:
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::unique_ptr<XmltarMemberCreate> & nextMember
 	);
 
-	std::shared_ptr<XmltarMemberCreate> NextMember();
+	void NextMember();
 
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);

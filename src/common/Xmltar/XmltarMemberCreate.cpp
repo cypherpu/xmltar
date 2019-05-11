@@ -32,6 +32,7 @@ extern "C" {
 
 XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath)
 	: options_(options), globals_(globals), filepath_(filepath), metadataWritten_(false) {
+	std::cerr << "XmltarMemberCreate::XmltarMemberCreate: constructor" << std::endl;
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
     f_stat=std::filesystem::symlink_status(filepath_);
@@ -73,6 +74,7 @@ XmltarMemberCreate::~XmltarMemberCreate(){
 			<< "\t</file>" << std::endl;
 		std::cerr << "Digest=" << output << std::endl;
 	}
+	std::cerr << "XmltarMemberCreate::~XmltarMemberCreate: destructor" << std::endl;
 }
 
 void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
