@@ -43,9 +43,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarGlobals.hpp"
 
 #include "Transform/TransformIdentity.hpp"
-#include "Transform/TransformGzip.hpp"
-#include "Transform/TransformBzip2.hpp"
-#include "Transform/TransformLzip.hpp"
+#include "Transform/TransformProcessGzip.hpp"
+#include "Transform/TransformProcessBzip2.hpp"
+#include "Transform/TransformProcessLzip.hpp"
 
 int main(int argc, char const *argv[])
 {

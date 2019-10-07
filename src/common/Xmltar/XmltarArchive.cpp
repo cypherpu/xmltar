@@ -29,9 +29,9 @@ extern "C" {
 #include "Utilities/Glob.hpp"
 
 #include "Transform/TransformIdentity.hpp"
-#include "Transform/TransformGzip.hpp"
-#include "Transform/TransformBzip2.hpp"
-#include "Transform/TransformLzip.hpp"
+#include "Transform/TransformProcessGzip.hpp"
+#include "Transform/TransformProcessBzip2.hpp"
+#include "Transform/TransformProcessLzip.hpp"
 #include "Transform/TransformHex.hpp"
 #include "Transform/DMap.hpp"
 

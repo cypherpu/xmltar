@@ -27,11 +27,11 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
 			p.Assign_Value(fileCompression_, (Transform *) new TransformIdentity("file:ident")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformGzip("file:gzip")));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformProcessGzip("file:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-bzip2","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformBzip2("file:bzip2")));
+			p.Assign_Value(fileCompression_, (Transform *) new TransformProcessBzip2("file:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-lzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_,  (Transform *) new TransformLzip("file:lzip")));
+			p.Assign_Value(fileCompression_,  (Transform *) new TransformProcessLzip("file:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
 			p.Assign_Value(encoding_,(Transform *) new TransformHex("encod:hex")));
@@ -39,27 +39,27 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(encoding_,(Transform *) new TransformHex("encode:base64")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformGzip(":member:gzip")));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformProcessGzip(":member:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-bzip2","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformBzip2(":member:bzip2")));
+			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformProcessBzip2(":member:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-lzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformLzip(":member:lzip")));
+			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformProcessLzip(":member:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformGzip("archive:gzip")));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformProcessGzip("archive:gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--bzip2","compress archive",
-			p.Assign_Value(archiveCompression_, (Transform *) new TransformBzip2("archive:bzip2")));
+			p.Assign_Value(archiveCompression_, (Transform *) new TransformProcessBzip2("archive:bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--lzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformLzip("archive:lzip")));
+			p.Assign_Value(archiveCompression_,(Transform *) new TransformProcessLzip("archive:lzip")));
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-gzip","gzip listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformGzip("gzip")));
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessGzip("gzip")));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-bzip2","bzip2 listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformBzip2("bzip2")));
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessBzip2("bzip2")));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-lzip","lzip listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformLzip("lzip")));
+			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessLzip("lzip")));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
 			p.Assign_Args(dump_level_));
 

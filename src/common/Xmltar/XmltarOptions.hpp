@@ -32,9 +32,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Utilities/Options-TarStyle.hpp"
 #include "Transform/Transform.hpp"
 #include "Transform/TransformIdentity.hpp"
-#include "Transform/TransformGzip.hpp"
-#include "Transform/TransformBzip2.hpp"
-#include "Transform/TransformLzip.hpp"
+#include "Transform/TransformProcessGzip.hpp"
+#include "Transform/TransformProcessBzip2.hpp"
+#include "Transform/TransformProcessLzip.hpp"
 #include "Transform/TransformHex.hpp"
 
 class XmltarOptions {
