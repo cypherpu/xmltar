@@ -42,35 +42,12 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 
-#include "Transform/TransformIdentity.hpp"
-#include "Transform/TransformProcessGzip.hpp"
-#include "Transform/TransformProcessBzip2.hpp"
-#include "Transform/TransformProcessLzip.hpp"
-
 int main(int argc, char const *argv[])
 {
 	spdlog::set_level(spdlog::level::info);
 	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
 
 	try {
-		/*
-		TransformIdentity transformIdentity;
-		TransformGzip transformGzip;
-		TransformBzip2 transformBzip2;
-		TransformLzip transformLzip;
-
-		if (!transformIdentity.CorrectCompressorVersion())
-			throw std::runtime_error("main: wrong version 'cat' command");
-
-		if (!transformGzip.CorrectCompressorVersion())
-			throw std::runtime_error("main: wrong version 'gzip' command");
-
-		if (!transformBzip2.CorrectCompressorVersion())
-			throw std::runtime_error("main: wrong version 'bzip2' command");
-
-		if (!transformLzip.CorrectCompressorVersion())
-			throw std::runtime_error("main: wrong version 'lzip' command");
-		*/
 #if 0
 	    termios oldt;
 	    tcgetattr(STDIN_FILENO, &oldt);

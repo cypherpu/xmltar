@@ -83,14 +83,14 @@ void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, si
 		// std::ifstream ifs(filepath_.string());
 		// ifs.seekg(nextByte_);
 
-		std::shared_ptr<Transform> precompression(options_.fileCompression_->clone());
-		std::shared_ptr<Transform> memberCompression(options_.archiveMemberCompression_->clone());
-		std::shared_ptr<Transform> encoding(options_.encoding_->clone());
+		std::shared_ptr<CompressorInterface> precompression(options_.fileCompression_->clone());
+		std::shared_ptr<CompressorInterface> memberCompression(options_.archiveMemberCompression_->clone());
+		std::shared_ptr<CompressorInterface> encoding(options_.encoding_->clone());
 
 		size_t numberOfBytesToArchive=std::min(file_size-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
-		precompression->OpenCompression();
-		encoding->OpenCompression();
-		memberCompression->OpenCompression();
+		precompression->Open();
+		encoding->Open();
+		memberCompression->Open();
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;

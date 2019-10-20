@@ -21,7 +21,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	: XmltarArchive(opts,globals,filename,nextMember)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume");
-	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
+	std::shared_ptr<CompressorInterface> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	if (!options_.tape_length_)
 		throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
