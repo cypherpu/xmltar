@@ -7,6 +7,8 @@
 
 #include <gmock/gmock.h>
 
+#include <spdlog/spdlog.h>
+
 #include "Xmltar/XmltarOptions.hpp"
 
 TEST(XmltarTest,Options1)

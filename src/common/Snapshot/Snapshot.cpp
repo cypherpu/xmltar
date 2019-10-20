@@ -19,15 +19,15 @@
 class IncrementalFile {
 public:
 	std::ifstream incrementalSnapshotIfs_;
-	std::unique_ptr<Transform> incrementalSnapshotDecompression_;
+	std::unique_ptr<CompressorInterface> incrementalSnapshotDecompression_;
 	SnapshotXmlParser incrementalSnapshotParser_;
 
-	IncrementalFile(std::filesystem::path & filename, std::shared_ptr<Transform> decompression)
+	IncrementalFile(std::filesystem::path & filename, std::shared_ptr<CompressorInterface> decompression)
 		: incrementalSnapshotIfs_(filename), incrementalSnapshotDecompression_(decompression->clone()) {
 	}
 };
 
-void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<Transform> compression){
+void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression){
 	std::vector<std::shared_ptr<IncrementalFile>> incrementalFiles;
 
 	for(auto & i : sourcePaths){
@@ -40,7 +40,7 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 	}
 
 	std::ofstream ofs(targetPath);
-	std::shared_ptr<Transform> targetCompression(compression->clone());
+	std::shared_ptr<CompressorInterface> targetCompression(compression->clone());
 
 	ofs << targetCompression->ForceWrite(Snapshot::Prologue());
 
@@ -133,7 +133,7 @@ void Snapshot::NewTemporarySnapshotFile(){
 	std::cerr << "Snapshot::NewTemporarySnapshotFile: opening " << temporarySnapshotFilePaths_.back() << std::endl;
 
 	temporaryFileCompression_.reset(options_.incrementalFileCompression_->clone());
-	temporaryFileCompression_->OpenCompression();
+	temporaryFileCompression_->Open();
 
 	temporarySnapshotFileOfs_.open(temporarySnapshotFilePaths_.back());
 

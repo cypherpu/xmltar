@@ -30,12 +30,15 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/optional.hpp>
 
 #include "Utilities/Options-TarStyle.hpp"
+#if 0
 #include "Transform/Transform.hpp"
 #include "Transform/TransformIdentity.hpp"
 #include "Transform/TransformProcessGzip.hpp"
 #include "Transform/TransformProcessBzip2.hpp"
 #include "Transform/TransformProcessLzip.hpp"
 #include "Transform/TransformHex.hpp"
+#endif
+#include "Compressors/Compressor.hpp"
 
 class XmltarOptions {
 public:
@@ -45,14 +48,14 @@ public:
 	boost::optional<Operation> operation_;
 	boost::optional<int> verbosity_;
 	boost::optional<bool> multi_volume_;
-	std::shared_ptr<Transform> fileCompression_;
-	std::shared_ptr<Transform> encoding_;
-	std::shared_ptr<Transform> archiveMemberCompression_;
-	std::shared_ptr<Transform> archiveCompression_;
+	std::shared_ptr<CompressorInterface> fileCompression_;
+	std::shared_ptr<CompressorInterface> encoding_;
+	std::shared_ptr<CompressorInterface> archiveMemberCompression_;
+	std::shared_ptr<CompressorInterface> archiveCompression_;
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
-	std::shared_ptr<Transform> incrementalFileCompression_;
+	std::shared_ptr<CompressorInterface> incrementalFileCompression_;
 	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
 	std::vector<std::string> excludeFileGlobs_;
@@ -65,13 +68,13 @@ public:
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
-		  fileCompression_(new TransformIdentity("fileCompression")),
-		  encoding_(new TransformHex("encoding")),
-		  archiveMemberCompression_(new TransformIdentity("archiveMemberCompression")),
-		  archiveCompression_(new TransformIdentity("archiveCompression")),
+		  fileCompression_(new Compressor<Identity>("fileCompression")),
+		  encoding_(new Compressor<HexEncode>("encoding")),
+		  archiveMemberCompression_(new Compressor<Identity>("archiveMemberCompression")),
+		  archiveCompression_(new Compressor<Identity>("archiveCompression")),
           tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
-		  incrementalFileCompression_(new TransformIdentity("listed-incremental-compression")),
+		  incrementalFileCompression_(new Compressor<Identity>("listed-incremental-compression")),
 		  dump_level_(),
 		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),

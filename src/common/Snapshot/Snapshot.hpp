@@ -18,7 +18,7 @@
 
 class XmltarOptions;
 class XmltarGlobals;
-class Transform;
+class CompressorInterface;
 
 class Snapshot {
 public:
@@ -28,7 +28,7 @@ public:
 	std::vector<std::filesystem::path> temporarySnapshotFilePaths_;
 
 	std::ofstream temporarySnapshotFileOfs_;
-	std::shared_ptr<Transform> temporaryFileCompression_;
+	std::shared_ptr<CompressorInterface> temporaryFileCompression_;
 
 	static std::string Prologue(){
 		return  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
@@ -48,6 +48,6 @@ public:
 	void NewTemporarySnapshotFile();
 };
 
-void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<Transform> compression);
+void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression);
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

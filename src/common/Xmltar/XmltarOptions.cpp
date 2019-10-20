@@ -25,41 +25,38 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Increment_Value(verbosity_));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformIdentity("file:ident")));
+			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<Identity>("file:ident")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformProcessGzip("file:gzip")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--file-bzip2","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (Transform *) new TransformProcessBzip2("file:bzip2")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--file-lzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_,  (Transform *) new TransformProcessLzip("file:lzip")));
+			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<Zlib::Gzip>("file:gzip")));
+	p.Add_Option(Parse_Opts::ARGS_0,"","--file-zstd","file-compress files before archiving",
+			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<ZstdCompress>("file:zstd")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
-			p.Assign_Value(encoding_,(Transform *) new TransformHex("encod:hex")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--base64","base64 encode files before archiving",
-			p.Assign_Value(encoding_,(Transform *) new TransformHex("encode:base64")));
+			p.Assign_Value(encoding_,(CompressorInterface *) new Compressor<HexEncode>("encod:hex")));
 
+	p.Add_Option(Parse_Opts::ARGS_0,"","--member-identity","member-compress members before archiving",
+			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Identity>(":member:ident")));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformProcessGzip(":member:gzip")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--member-bzip2","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, (Transform *) new TransformProcessBzip2(":member:bzip2")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--member-lzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(Transform *) new TransformProcessLzip(":member:lzip")));
+			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>(":member:gzip")));
+	p.Add_Option(Parse_Opts::ARGS_0,"","--member-zstd","member-compress members before archiving",
+			p.Assign_Value(archiveMemberCompression_, (CompressorInterface *) new Compressor<ZstdCompress>(":member:zstd")));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformProcessGzip("archive:gzip")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--bzip2","compress archive",
-			p.Assign_Value(archiveCompression_, (Transform *) new TransformProcessBzip2("archive:bzip2")));
-	p.Add_Option(Parse_Opts::ARGS_0,"","--lzip","compress archive",
-			p.Assign_Value(archiveCompression_,(Transform *) new TransformProcessLzip("archive:lzip")));
+			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Identity>("archive:ident")));
+	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
+			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>("archive:gzip")));
+	p.Add_Option(Parse_Opts::ARGS_0,"","--zstd","compress archive",
+			p.Assign_Value(archiveCompression_, (CompressorInterface *) new Compressor<ZstdCompress>("archive:zstd")));
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
+	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-identity","plaintext listed-incremental file",
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Identity>("identity")));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-gzip","gzip listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessGzip("gzip")));
-	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-bzip2","bzip2 listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessBzip2("bzip2")));
-	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-lzip","lzip listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(Transform *) new TransformProcessLzip("lzip")));
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>("gzip")));
+	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-zstd","zstd listed-incremental file",
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<ZstdCompress>("zstd")));
+
 	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
 			p.Assign_Args(dump_level_));
 
@@ -122,10 +119,10 @@ std::string XmltarOptions::toXMLString(){
 	if(multi_volume_)
 		oss << Tabs("\t\t\t") << "<option>--multi-volume</option>" << std::endl;
 
-	oss << Tabs("\t\t\t") << "<option>--file-" << fileCompression_.get()->CompressionName() << "</option>" << std::endl;
-	oss << Tabs("\t\t\t") << "<option>--" << encoding_.get()->CompressionName() << "</option>" << std::endl;
-	oss << Tabs("\t\t\t") << "<option>--member-" << archiveMemberCompression_.get()->CompressionName() << "</option>" << std::endl;
-	oss << Tabs("\t\t\t") << "<option>--" << archiveCompression_.get()->CompressionName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--file-" << fileCompression_.get()->CompressorName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--" << encoding_.get()->CompressorName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--member-" << archiveMemberCompression_.get()->CompressorName() << "</option>" << std::endl;
+	oss << Tabs("\t\t\t") << "<option>--" << archiveCompression_.get()->CompressorName() << "</option>" << std::endl;
 
 	if (tape_length_)
 		oss << Tabs("\t\t\t") << "<option>--tape-length=" << tape_length_.get() << "</option>" << std::endl;
@@ -136,7 +133,7 @@ std::string XmltarOptions::toXMLString(){
 	if (listed_incremental_file_)
 		oss << Tabs("\t\t\t") << "<option>--listed-incremental=" << listed_incremental_file_.get().string() << "</option>" << std::endl;
 
-	if (incrementalFileCompression_->CompressionName()!=std::string("identity"))
+	if (incrementalFileCompression_->CompressorName()!=std::string("identity"))
 		oss << Tabs("\t\t\t") << "<option>--compress-listed-incremental</option>" << std::endl;
 
 	if (files_from_)
