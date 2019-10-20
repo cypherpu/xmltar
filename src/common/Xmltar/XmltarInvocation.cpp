@@ -187,12 +187,12 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 	            boost::format fmt(options_.base_xmltar_file_name_.get());
 	            fmt % lastArchiveSequenceNumber;
 	            std::string filename=str(fmt);
-	            if (boost::filesystem::exists(boost::filesystem::path(filename))){
+	            if (std::filesystem::exists(std::filesystem::path(filename))){
 	            	for( ; ; ++lastArchiveSequenceNumber){
 	    	            boost::format fmt(options_.base_xmltar_file_name_.get());
 	    	            fmt % (lastArchiveSequenceNumber+1);
 	    	            std::string filename=str(fmt);
-						if (!boost::filesystem::exists(boost::filesystem::path(filename)))
+						if (!std::filesystem::exists(std::filesystem::path(filename)))
 							break;
 	            	}
 				}

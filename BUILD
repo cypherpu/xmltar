@@ -14,7 +14,10 @@ cc_binary(
 	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
 	linkopts = [
 				"-lgtest",
-				"-lboost_filesystem",
+				"-lzstd",
+				"-lz",
+				"-lxxhash",
+#				"-lboost_filesystem",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
@@ -37,7 +40,10 @@ cc_binary(
 	linkopts = [
 				"-pg",
 				"-lgtest",
-				"-lboost_filesystem",
+				"-lzstd",
+				"-lz",
+				"-lxxhash",
+#				"-lboost_filesystem",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
@@ -48,14 +54,3 @@ cc_binary(
 				"-lstdc++fs"
 				]
 )
-
-#cc_binary(
-#	name = "StateMachine",
-#	srcs = ["src/xmltar.cpp"]
-#			+glob(["src/common/StateMachine/*.cpp"] )
-#			+glob(["src/common/StateMachine/*.hpp"])
-#			,
-#	includes = [],
-#	copts = ["-g","-std=c++1z","-Isrc","-Isrc/common"],
-#)
-

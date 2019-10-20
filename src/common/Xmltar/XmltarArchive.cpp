@@ -262,7 +262,7 @@ PartialFileRead XmltarArchive::append(unsigned int volumeNumber)
 	fmt % volumeNumber;
 	std::string filename=str(fmt);
 
-	if (!boost::filesystem::exists(filename)){
+	if (!std::filesystem::exists(filename)){
 		return create(volumeNumber);
 	}
 	else {
