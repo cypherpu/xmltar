@@ -27,7 +27,6 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Utilities/PrintOpenFileDescriptors.hpp"
-#include "Transform/TransformHex.hpp"
 #include "../Debug2/Debug2.hpp"
 
 XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath)
@@ -77,7 +76,7 @@ XmltarMemberCreate::~XmltarMemberCreate(){
 	std::cerr << "XmltarMemberCreate::~XmltarMemberCreate: destructor" << std::endl;
 }
 
-void XmltarMemberCreate::write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 		// std::ifstream ifs(filepath_.string());
@@ -209,9 +208,9 @@ std::string XmltarMemberCreate::MemberHeader(){
     switch(f_type){
         case std::filesystem::file_type::regular:
             s=s+options_.Tabs("\t\t\t")+"<content type=\"regular\">"+options_.Newline();
-            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->CompressionName();
+            s=s+options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+options_.fileCompression_.get()->Name();
 
-            s+=std::string("\" encoding=\"") + options_.encoding_.get()->CompressionName();
+            s+=std::string("\" encoding=\"") + options_.encoding_.get()->Name();
 
             s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(ifs_->tellg())+"\">"+options_.Newline();
             break;
@@ -266,11 +265,11 @@ std::string XmltarMemberCreate::MemberTrailer(){
 }
 
 std::string XmltarMemberCreate::CompressedMemberHeader(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberHeader());
+	return options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(MemberHeader());
 }
 
 std::string XmltarMemberCreate::CompressedMemberTrailer(){
-	return options_.archiveMemberCompression_.get()->CompressString(MemberTrailer());
+	return options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(MemberTrailer());
 }
 
 size_t XmltarMemberCreate::MinimumSize(){
@@ -352,7 +351,7 @@ bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendi
 	return numberOfFileBytesThatCanBeArchived;
 }
 
-bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressionInterface> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived

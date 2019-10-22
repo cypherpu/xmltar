@@ -16,7 +16,6 @@ extern "C" {
 }
 
 #include "Xmltar/XmltarOptions.hpp"
-#include "Transform/Transform.hpp"
 #include "Transform/ProcessSha3sum512.hpp"
 
 class XmltarMemberCreate {

@@ -35,7 +35,7 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 			incrementalFiles.push_back(std::make_shared<IncrementalFile>(i,compression));
 			if (!incrementalFiles.back()->incrementalSnapshotIfs_)
 				incrementalFiles.erase(incrementalFiles.end()-1);
-			incrementalFiles.back()->incrementalSnapshotDecompression_->OpenDecompression();
+			incrementalFiles.back()->incrementalSnapshotDecompression_->Open();
 		}
 	}
 

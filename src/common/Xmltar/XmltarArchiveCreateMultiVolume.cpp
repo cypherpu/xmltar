@@ -145,7 +145,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					}
 					else {
 						archiveCompression.reset(archiveCompression->clone());
-						archiveCompression->OpenCompression();
+						archiveCompression->Open();
 					}
 				}
 			}

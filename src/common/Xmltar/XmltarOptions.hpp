@@ -30,14 +30,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/optional.hpp>
 
 #include "Utilities/Options-TarStyle.hpp"
-#if 0
-#include "Transform/Transform.hpp"
-#include "Transform/TransformIdentity.hpp"
-#include "Transform/TransformProcessGzip.hpp"
-#include "Transform/TransformProcessBzip2.hpp"
-#include "Transform/TransformProcessLzip.hpp"
-#include "Transform/TransformHex.hpp"
-#endif
 #include "Compressors/Compressor.hpp"
 
 class XmltarOptions {

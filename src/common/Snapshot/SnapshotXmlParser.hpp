@@ -18,7 +18,6 @@ class Snapshot;
 
 #include "Snapshot/Snapshot.hpp"
 #include "XmlParser/XmlParser.hpp"
-#include "Transform/Transform.hpp"
 
 class SnapshotXmlParser : public XmlParser {
 	std::fstream fs_;

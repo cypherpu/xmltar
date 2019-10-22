@@ -9,7 +9,8 @@
 
 #include "Snapshot/Snapshot.hpp"
 #include "Utilities/TemporaryFile.hpp"
-#include "Transform/TransformIdentity.hpp"
+#include "Utilities/Identity.hpp"
+#include "Compressors/Compressor.hpp"
 
 TEST(Snapshot,MergeSnapshotFilesHelper)
 {
@@ -58,7 +59,7 @@ TEST(Snapshot,MergeSnapshotFilesHelper)
 	testOfs3.close();
 
 	std::vector<std::filesystem::path> sourcePaths { testFilePath1,testFilePath2,testFilePath3 };
-	std::shared_ptr<Transform> compression=std::make_shared<TransformIdentity>("");
+	std::shared_ptr<CompressorInterface> compression=std::make_shared<Compressor<Identity>>("");
 	MergeSnapshotFilesHelper(sourcePaths, targetPath, compression);
 
 }
