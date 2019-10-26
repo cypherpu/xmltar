@@ -47,10 +47,10 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
 		xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.options_.encoding_->clone());
-		xmltarArchiveExtractMultiVolume_.decoder_->OpenDecompression();
+		xmltarArchiveExtractMultiVolume_.decoder_->Open();
 
 		xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.options_.fileCompression_->clone());
-		xmltarArchiveExtractMultiVolume_.fileDecompression_->OpenDecompression();
+		xmltarArchiveExtractMultiVolume_.fileDecompression_->Open();
 	}
 
 	std::cerr << std::string(elements_.size(),'\t') << "<" << name << ">" << std::endl;
@@ -83,11 +83,11 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarOptions c
 
 	XML_Char buffer[1024];
 
-	std::shared_ptr<Transform> archiveDecompression(opts.archiveCompression_->clone());
-	std::shared_ptr<Transform> memberDecompression(opts.archiveMemberCompression_->clone());
+	std::shared_ptr<CompressorInterface> archiveDecompression(opts.archiveCompression_->clone());
+	std::shared_ptr<CompressorInterface> memberDecompression(opts.archiveMemberCompression_->clone());
 
-	archiveDecompression->OpenDecompression();
-	memberDecompression->OpenDecompression();
+	archiveDecompression->Open();
+	memberDecompression->Open();
 
 	std::string tmp;
 	while(ifs){

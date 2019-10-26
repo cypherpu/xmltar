@@ -45,8 +45,10 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, XmltarGlob
     	std::cerr << "########### is regular file" << std::endl;
         file_size=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
+#if 0
     	std::cerr << "########### running sha3sum512_" << std::endl;
         sha3sum512_.run();
+#endif
     }
     else file_size=0;
 
@@ -283,7 +285,7 @@ size_t XmltarMemberCreate::MinimumSize(){
 			);
 }
 
-size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (options_.tape_length_.get()<committedBytes+pendingBytes)
@@ -322,7 +324,7 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 #endif
 }
 
-bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression){
+bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	std::cerr << "XmltarMember::CanArchiveDirectory:"
@@ -351,7 +353,7 @@ bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendi
 	return numberOfFileBytesThatCanBeArchived;
 }
 
-bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressionInterface> archiveCompression){
+bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
 	if (options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived

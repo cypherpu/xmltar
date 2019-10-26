@@ -15,8 +15,8 @@ extern "C" {
 #include <sys/stat.h>
 }
 
+#include "Utilities/Sha3.hpp"
 #include "Xmltar/XmltarOptions.hpp"
-#include "Transform/ProcessSha3sum512.hpp"
 
 class XmltarMemberCreate {
 	XmltarOptions const  & options_;
@@ -31,7 +31,7 @@ class XmltarMemberCreate {
 	std::shared_ptr<std::ifstream> ifs_;
 	size_t startingVolume_;
 
-	ProcessSha3sum512 sha3sum512_;
+	Sha3_512 sha3sum512_;
 
 	bool metadataWritten_;
 
@@ -39,7 +39,7 @@ public:
 	XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath);
 	~XmltarMemberCreate();
 
-	void write(std::shared_ptr<Transform> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
+	void write(std::shared_ptr<CompressorInterface> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
 	size_t MemberSize();
 	std::string MemberHeader();
@@ -48,9 +48,9 @@ public:
 	std::string CompressedMemberTrailer();
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
-	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
-	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<Transform> archiveCompression);
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression);
+	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression);
+	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression);
 	bool IsComplete(){
 		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size << std::endl;
 		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;

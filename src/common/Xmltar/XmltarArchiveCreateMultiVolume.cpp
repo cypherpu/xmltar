@@ -40,7 +40,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	std::cerr << dbg << "::compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
 	std::cerr << dbg << "::compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
 
-	archiveCompression->OpenCompression();
+	archiveCompression->Open();
 
 	if (!globals_.filesToBeIncluded_.empty() && !nextMember_)
 		NextMember();
@@ -56,7 +56,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
 				std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 				std::string compressedDirectoryMember
-					= options_.archiveMemberCompression_->CompressString(
+					= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 							tmp
 						);
 				ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
@@ -73,7 +73,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				pendingBytes=compressedArchiveTrailer.size();
 				if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
 					archiveCompression.reset(archiveCompression->clone());
-					archiveCompression->OpenCompression();
+					archiveCompression->Open();
 				}
 				else {
 					std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);
@@ -88,7 +88,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
 				std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 				std::string compressedDirectoryMember
-					= options_.archiveMemberCompression_->CompressString(
+					= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 							tmp
 						);
 				ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
@@ -105,7 +105,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				pendingBytes=compressedArchiveTrailer.size();
 				if (nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, archiveCompression)){
 					archiveCompression.reset(archiveCompression->clone());
-					archiveCompression->OpenCompression();
+					archiveCompression->Open();
 				}
 				else {
 					std::string tmp=CompressedArchiveTrailer(options_.tape_length_.get()-committedBytes);

@@ -7,6 +7,7 @@
 
 #include <fstream>
 
+#include "Compressors/Compressor.hpp"
 #include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
 #include "Debug2/Debug2.hpp"
 
@@ -20,7 +21,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	: XmltarArchive(opts,globals,filename,volumeNumber,nextMember)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume");
-	std::shared_ptr<Transform> archiveCompression(options_.archiveCompression_.get()->clone());
+	std::shared_ptr<CompressorInterface> archiveCompression(options_.archiveCompression_.get()->clone());
 
 	std::cerr << dbg << " starting archive **********" << std::endl;
 	std::ostream *ofs;
@@ -31,7 +32,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		outputFileStream.open(filename);
 		ofs=&outputFileStream;
 	}
-	archiveCompression->OpenCompression();
+	archiveCompression->Open();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
@@ -43,7 +44,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		if (nextMember_->isDirectory()){
 			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
-				= options_.archiveMemberCompression_->CompressString(
+				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
@@ -52,7 +53,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		else if (nextMember_->isSymLink()){
 			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
-				= options_.archiveMemberCompression_->CompressString(
+				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
