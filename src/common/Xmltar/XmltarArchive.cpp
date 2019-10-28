@@ -209,6 +209,11 @@ void XmltarArchive::NextMember(){
 	 * the excluded path is not a path prefix of the included path.
 	 */
 	std::filesystem::path filepath;
+
+	if (globals_.filesToBeIncluded_.empty()){
+		nextMember_.reset(nullptr);
+		return;
+	}
 	for( ; !globals_.filesToBeIncluded_.empty(); ){
 		filepath=globals_.filesToBeIncluded_.top();
 		globals_.filesToBeIncluded_.pop();
@@ -424,7 +429,7 @@ std::string XmltarArchive::ArchiveTrailerEnd(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(){
-#if 0
+
 	std::string compressedArchiveTrailerBegin
 			=options_.archiveCompression_.get()->OpenForceWriteAndClose(
 				options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
@@ -439,9 +444,7 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 				)
 			);
 
-	std::string minimumString(
-		random_hex+std::get<0>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].begin()->second),
-		std::get<1>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].begin()->second));
+	std::string minimumString;
 
 	std::string compressedArchiveTrailerMiddle
 			=options_.archiveCompression_.get()->OpenForceWriteAndClose(
@@ -451,7 +454,7 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 			);
 
 	return compressedArchiveTrailerBegin+compressedArchiveTrailerMiddle+compressedArchiveTrailerEnd;
-#endif
+
 	return "";
 }
 

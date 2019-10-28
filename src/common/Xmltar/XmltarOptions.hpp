@@ -41,13 +41,18 @@ public:
 	boost::optional<int> verbosity_;
 	boost::optional<bool> multi_volume_;
 	std::shared_ptr<CompressorInterface> fileCompression_;
+	std::shared_ptr<CompressorInterface> fileDecompression_;
 	std::shared_ptr<CompressorInterface> encoding_;
+	std::shared_ptr<CompressorInterface> decoding_;
 	std::shared_ptr<CompressorInterface> archiveMemberCompression_;
+	std::shared_ptr<CompressorInterface> archiveMemberDecompression_;
 	std::shared_ptr<CompressorInterface> archiveCompression_;
+	std::shared_ptr<CompressorInterface> archiveDecompression_;
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
 	std::shared_ptr<CompressorInterface> incrementalFileCompression_;
+	std::shared_ptr<CompressorInterface> incrementalFileDecompression_;
 	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
 	std::vector<std::string> excludeFileGlobs_;
