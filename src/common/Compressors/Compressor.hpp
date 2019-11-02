@@ -37,7 +37,6 @@ public:
 
 	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
-	virtual std::string MinimumCompressionString()=0;
 };
 
 template<typename T> class Compressor : public CompressorInterface {
@@ -54,7 +53,7 @@ public:
 	}
 
 	std::string ForceWrite(std::string const & s) override {
-		std::string result=compressor_.ForceWrite(s);
+		std::string result(compressor_.ForceWrite(s));
 		writeCount_+=s.size();
 		readCount_+=result.size();
 
@@ -62,7 +61,7 @@ public:
 	}
 
 	std::string ForceWriteAndClose(std::string const & s) override {
-		std::string result=compressor_.ForceWriteAndClose(s);
+		std::string result(compressor_.ForceWriteAndClose(s));
 		writeCount_+=s.size();
 		readCount_+=result.size();
 
@@ -70,7 +69,7 @@ public:
 	}
 
 	std::string OpenForceWriteAndClose(std::string const & s) override {
-		std::string result=compressor_.OpenForceWriteAndClose(s);
+		std::string result(compressor_.OpenForceWriteAndClose(s));
 		writeCount_+=s.size();
 		readCount_+=result.size();
 
@@ -84,11 +83,16 @@ public:
 	size_t ReadCount() override { return readCount_; }
 	size_t WriteCount() override { return writeCount_; }
 
-	std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize) override;
-	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize) override;
-	std::string MinimumCompressionString() override;
+	std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize){
+		return compressor_.MaximumCompressedtextSizeGivenPlaintextSize(plaintextSize);
+	}
+
+	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){
+		return compressor_.MinimumPlaintextSizeGivenCompressedtextSize(compressedtextSize);
+	}
 };
 
+#if 0
 template<>
 std::streamoff Compressor<Identity>::MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize);
 template<>
@@ -118,6 +122,13 @@ template<>
 std::string Compressor<Zlib::Gzip>::MinimumCompressionString();
 
 template<>
+std::streamoff Compressor<Zlib::GzipRaw>::MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize);
+template<>
+std::streamoff Compressor<Zlib::GzipRaw>::MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize);
+template<>
+std::string Compressor<Zlib::GzipRaw>::MinimumCompressionString();
+
+template<>
 std::streamoff Compressor<Zlib::Gunzip>::MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize);
 template<>
 std::streamoff Compressor<Zlib::Gunzip>::MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize);
@@ -132,10 +143,18 @@ template<>
 std::string Compressor<ZstdCompress>::MinimumCompressionString();
 
 template<>
+std::streamoff Compressor<ZstdCompressRaw>::MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize);
+template<>
+std::streamoff Compressor<ZstdCompressRaw>::MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize);
+template<>
+std::string Compressor<ZstdCompressRaw>::MinimumCompressionString();
+
+template<>
 std::streamoff Compressor<ZstdDecompress>::MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize);
 template<>
 std::streamoff Compressor<ZstdDecompress>::MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize);
 template<>
 std::string Compressor<ZstdDecompress>::MinimumCompressionString();
+#endif
 
 #endif /* SRC_COMMON_COMPRESSORS_COMPRESSOR_HPP_ */

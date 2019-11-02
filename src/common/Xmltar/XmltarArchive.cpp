@@ -417,9 +417,9 @@ std::string XmltarArchive::ArchiveTrailerBegin(){
 }
 
 std::string XmltarArchive::ArchiveTrailerMiddle(unsigned int padding){
-	std::string s=options_.archiveCompression_.get()->MinimumCompressionString();
+	//std::string s=options_.archiveCompression_.get()->MinimumCompressionString();
 
-    return s;
+    return std::string();
 }
 
 std::string XmltarArchive::ArchiveTrailerEnd(){
