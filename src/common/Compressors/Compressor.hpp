@@ -13,7 +13,7 @@
 #include "Generated/Utilities/Identity.hpp"
 #include "Generated/Utilities/Hex.hpp"
 #include "Generated/Utilities/Gzip.hpp"
-#include "Generated/Utilities/Zstd.hpp"
+#include "Generated/Utilities/ZstdCompress.hpp"
 #include "Generated/Utilities/Sha3.hpp"
 
 class CompressorInterface {

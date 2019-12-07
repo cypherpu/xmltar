@@ -8,6 +8,10 @@
 #include <iostream>
 
 #include "Xmltar/XmltarOptions.hpp"
+#include "Generated/Utilities/GzipRaw.hpp"
+#include "Generated/Utilities/Gunzip.hpp"
+#include "Generated/Utilities/ZstdCompressRaw.hpp"
+#include "Generated/Utilities/ZstdDecompress.hpp"
 
 void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	Parse_Opts::Option_Parser p;
