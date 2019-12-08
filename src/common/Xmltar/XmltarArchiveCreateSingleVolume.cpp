@@ -9,7 +9,7 @@
 
 #include "Compressors/Compressor.hpp"
 #include "Xmltar/XmltarArchiveCreateSingleVolume.hpp"
-#include "Debug2/Debug2.hpp"
+#include "Generated/Utilities/Debug2.hpp"
 
 XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		XmltarOptions const & opts,
