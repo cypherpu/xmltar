@@ -72,8 +72,8 @@ void XmltarSingleVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	}
 }
 
-XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
-	: ::XmltarArchive(opts,globals,filename,nextMember_)
+XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename)
+	: ::XmltarArchive(opts,globals,filename)
 {
 	std::cerr << "XmltarArchiveExtractMultiVolume::XmltarSingleVolumeXmlHandler: entering: filename=" << filename << std::endl;
 

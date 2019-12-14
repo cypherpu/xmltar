@@ -39,6 +39,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Xmltar/XmltarInvocation.hpp"
 #include "Snapshot/Snapshot.hpp"
+#include "Xmltar/XmltarMemberCreate.hpp"
 #include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 
