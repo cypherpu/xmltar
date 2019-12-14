@@ -15,8 +15,7 @@ public:
 	XmltarArchiveCreateMultiVolume(
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
-		std::string filename,
-		std::unique_ptr<XmltarMemberCreate> & nextMember
+		std::string filename
 	);
 };
 

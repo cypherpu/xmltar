@@ -15,10 +15,9 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
-		unsigned int volumeNumber,
-		std::unique_ptr<XmltarMemberCreate> & nextMember
+		unsigned int volumeNumber
 	)
-	: XmltarArchive(opts,globals,filename,volumeNumber,nextMember)
+	: XmltarArchive(opts,globals,filename,volumeNumber)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume");
 	std::shared_ptr<CompressorInterface> archiveCompression(options_.archiveCompression_.get()->clone());
@@ -36,13 +35,13 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
-	NextMember();
+	globals_.NextMember();
 
-	for( ; nextMember_; NextMember()){
-		std::cerr << dbg << ": " << nextMember_->filepath() << std::endl;
+	for( ; globals_.nextMember_; globals_.NextMember()){
+		std::cerr << dbg << ": " << globals_.nextMember_->filepath() << std::endl;
 
-		if (nextMember_->isDirectory()){
-			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+		if (globals_.nextMember_->isDirectory()){
+			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
 				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
@@ -50,8 +49,8 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 		}
-		else if (nextMember_->isSymLink()){
-			std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
+		else if (globals_.nextMember_->isSymLink()){
+			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
 				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
@@ -59,11 +58,11 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 		}
-		else if (nextMember_->isRegularFile()){
+		else if (globals_.nextMember_->isRegularFile()){
 			std::cerr << "********** isRegularFile" << std::endl;
-			std::cerr << dbg << ": archiving " << nextMember_->filepath().string() << std::endl;
+			std::cerr << dbg << ": archiving " << globals_.nextMember_->filepath().string() << std::endl;
 
-			nextMember_->write(archiveCompression,std::numeric_limits<size_t>::max(),*ofs);
+			globals_.nextMember_->write(archiveCompression,std::numeric_limits<size_t>::max(),*ofs);
 		}
 
 	}

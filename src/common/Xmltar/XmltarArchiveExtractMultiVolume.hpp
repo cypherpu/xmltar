@@ -35,8 +35,7 @@ public:
 	XmltarArchiveExtractMultiVolume(
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
-		std::string filename,
-		std::shared_ptr<XmltarMemberCreate> & nextMember
+		std::string filename
 	);
 };
 

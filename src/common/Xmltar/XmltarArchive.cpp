@@ -57,16 +57,15 @@ XmltarArchive::XmltarArchive(
 	XmltarOptions const & opts,
 	XmltarGlobals & globals,
 	std::string filename,
-	unsigned int volumeNumber,
-	std::unique_ptr<XmltarMemberCreate> & nextMember
+	unsigned int volumeNumber
 )
-	: options_(opts), globals_(globals), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
+	: options_(opts), globals_(globals), filename_(filename), volumeNumber_(volumeNumber)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
-XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::unique_ptr<XmltarMemberCreate> & nextMember)
-: options_(opts), globals_(globals), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
+XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename)
+: options_(opts), globals_(globals), filename_(filename), volumeNumber_(0)
 {
 	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
 		if (options_.multi_volume_){
@@ -175,81 +174,6 @@ XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals
 #endif
 		}
 	}
-}
-
-void XmltarArchive::NextMember(){
-	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
-	nextMember_.reset();
-
-	if(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
-		std::cerr << "XmltarArchive::NextMember(): replenish files to be included" << std::endl;
-		while(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
-			std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
-			for(auto & i : tmp)
-				globals_.filesToBeIncluded_.push(std::filesystem::path(i));
-
-			globals_.globsToBeIncluded_.erase(globals_.globsToBeIncluded_.begin());
-		}
-
-		if (globals_.filesToBeIncluded_.empty())
-			return;
-
-		if (globals_.snapshot_.get()!=nullptr)
-			globals_.snapshot_->NewTemporarySnapshotFile();
-	}
-
-	globals_.filesToBeExcludedTruncated_=globals_.filesToBeExcludedComplete_;
-	/*
-	 * Files to be included in the archive are archived in command-line order.
-	 * As files are included, we would like to erase excluded paths which
-	 * could not possibly be relevant to any further included paths.
-	 * as possible. It is not sufficient to merely erase excluded paths which
-	 * are less than the current included path - we should not erase the excluded
-	 * path "/bin" just because it is less than "/bin/foo"; we must also ensure
-	 * the excluded path is not a path prefix of the included path.
-	 */
-	std::filesystem::path filepath;
-
-	if (globals_.filesToBeIncluded_.empty()){
-		nextMember_.reset(nullptr);
-		return;
-	}
-	for( ; !globals_.filesToBeIncluded_.empty(); ){
-		filepath=globals_.filesToBeIncluded_.top();
-		globals_.filesToBeIncluded_.pop();
-		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "considering " << filepath.string() << std::endl;
-		while(!globals_.filesToBeExcludedTruncated_.empty() &&
-				globals_.filesToBeExcludedTruncated_.top()<filepath &&
-			!IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
-			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding exclude file " << globals_.filesToBeExcludedTruncated_.top().string() << std::endl;
-			globals_.filesToBeExcludedTruncated_.pop();
-		}
-
-		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "filesToBeExcludedTruncated_.top()=" << (globals_.filesToBeExcludedTruncated_.size()?globals_.filesToBeExcludedTruncated_.top().string():"") << std::endl;
-
-		if (globals_.filesToBeExcludedTruncated_.empty())
-			break;
-		if (IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
-			std::cerr	<< "########### XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding include file " << filepath << std::endl;
-			continue;
-		}
-		else break;
-	}
-
-	std::cerr << "NextMember=" << filepath << std::endl;
-	std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
-
-	if (std::filesystem::is_directory(f_stat)){
-		for(auto & p : std::filesystem::directory_iterator(filepath) ){
-			globals_.filesToBeIncluded_.push(p);
-		}
-	}
-
-	nextMember_.reset(new XmltarMemberCreate(options_,globals_,filepath));
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)

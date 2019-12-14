@@ -16,8 +16,7 @@ public:
 		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
-		unsigned int volumeNumber,
-		std::unique_ptr<XmltarMemberCreate> & nextMember
+		unsigned int volumeNumber
 	);
 };
 

@@ -112,7 +112,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
                 std::string filename=str(fmt);
 
                 std::cerr << "*********" << globals_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
-                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,globals_,filename, nextMember);
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,globals_,filename);
                 std::cerr << "*********" << globals_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
@@ -126,7 +126,7 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
             std::unique_ptr<XmltarMemberCreate> nextMember;
-            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,globals_,options_.base_xmltar_file_name_.get(), 0, nextMember);
+            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,globals_,options_.base_xmltar_file_name_.get(), 0);
 		}
 	}
 	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
@@ -167,12 +167,12 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 				std::string filename=str(fmt);
 
 				if (!std::filesystem::exists(filename)) break;
-				XmltarArchiveExtractMultiVolume xmltarArchiveExtractMultiVolume(options_,globals_,filename, nextMember);
+				XmltarArchiveExtractMultiVolume xmltarArchiveExtractMultiVolume(options_,globals_,filename);
 			}
 		}
 		else {
 			std::shared_ptr<XmltarMemberCreate> nextMember;
-			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(options_,globals_,options_.base_xmltar_file_name_.get(), nextMember);
+			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(options_,globals_,options_.base_xmltar_file_name_.get());
 		}
 	}
 
