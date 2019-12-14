@@ -50,6 +50,8 @@ public:
 
 	void Open() override {
 		compressor_.Open();
+		readCount_=0;
+		writeCount_=0;
 	}
 
 	std::string ForceWrite(std::string const & s) override {

@@ -53,6 +53,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		std::cerr << dbg << ": file=" << nextMember_->filepath() << std::endl;
 
 		if (nextMember_->isDirectory()){
+			std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: isDirectory" << std::endl;
 			if (nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, archiveCompression)){
 				std::string tmp=nextMember_->MemberHeader()+nextMember_->MemberTrailer();
 				std::string compressedDirectoryMember
@@ -64,8 +65,10 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				pendingBytes=archiveCompression->MaximumCompressedtextSizeGivenPlaintextSize(archiveCompression->WriteCount())+compressedArchiveTrailer.size();
 				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 			}
-			else if (firstPass)
-				throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+			else if (firstPass){
+				std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: failure first pass" << std::endl;
+				throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold directory archive member");
+			}
 			else {
 				ofs << archiveCompression->ForceWriteAndClose("");
 				ofs.flush();
@@ -97,7 +100,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 			}
 			else if (firstPass)
-				throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold directory archive member");
+				throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold directory archive member");
 			else {
 				ofs << archiveCompression->ForceWriteAndClose("");
 				ofs.flush();
@@ -122,7 +125,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << nextMember_->filepath().string() << std::endl;
 			if (numberOfFileBytesThatCanBeArchived==0){
 				if (firstPass)
-					throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold even 1 char of archive member");
+					throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold even 1 char of archive member");
 				else {	// close off this archiveCompression to free up space
 					ofs << archiveCompression->ForceWriteAndClose("");
 					committedBytes+=archiveCompression->ReadCount();
@@ -141,7 +144,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 							return;
 						}
 						else
-							throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
+							throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: overflow");
 					}
 					else {
 						archiveCompression.reset(archiveCompression->clone());
@@ -173,5 +176,5 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		return;
 	}
 	else
-		throw std::logic_error("XmltarARchive::XmltarArchive: overflow");
+		throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: overflow");
 }
