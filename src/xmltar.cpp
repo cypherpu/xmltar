@@ -40,7 +40,6 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarInvocation.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Xmltar/XmltarMemberCreate.hpp"
-#include "Xmltar/XmltarOptions.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 
 int main(int argc, char const *argv[])
@@ -131,14 +130,11 @@ int main(int argc, char const *argv[])
 	    return 0;
 #endif
 
-
-
+		XmltarGlobals globals;
 	    spdlog::debug("Before XmltarOptions");
-		XmltarOptions options;
-		options.ProcessOptions(argc, argv);
-		XmltarGlobals globals(options);
+		globals.options_.ProcessOptions(argc, argv);
 	    spdlog::debug("Before XmltarInvocation");
-		XmltarInvocation xmltarInvocation(options,globals);
+		XmltarInvocation xmltarInvocation(globals);
 	    spdlog::debug("After XmltarInvocation");
 	}
 	catch (char const *msg){

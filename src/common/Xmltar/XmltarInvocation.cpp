@@ -39,38 +39,38 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractSingleVolume.hpp"
 
-XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals & globals)
-	: version("Xmltar_0_0_1"), options_(options), globals_(globals)  {
+XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
+	: version("Xmltar_0_0_1"), globals_(globals)  {
 
-	if (options_.verbosity_==3){
-		if (options_.operation_==XmltarOptions::APPEND) std::cerr << "Operation=APPEND" << std::endl;
-		if (options_.operation_==XmltarOptions::CREATE) std::cerr << "Operation=CREATE" << std::endl;
-		if (options_.operation_==XmltarOptions::LIST) std::cerr << "Operation=LIST" << std::endl;
-		if (options_.operation_==XmltarOptions::EXTRACT) std::cerr << "Operation=EXTRACT" << std::endl;
-		std::cerr << "verbosity=" << options_.verbosity_.get() << std::endl;
-		if (options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
-		if (options_.starting_volume_) std::cerr << "starting_volume=" << options_.starting_volume_.get() << std::endl;
-		if (options_.tape_length_) std::cerr << "tape length=" << options_.tape_length_.get() << std::endl;
-		if (options_.stop_after_) std::cerr << "stop after=" << options_.stop_after_.get() << std::endl;
-		std::cerr << "base_xmltar_file_name=" << options_.base_xmltar_file_name_.get() << std::endl;
-		if (options_.sourceFileGlobs_.size()) std::cerr << "Source file size=" << options_.sourceFileGlobs_.size() << std::endl;
-		if (options_.excludeFileGlobs_.size())
-			for(auto & i : options_.excludeFileGlobs_)
+	if (globals_.options_.verbosity_==3){
+		if (globals_.options_.operation_==XmltarOptions::APPEND) std::cerr << "Operation=APPEND" << std::endl;
+		if (globals_.options_.operation_==XmltarOptions::CREATE) std::cerr << "Operation=CREATE" << std::endl;
+		if (globals_.options_.operation_==XmltarOptions::LIST) std::cerr << "Operation=LIST" << std::endl;
+		if (globals_.options_.operation_==XmltarOptions::EXTRACT) std::cerr << "Operation=EXTRACT" << std::endl;
+		std::cerr << "verbosity=" << globals_.options_.verbosity_.get() << std::endl;
+		if (globals_.options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
+		if (globals_.options_.starting_volume_) std::cerr << "starting_volume=" << globals_.options_.starting_volume_.get() << std::endl;
+		if (globals_.options_.tape_length_) std::cerr << "tape length=" << globals_.options_.tape_length_.get() << std::endl;
+		if (globals_.options_.stop_after_) std::cerr << "stop after=" << globals_.options_.stop_after_.get() << std::endl;
+		std::cerr << "base_xmltar_file_name=" << globals_.options_.base_xmltar_file_name_.get() << std::endl;
+		if (globals_.options_.sourceFileGlobs_.size()) std::cerr << "Source file size=" << globals_.options_.sourceFileGlobs_.size() << std::endl;
+		if (globals_.options_.excludeFileGlobs_.size())
+			for(auto & i : globals_.options_.excludeFileGlobs_)
 				std::cerr << "Exclude file=" << i << std::endl;
-		if (options_.sourceFileGlobs_.size())
-			for(auto & i : options_.sourceFileGlobs_)
+		if (globals_.options_.sourceFileGlobs_.size())
+			for(auto & i : globals_.options_.sourceFileGlobs_)
 				std::cerr << "Source file=" << i << std::endl;
-		if (options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << options_.listed_incremental_file_.get() << std::endl;
-		if (options_.files_from_) std::cerr << "files from=" << options_.files_from_.get() << std::endl;
+		if (globals_.options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << globals_.options_.listed_incremental_file_.get() << std::endl;
+		if (globals_.options_.files_from_) std::cerr << "files from=" << globals_.options_.files_from_.get() << std::endl;
 	}
 
 	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
-	if (options_.sourceFileGlobs_.size()){
-		for(auto & i : options_.sourceFileGlobs_)
+	if (globals_.options_.sourceFileGlobs_.size()){
+		for(auto & i : globals_.options_.sourceFileGlobs_)
 			globals_.globsToBeIncluded_.push_back(i);
 	}
-	else if (options_.files_from_){
-		std::ifstream ifs(options_.files_from_.get().string());
+	else if (globals_.options_.files_from_){
+		std::ifstream ifs(globals_.options_.files_from_.get().string());
 
 		if (ifs){
 			std::string line;
@@ -80,56 +80,56 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 		else
 			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
 	}
-	else if (options_.operation_==XmltarOptions::CREATE || options_.operation_==XmltarOptions::APPEND)
+	else if (globals_.options_.operation_==XmltarOptions::CREATE || globals_.options_.operation_==XmltarOptions::APPEND)
 		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 	spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
-	if (options_.excludeFileGlobs_.size()){
-		std::vector<std::string> tmp=BashGlob(options_.excludeFileGlobs_);
+	if (globals_.options_.excludeFileGlobs_.size()){
+		std::vector<std::string> tmp=BashGlob(globals_.options_.excludeFileGlobs_);
 		for(auto & i : tmp)
 			globals_.filesToBeExcludedComplete_.push(std::filesystem::path(i));
 	}
 
 	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
-	if (options_.listed_incremental_file_){
-		if (!(options_.operation_ && options_.operation_==XmltarOptions::CREATE))
+	if (globals_.options_.listed_incremental_file_){
+		if (!(globals_.options_.operation_ && globals_.options_.operation_==XmltarOptions::CREATE))
 			throw std::runtime_error("XmltarInvocation: must use incremental file with create");
 
-		globals_.snapshot_.reset(new Snapshot(options_,globals_));
+		globals_.snapshot_.reset(new Snapshot(globals_));
 	}
 
-	if (options_.operation_ && options_.operation_==XmltarOptions::CREATE){
-		if (options_.multi_volume_){
-			if (!options_.starting_volume_)
+	if (globals_.options_.operation_ && globals_.options_.operation_==XmltarOptions::CREATE){
+		if (globals_.options_.multi_volume_){
+			if (!globals_.options_.starting_volume_)
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting volume number to create multivolume archive");
 
-            globals_.current_volume_=options_.starting_volume_.get();
-            std::unique_ptr<XmltarMemberCreate> nextMember;
+            globals_.current_volume_=globals_.options_.starting_volume_.get();
+            globals_.NextMember();
 
-            for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++globals_.current_volume_){
-                boost::format fmt(options_.base_xmltar_file_name_.get());
+            for(unsigned int i=0; i<globals_.options_.stop_after_.get(); ++i, ++globals_.current_volume_){
+                boost::format fmt(globals_.options_.base_xmltar_file_name_.get());
                 fmt % globals_.current_volume_;
                 std::string filename=str(fmt);
 
-                std::cerr << "*********" << globals_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
-                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(options_,globals_,filename);
-                std::cerr << "*********" << globals_.current_volume_ << "******** " << (nextMember?(std::streamoff)(nextMember->Ifs().tellg()):(std::streamoff)0) << std::endl;
+                std::cerr << "*********" << globals_.current_volume_ << "******** " << (globals_.nextMember_ && globals_.nextMember_->Ifs()?(std::streamoff)(globals_.nextMember_->Ifs()->tellg()):(std::streamoff)0) << std::endl;
+                XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(globals_,filename);
+                std::cerr << "*********" << globals_.current_volume_ << "******** " << (globals_.nextMember_ && globals_.nextMember_->Ifs()?(std::streamoff)(globals_.nextMember_->Ifs()->tellg()):(std::streamoff)0) << std::endl;
                 // We return from XmltarArchive under 2 circumstances:
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (!nextMember && globals_.filesToBeIncluded_.empty()) break;
+            	if (!globals_.nextMember_ && globals_.filesToBeIncluded_.empty()) break;
             }
 		}
 		else {	// !options_.multi_volume_
-			if (!options_.base_xmltar_file_name_)
+			if (!globals_.options_.base_xmltar_file_name_)
 				throw std::runtime_error("xmltar: XmltarInvocation: must specify an output file");
 
             std::unique_ptr<XmltarMemberCreate> nextMember;
-            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(options_,globals_,options_.base_xmltar_file_name_.get(), 0);
+            XmltarArchiveCreateSingleVolume xmltarArchiveCreateSingleVolume(globals_,globals_.options_.base_xmltar_file_name_.get(), 0);
 		}
 	}
-	else if (options_.operation_ && options_.operation_==XmltarOptions::APPEND){
+	else if (globals_.options_.operation_ && globals_.options_.operation_==XmltarOptions::APPEND){
 		/*
 		if (options_.multi_volume_){
 			if (!options_.starting_sequence_number_){
@@ -153,26 +153,26 @@ XmltarInvocation::XmltarInvocation(XmltarOptions const & options, XmltarGlobals 
 		}
 		*/
 	}
-	if (options_.operation_ && options_.operation_==XmltarOptions::EXTRACT){
-		if (options_.multi_volume_){
-			if (!options_.starting_volume_)
+	if (globals_.options_.operation_ && globals_.options_.operation_==XmltarOptions::EXTRACT){
+		if (globals_.options_.multi_volume_){
+			if (!globals_.options_.starting_volume_)
 				throw std::logic_error("XmltarRun::XmltarRun: must specify starting sequence number to create multivolume archive");
 
-			globals_.current_volume_=options_.starting_volume_.get();
+			globals_.current_volume_=globals_.options_.starting_volume_.get();
 			std::shared_ptr<XmltarMemberCreate> nextMember;
 
-			for(unsigned int i=0; i<options_.stop_after_.get(); ++i, ++globals_.current_volume_){
-				boost::format fmt(options_.base_xmltar_file_name_.get());
+			for(unsigned int i=0; i<globals_.options_.stop_after_.get(); ++i, ++globals_.current_volume_){
+				boost::format fmt(globals_.options_.base_xmltar_file_name_.get());
 				fmt % globals_.current_volume_;
 				std::string filename=str(fmt);
 
 				if (!std::filesystem::exists(filename)) break;
-				XmltarArchiveExtractMultiVolume xmltarArchiveExtractMultiVolume(options_,globals_,filename);
+				XmltarArchiveExtractMultiVolume xmltarArchiveExtractMultiVolume(globals_,filename);
 			}
 		}
 		else {
 			std::shared_ptr<XmltarMemberCreate> nextMember;
-			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(options_,globals_,options_.base_xmltar_file_name_.get());
+			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(globals_,globals_.options_.base_xmltar_file_name_.get());
 		}
 	}
 

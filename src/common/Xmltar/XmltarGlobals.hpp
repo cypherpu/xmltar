@@ -33,7 +33,7 @@ public:
 
     std::unique_ptr<XmltarMemberCreate> nextMember_;
 
-    XmltarGlobals(XmltarOptions const & options);
+    XmltarGlobals();
     void NextMember();
 };
 

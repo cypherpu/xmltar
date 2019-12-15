@@ -13,7 +13,6 @@
 class XmltarArchiveCreateMultiVolume : public XmltarArchive {
 public:
 	XmltarArchiveCreateMultiVolume(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename
 	);

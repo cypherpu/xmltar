@@ -10,12 +10,12 @@
 #include "Generated/Utilities/Glob.hpp"
 #include "Generated/Utilities/IsPrefixPath.hpp"
 
-XmltarGlobals::XmltarGlobals(XmltarOptions const & options)
+XmltarGlobals::XmltarGlobals()
 	: current_xmltar_file_name_(), current_volume_(),
-	  invocationTime_(time(nullptr)), options_(options) {
+	  invocationTime_(time(nullptr)) {
 
-	if (options.starting_volume_)
-		current_volume_=options.starting_volume_.get();
+	if (options_.starting_volume_)
+		current_volume_=options_.starting_volume_.get();
 }
 
 void XmltarGlobals::NextMember(){
@@ -90,5 +90,5 @@ void XmltarGlobals::NextMember(){
 		}
 	}
 
-	nextMember_.reset(new XmltarMemberCreate(options_,*this,filepath));
+	nextMember_.reset(new XmltarMemberCreate(*this,filepath));
 }

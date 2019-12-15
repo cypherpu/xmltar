@@ -29,7 +29,6 @@ public:
 
 class XmltarArchive {
 protected:
-	XmltarOptions const & options_;
 	XmltarGlobals & globals_;
 	std::string filename_;
 	unsigned int volumeNumber_;
@@ -38,7 +37,6 @@ public:
 	 * Single volume constructor - no volume number needed
 	 */
 	XmltarArchive(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename
 	);
@@ -47,7 +45,6 @@ public:
 	 * Multi volume constructor - requires volume number
 	 */
 	XmltarArchive(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber

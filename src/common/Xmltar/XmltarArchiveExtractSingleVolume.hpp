@@ -33,7 +33,6 @@ public:
 
 public:
 	XmltarArchiveExtractSingleVolume(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename
 	);

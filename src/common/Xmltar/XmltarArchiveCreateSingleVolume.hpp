@@ -13,7 +13,6 @@
 class XmltarArchiveCreateSingleVolume : public XmltarArchive {
 public:
 	XmltarArchiveCreateSingleVolume(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber

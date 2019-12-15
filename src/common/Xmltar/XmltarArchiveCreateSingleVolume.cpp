@@ -12,15 +12,14 @@
 #include "Generated/Utilities/Debug2.hpp"
 
 XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
 		unsigned int volumeNumber
 	)
-	: XmltarArchive(opts,globals,filename,volumeNumber)
+	: XmltarArchive(globals,filename,volumeNumber)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume");
-	std::shared_ptr<CompressorInterface> archiveCompression(options_.archiveCompression_.get()->clone());
+	std::shared_ptr<CompressorInterface> archiveCompression(globals_.options_.archiveCompression_.get()->clone());
 
 	std::cerr << dbg << " starting archive **********" << std::endl;
 	std::ostream *ofs;
@@ -43,7 +42,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		if (globals_.nextMember_->isDirectory()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
-				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
+				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
@@ -52,7 +51,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		else if (globals_.nextMember_->isSymLink()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 			std::string compressedDirectoryMember
-				= options_.archiveMemberCompression_->OpenForceWriteAndClose(
+				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
 			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
