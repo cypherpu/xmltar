@@ -30,7 +30,7 @@ extern "C" {
 
 #include "XmlParser/XmlParser.hpp"
 
-#include "../Debug2/Debug2.hpp"
+#include "Generated/Utilities/Debug2.hpp"
 
 class NonDeterministicRNG : public boost::random::random_device {
 public:

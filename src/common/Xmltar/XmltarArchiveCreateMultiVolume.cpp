@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
-#include "Debug2/Debug2.hpp"
+#include "Generated/Utilities/Debug2.hpp"
 
 XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		XmltarOptions const & opts,

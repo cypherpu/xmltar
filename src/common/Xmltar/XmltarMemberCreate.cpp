@@ -27,7 +27,7 @@ extern "C" {
 #include "Utilities/ToDecimalInt.hpp"
 #include "Utilities/ToOctalInt.hpp"
 #include "Utilities/PrintOpenFileDescriptors.hpp"
-#include "../Debug2/Debug2.hpp"
+#include "Generated/Utilities/Debug2.hpp"
 
 XmltarMemberCreate::XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath)
 	: options_(options), globals_(globals), filepath_(filepath), metadataWritten_(false) {

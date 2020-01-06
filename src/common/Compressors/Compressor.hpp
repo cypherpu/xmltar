@@ -9,12 +9,14 @@
 #define SRC_COMMON_COMPRESSORS_COMPRESSOR_HPP_
 
 #include <string>
+#include <iostream>
 
 #include "Generated/Utilities/Identity.hpp"
 #include "Generated/Utilities/Hex.hpp"
 #include "Generated/Utilities/Gzip.hpp"
 #include "Generated/Utilities/ZstdCompress.hpp"
 #include "Generated/Utilities/Sha3.hpp"
+#include "Generated/Utilities/Debug2.hpp"
 
 class CompressorInterface {
 	std::string name_;
@@ -87,9 +89,69 @@ public:
 		return compressor_.MaximumCompressedtextSizeGivenPlaintextSize(plaintextSize);
 	}
 
+#if 0
 	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){
 		return compressor_.MinimumPlaintextSizeGivenCompressedtextSize(compressedtextSize);
 	}
+#endif
+	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){	//FIXME - duplicated in Transform.cpp
+		betz::Debug2 dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
+		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
+		std::streamoff 	plaintextSizeLB=0,
+						plaintextSizeUB=compressedtextSize;
+
+		if (compressedtextSize<MaximumCompressedtextSizeGivenPlaintextSize(0)){
+			return 0;
+
+			std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
+			std::cerr << dbg << ": MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
+			throw std::invalid_argument("Transform::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize too small");
+		}
+
+		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << " < MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
+		std::cerr << dbg << ": plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
+
+		std::cerr << dbg << ": 1" << std::endl;
+
+		while(MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)<compressedtextSize){
+			std::cerr << dbg << ":1: plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
+			plaintextSizeUB+=compressedtextSize;
+		}
+
+		//std::cerr << dbg << ": 2" << std::endl;
+
+		while(plaintextSizeUB-plaintextSizeLB>1){
+			std::cerr << dbg << ":2: plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
+
+			// mid is always strictly less than plaintextSizeUB
+
+			size_t mid=(plaintextSizeLB+plaintextSizeUB)/2;
+
+			// plaintextSizeUB points to somewhere in the range of possible plaintext sizes
+
+			if (MaximumCompressedtextSizeGivenPlaintextSize(mid)>=compressedtextSize)
+				plaintextSizeUB=mid;
+
+			// plaintextSizeLB points below the range of possible plaintext sizes
+
+			else // if (MaximumCompressedtextSizeGivenPlaintextSize(mid)<compressedtextSize)
+				plaintextSizeLB=mid;
+		}
+
+		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
+		std::cerr << dbg << ": plaintextSizeUB=" << plaintextSizeUB << std::endl;
+		std::cerr << dbg << ": MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)=" << MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB) << std::endl;
+
+		std::streamoff result;
+
+		if (MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)<compressedtextSize)
+			result=plaintextSizeUB;
+		else
+			result=plaintextSizeLB;
+
+		return result;
+	}
+
 };
 
 #if 0
