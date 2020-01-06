@@ -46,10 +46,10 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
-		xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.options_.encoding_->clone());
+		xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.encoding_->clone());
 		xmltarArchiveExtractMultiVolume_.decoder_->Open();
 
-		xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.options_.fileCompression_->clone());
+		xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.fileCompression_->clone());
 		xmltarArchiveExtractMultiVolume_.fileDecompression_->Open();
 	}
 
@@ -71,8 +71,8 @@ void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	}
 }
 
-XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::shared_ptr<XmltarMemberCreate> & nextMember)
-	: ::XmltarArchive(opts,globals,filename,nextMember_)
+XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals & globals, std::string filename)
+	: ::XmltarArchive(globals,filename)
 {
 	std::cerr << "XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume: entering: filename=" << filename << std::endl;
 
@@ -83,8 +83,8 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarOptions c
 
 	XML_Char buffer[1024];
 
-	std::shared_ptr<CompressorInterface> archiveDecompression(opts.archiveCompression_->clone());
-	std::shared_ptr<CompressorInterface> memberDecompression(opts.archiveMemberCompression_->clone());
+	std::shared_ptr<CompressorInterface> archiveDecompression(globals_.options_.archiveCompression_->clone());
+	std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberCompression_->clone());
 
 	archiveDecompression->Open();
 	memberDecompression->Open();

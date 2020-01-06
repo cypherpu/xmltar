@@ -19,7 +19,6 @@ extern "C" {
 #include "Xmltar/XmltarOptions.hpp"
 
 class XmltarMemberCreate {
-	XmltarOptions const  & options_;
 	XmltarGlobals & globals_;
 	std::filesystem::path const filepath_;
 	struct stat stat_buf;
@@ -36,7 +35,7 @@ class XmltarMemberCreate {
 	bool metadataWritten_;
 
 public:
-	XmltarMemberCreate(XmltarOptions const & options, XmltarGlobals & globals, std::filesystem::path const & filepath);
+	XmltarMemberCreate(XmltarGlobals & globals, std::filesystem::path const & filepath);
 	~XmltarMemberCreate();
 
 	void write(std::shared_ptr<CompressorInterface> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
@@ -56,7 +55,7 @@ public:
 		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;
 		return ifs_->tellg()==file_size;
 	}
-	std::ifstream & Ifs(){ return *ifs_; }
+	std::ifstream *Ifs(){ return ifs_.get(); }
 	std::filesystem::path filepath(){ return filepath_; }
 	bool isDirectory(){ return f_type==std::filesystem::file_type::directory; }
 	bool isSymLink(){ return f_type==std::filesystem::file_type::symlink; }

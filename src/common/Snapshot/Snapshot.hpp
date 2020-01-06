@@ -22,7 +22,6 @@ class CompressorInterface;
 
 class Snapshot {
 public:
-	XmltarOptions const & options_;
 	XmltarGlobals & globals_;
 	std::filesystem::path temporarySnapshotDirPath_;
 	std::vector<std::filesystem::path> temporarySnapshotFilePaths_;
@@ -39,7 +38,7 @@ public:
 		return "</snapshot>\n";
 	}
 public:
-	Snapshot(XmltarOptions const & options, XmltarGlobals & globals);
+	Snapshot(XmltarGlobals & globals);
 
 	~Snapshot();
 

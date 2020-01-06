@@ -101,8 +101,8 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 void Snapshot::MergeSnapshotFiles(){
 }
 
-Snapshot::Snapshot(XmltarOptions const & options, XmltarGlobals & globals)
-	: options_(options), globals_(globals) {
+Snapshot::Snapshot(XmltarGlobals & globals)
+	: globals_(globals) {
 
 	temporarySnapshotDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
 }
@@ -111,12 +111,12 @@ Snapshot::~Snapshot(){
 	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
 	temporarySnapshotFileOfs_.close();
 
-	temporarySnapshotFilePaths_.insert(temporarySnapshotFilePaths_.begin(),options_.listed_incremental_file_.get());
+	temporarySnapshotFilePaths_.insert(temporarySnapshotFilePaths_.begin(),globals_.options_.listed_incremental_file_.get());
 
 	std::filesystem::path sum=temporarySnapshotDirPath_ / "sum";
-	MergeSnapshotFilesHelper(temporarySnapshotFilePaths_, sum, options_.incrementalFileCompression_);
+	MergeSnapshotFilesHelper(temporarySnapshotFilePaths_, sum, globals_.options_.incrementalFileCompression_);
 
-	std::filesystem::rename(sum,options_.listed_incremental_file_.get());
+	std::filesystem::rename(sum,globals_.options_.listed_incremental_file_.get());
 }
 
 void Snapshot::NewTemporarySnapshotFile(){
@@ -132,7 +132,7 @@ void Snapshot::NewTemporarySnapshotFile(){
 
 	std::cerr << "Snapshot::NewTemporarySnapshotFile: opening " << temporarySnapshotFilePaths_.back() << std::endl;
 
-	temporaryFileCompression_.reset(options_.incrementalFileCompression_->clone());
+	temporaryFileCompression_.reset(globals_.options_.incrementalFileCompression_->clone());
 	temporaryFileCompression_->Open();
 
 	temporarySnapshotFileOfs_.open(temporarySnapshotFilePaths_.back());

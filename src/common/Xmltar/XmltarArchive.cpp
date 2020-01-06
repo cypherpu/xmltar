@@ -54,22 +54,20 @@ public:
 };
 
 XmltarArchive::XmltarArchive(
-	XmltarOptions const & opts,
 	XmltarGlobals & globals,
 	std::string filename,
-	unsigned int volumeNumber,
-	std::unique_ptr<XmltarMemberCreate> & nextMember
+	unsigned int volumeNumber
 )
-	: options_(opts), globals_(globals), filename_(filename), volumeNumber_(volumeNumber), nextMember_(nextMember)
+	: globals_(globals), filename_(filename), volumeNumber_(volumeNumber)
 {
 	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
-XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals, std::string filename, std::unique_ptr<XmltarMemberCreate> & nextMember)
-: options_(opts), globals_(globals), filename_(filename), volumeNumber_(0), nextMember_(nextMember)
+XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
+: globals_(globals), filename_(filename), volumeNumber_(0)
 {
-	if (options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
-		if (options_.multi_volume_){
+	if (globals_.options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
+		if (globals_.options_.multi_volume_){
 			std:: ifstream ifs(filename);
 
 			if (!ifs)
@@ -175,81 +173,6 @@ XmltarArchive::XmltarArchive(XmltarOptions const & opts, XmltarGlobals & globals
 #endif
 		}
 	}
-}
-
-void XmltarArchive::NextMember(){
-	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
-	nextMember_.reset();
-
-	if(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
-		std::cerr << "XmltarArchive::NextMember(): replenish files to be included" << std::endl;
-		while(globals_.filesToBeIncluded_.empty() && !globals_.globsToBeIncluded_.empty()){
-			std::vector<std::string> tmp=BashGlob({globals_.globsToBeIncluded_[0]});
-			for(auto & i : tmp)
-				globals_.filesToBeIncluded_.push(std::filesystem::path(i));
-
-			globals_.globsToBeIncluded_.erase(globals_.globsToBeIncluded_.begin());
-		}
-
-		if (globals_.filesToBeIncluded_.empty())
-			return;
-
-		if (globals_.snapshot_.get()!=nullptr)
-			globals_.snapshot_->NewTemporarySnapshotFile();
-	}
-
-	globals_.filesToBeExcludedTruncated_=globals_.filesToBeExcludedComplete_;
-	/*
-	 * Files to be included in the archive are archived in command-line order.
-	 * As files are included, we would like to erase excluded paths which
-	 * could not possibly be relevant to any further included paths.
-	 * as possible. It is not sufficient to merely erase excluded paths which
-	 * are less than the current included path - we should not erase the excluded
-	 * path "/bin" just because it is less than "/bin/foo"; we must also ensure
-	 * the excluded path is not a path prefix of the included path.
-	 */
-	std::filesystem::path filepath;
-
-	if (globals_.filesToBeIncluded_.empty()){
-		nextMember_.reset(nullptr);
-		return;
-	}
-	for( ; !globals_.filesToBeIncluded_.empty(); ){
-		filepath=globals_.filesToBeIncluded_.top();
-		globals_.filesToBeIncluded_.pop();
-		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "considering " << filepath.string() << std::endl;
-		while(!globals_.filesToBeExcludedTruncated_.empty() &&
-				globals_.filesToBeExcludedTruncated_.top()<filepath &&
-			!IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
-			std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding exclude file " << globals_.filesToBeExcludedTruncated_.top().string() << std::endl;
-			globals_.filesToBeExcludedTruncated_.pop();
-		}
-
-		std::cerr	<< "############ XmltarArchiveCreateSingleVolume::NextMember: "
-					<< "filesToBeExcludedTruncated_.top()=" << (globals_.filesToBeExcludedTruncated_.size()?globals_.filesToBeExcludedTruncated_.top().string():"") << std::endl;
-
-		if (globals_.filesToBeExcludedTruncated_.empty())
-			break;
-		if (IsPrefixPath(globals_.filesToBeExcludedTruncated_.top(),filepath)){
-			std::cerr	<< "########### XmltarArchiveCreateSingleVolume::NextMember: "
-						<< "discarding include file " << filepath << std::endl;
-			continue;
-		}
-		else break;
-	}
-
-	std::cerr << "NextMember=" << filepath << std::endl;
-	std::filesystem::file_status f_stat=std::filesystem::symlink_status(filepath);
-
-	if (std::filesystem::is_directory(f_stat)){
-		for(auto & p : std::filesystem::directory_iterator(filepath) ){
-			globals_.filesToBeIncluded_.push(p);
-		}
-	}
-
-	nextMember_.reset(new XmltarMemberCreate(options_,globals_,filepath));
 }
 
 PartialFileRead XmltarArchive::append(unsigned int volumeNumber)
@@ -380,8 +303,8 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	std::string compressedContent(	(std::istreambuf_iterator<char>(iofs)),
 									(std::istreambuf_iterator<char>()    ));
 
-	std::string uncompressedContent=options_.archiveCompression_.get()->OpenForceWriteAndClose(
-										options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
+	std::string uncompressedContent=globals_.options_.archiveCompression_.get()->OpenForceWriteAndClose(
+			globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
 											compressedContent
 										)
 									);
@@ -392,17 +315,17 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 std::string XmltarArchive::ArchiveHeader(std::string filename, int archive_sequence_number){
     std::string s;
 
-    s+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"+options_.Newline();
-    s+="<xmltar xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">"+options_.Newline();
-    s+=options_.Tabs("\t")+"<archive-name>"+filename+"</archive-name>"+options_.Newline();
-    s+=options_.Tabs("\t")+"<members>"+options_.Newline();
+    s+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"+globals_.options_.Newline();
+    s+="<xmltar xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">"+globals_.options_.Newline();
+    s+=globals_.options_.Tabs("\t")+"<archive-name>"+filename+"</archive-name>"+globals_.options_.Newline();
+    s+=globals_.options_.Tabs("\t")+"<members>"+globals_.options_.Newline();
 
     return s;
 }
 
 std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int archive_sequence_number){
-	return options_.archiveCompression_.get()->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
+	return globals_.options_.archiveCompression_.get()->OpenForceWriteAndClose(
+			globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
 						ArchiveHeader(filename, archive_sequence_number)
 				)
 			);
@@ -410,8 +333,8 @@ std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int arc
 
 std::string XmltarArchive::ArchiveTrailerBegin(){
     std::string s
-		=options_.Tabs("\t")+"</members>"+options_.Newline()
-		+options_.Tabs("\t")+"<padding>";
+		=globals_.options_.Tabs("\t")+"</members>"+globals_.options_.Newline()
+		+globals_.options_.Tabs("\t")+"<padding>";
 
     return s;
 }
@@ -423,59 +346,41 @@ std::string XmltarArchive::ArchiveTrailerMiddle(unsigned int padding){
 }
 
 std::string XmltarArchive::ArchiveTrailerEnd(){
-    std::string s="</padding>"+options_.Newline()+"</xmltar>"+options_.Newline();
+    std::string s="</padding>"+globals_.options_.Newline()+"</xmltar>"+globals_.options_.Newline();
 
     return s;
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(){
 
-	std::string compressedArchiveTrailerBegin
-			=options_.archiveCompression_.get()->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
-								ArchiveTrailerBegin()
+	std::string compressedArchiveTrailer
+			=globals_.options_.archiveRawCompression_.get()->OpenForceWriteAndClose(
+					globals_.options_.archiveMemberRawCompression_.get()->OpenForceWriteAndClose(
+								ArchiveTrailerBegin()+ArchiveTrailerEnd()
 				)
 			);
 
-	std::string compressedArchiveTrailerEnd
-			=options_.archiveCompression_.get()->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
-								ArchiveTrailerEnd()
-				)
-			);
-
-	std::string minimumString;
-
-	std::string compressedArchiveTrailerMiddle
-			=options_.archiveCompression_.get()->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
-					minimumString
-				)
-			);
-
-	return compressedArchiveTrailerBegin+compressedArchiveTrailerMiddle+compressedArchiveTrailerEnd;
-
-	return "";
+	return compressedArchiveTrailer;
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 #if 0
 	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
 
-	std::cerr << dbg << ": archiveCompression=" << options_.archiveCompression_->Name() << std::endl;
-	std::cerr << dbg << ": archiveMemberCompression=" << options_.archiveMemberCompression_->Name() << std::endl;
+	std::cerr << dbg << ": archiveCompression=" << globals_.options_.archiveCompression_->Name() << std::endl;
+	std::cerr << dbg << ": archiveMemberCompression=" << globals_.options_.archiveMemberCompression_->Name() << std::endl;
 	std::cerr << dbg << ": desiredLength=" << desiredLength << std::endl;
 
 	std::string compressedArchiveTrailerBegin
-			=options_.archiveCompression_->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_->OpenForceWriteAndClose(
+			=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
+					globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 								ArchiveTrailerBegin()
 				)
 			);
 
 	std::string compressedArchiveTrailerEnd
-			=options_.archiveCompression_->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_->OpenForceWriteAndClose(
+			=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
+					globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 								ArchiveTrailerEnd()
 				)
 			);
@@ -488,23 +393,23 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 	std::cerr << dbg << ": 2 desiredLength=" << desiredLength << std::endl;
 
 	std::string minimumString(
-		random_hex+std::get<0>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].begin()->second),
-		std::get<1>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].begin()->second));
+		random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].begin()->second),
+		std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].begin()->second));
 
 	std::string minimumCompressedString
-		=options_.archiveCompression_->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_->OpenForceWriteAndClose(
+		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
+				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						minimumString
 				)
 			);
 
 	std::string maximumString(
-		random_hex+std::get<0>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].rbegin()->second),
-		std::get<1>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()].rbegin()->second));
+		random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].rbegin()->second),
+		std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].rbegin()->second));
 
 	std::string maximumCompressedString
-		=options_.archiveCompression_->OpenForceWriteAndClose(
-				options_.archiveMemberCompression_->OpenForceWriteAndClose(
+		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
+				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						maximumString
 				)
 			);
@@ -527,12 +432,12 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 
 
 	std::string uncompressedPadding(
-			random_hex+std::get<0>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()][desiredLength]),
-			std::get<1>(dMap[options_.archiveCompression_->Name()][options_.archiveMemberCompression_->Name()][desiredLength]));
+			random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()][desiredLength]),
+			std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()][desiredLength]));
 
 	std::string compressedPadding
-		=options_.archiveCompression_->OpenForceWriteAndClose(
-			options_.archiveMemberCompression_->OpenForceWriteAndClose(
+		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
+				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 				uncompressedPadding
 			)
 		);

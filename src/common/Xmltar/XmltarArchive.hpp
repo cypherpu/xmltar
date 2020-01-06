@@ -29,34 +29,26 @@ public:
 
 class XmltarArchive {
 protected:
-	XmltarOptions const & options_;
 	XmltarGlobals & globals_;
 	std::string filename_;
 	unsigned int volumeNumber_;
-	std::unique_ptr<XmltarMemberCreate> & nextMember_;
 public:
 	/**
 	 * Single volume constructor - no volume number needed
 	 */
 	XmltarArchive(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
-		std::string filename,
-		std::unique_ptr<XmltarMemberCreate> & nextMember
+		std::string filename
 	);
 
 	/**
 	 * Multi volume constructor - requires volume number
 	 */
 	XmltarArchive(
-		XmltarOptions const & opts,
 		XmltarGlobals & globals,
 		std::string filename,
-		unsigned int volumeNumber,
-		std::unique_ptr<XmltarMemberCreate> & nextMember
+		unsigned int volumeNumber
 	);
-
-	void NextMember();
 
 	PartialFileRead create(unsigned int volumeNumber);
 	PartialFileRead append(unsigned int volumeNumber);

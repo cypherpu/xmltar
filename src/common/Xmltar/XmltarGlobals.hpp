@@ -16,25 +16,25 @@
 #include "Snapshot/Snapshot.hpp"
 #include "Xmltar/XmltarOptions.hpp"
 
+class XmltarMemberCreate;
+
 class XmltarGlobals {
 public:
 	std::string current_xmltar_file_name_;
 	size_t current_volume_;
 	std::unique_ptr<Snapshot> snapshot_;
 	time_t invocationTime_;
+	XmltarOptions options_;
 
 	std::vector<std::filesystem::path> globsToBeIncluded_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedComplete_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedTruncated_;
 
-	XmltarGlobals(XmltarOptions const & options)
-		: current_xmltar_file_name_(), current_volume_(),
-		  invocationTime_(time(nullptr)) {
+    std::unique_ptr<XmltarMemberCreate> nextMember_;
 
-		if (options.starting_volume_)
-			current_volume_=options.starting_volume_.get();
-	}
+    XmltarGlobals();
+    void NextMember();
 };
 
 

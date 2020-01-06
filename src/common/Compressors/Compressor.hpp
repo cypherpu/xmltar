@@ -39,6 +39,8 @@ public:
 
 	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
+
+	virtual std::string GenerateCompressedFile(std::string & start, std::string finish, size_t size)=0;
 };
 
 template<typename T> class Compressor : public CompressorInterface {
@@ -52,6 +54,8 @@ public:
 
 	void Open() override {
 		compressor_.Open();
+		readCount_=0;
+		writeCount_=0;
 	}
 
 	std::string ForceWrite(std::string const & s) override {
