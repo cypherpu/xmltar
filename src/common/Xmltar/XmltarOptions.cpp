@@ -10,6 +10,8 @@
 #include "Xmltar/XmltarOptions.hpp"
 #include "Generated/Utilities/GzipRaw.hpp"
 #include "Generated/Utilities/Gunzip.hpp"
+#include "Generated/Utilities/IdentityRaw.hpp"
+#include "Generated/Utilities/Identity.hpp"
 #include "Generated/Utilities/ZstdCompressRaw.hpp"
 #include "Generated/Utilities/ZstdDecompress.hpp"
 
@@ -30,7 +32,7 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
 			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<Identity>("file:ident")),
-			p.Assign_Value(fileRawCompression_, (CompressorInterface *) new Compressor<Identity>("file:ident")),
+			p.Assign_Value(fileRawCompression_, (CompressorInterface *) new Compressor<IdentityRaw>("file:ident")),
 			p.Assign_Value(fileDecompression_, (CompressorInterface *) new Compressor<Identity>("file:ident"))
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",

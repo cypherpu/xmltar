@@ -29,6 +29,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/optional.hpp>
 
+#include "Utilities/CompressRaw.hpp"
 #include "Utilities/Options-TarStyle.hpp"
 #include "Compressors/Compressor.hpp"
 
@@ -42,18 +43,18 @@ public:
 	boost::optional<bool> multi_volume_;
 
 	std::shared_ptr<CompressorInterface> fileCompression_;
-	std::shared_ptr<CompressorInterface> fileRawCompression_;
+	std::shared_ptr<CompressRaw> fileRawCompression_;
 	std::shared_ptr<CompressorInterface> fileDecompression_;
 
 	std::shared_ptr<CompressorInterface> encoding_;
 	std::shared_ptr<CompressorInterface> decoding_;
 
 	std::shared_ptr<CompressorInterface> archiveMemberCompression_;
-	std::shared_ptr<CompressorInterface> archiveMemberRawCompression_;
+	std::shared_ptr<CompressRaw> archiveMemberRawCompression_;
 	std::shared_ptr<CompressorInterface> archiveMemberDecompression_;
 
 	std::shared_ptr<CompressorInterface> archiveCompression_;
-	std::shared_ptr<CompressorInterface> archiveRawCompression_;
+	std::shared_ptr<CompressRaw> archiveRawCompression_;
 	std::shared_ptr<CompressorInterface> archiveDecompression_;
 
 	boost::optional<size_t> tape_length_;
