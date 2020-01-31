@@ -19,41 +19,52 @@
 #include "Generated/Utilities/Debug2.hpp"
 
 class CompressorInterface {
-	std::string name_;
 public:
-	CompressorInterface(std::string const & name) : name_(name) {}
+	CompressorInterface(){}
 	virtual ~CompressorInterface(){}
 
-	std::string CompressorName(){ return name_; }
-
-	virtual void Open()=0;
+	virtual std::string Open()=0;
 	virtual std::string ForceWrite(std::string const & s)=0;
 	virtual std::string ForceWriteAndClose(std::string const & s)=0;
 	virtual std::string OpenForceWriteAndClose(std::string const & s)=0;
 
-	std::string Name(){ return name_; }
-	virtual CompressorInterface *clone()=0;
-
 	virtual size_t ReadCount()=0;
 	virtual size_t WriteCount()=0;
+};
+
+class CompressorGeneralInterface : public CompressorInterface {
+public:
+	CompressorGeneralInterface(){}
+	virtual ~CompressorGeneralInterface(){}
 
 	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
 };
 
-template<typename T> class Compressor : public CompressorInterface {
+class CompressorRawInterface : public CompressorInterface {
+public:
+	CompressorRawInterface(){}
+	virtual ~CompressorRawInterface(){}
+
+	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
+	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
+};
+
+template<typename T> class Compressor : public CompressorGeneralInterface {
 	T compressor_;
 
 	size_t readCount_;
 	size_t writeCount_;
 public:
-	Compressor(std::string const & name) : CompressorInterface(name) {}
+	Compressor() : readCount_(), writeCount_() {}
 	virtual ~Compressor() {}
 
-	void Open() override {
-		compressor_.Open();
-		readCount_=0;
+	[[nodiscard]] std::string Open() override {
+		std::string tmp=compressor_.Open();
+		readCount_=tmp.size();
 		writeCount_=0;
+
+		return tmp;
 	}
 
 	std::string ForceWrite(std::string const & s) override {
@@ -78,10 +89,6 @@ public:
 		readCount_+=result.size();
 
 		return result;
-	}
-
-	CompressorInterface *clone() override {
-		return new Compressor<T>(Name());
 	}
 
 	size_t ReadCount() override { return readCount_; }

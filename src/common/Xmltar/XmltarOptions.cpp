@@ -31,71 +31,71 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Increment_Value(verbosity_));
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-identity","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<Identity>("file:ident")),
-			p.Assign_Value(fileRawCompression_, (CompressorInterface *) new Compressor<IdentityRaw>("file:ident")),
-			p.Assign_Value(fileDecompression_, (CompressorInterface *) new Compressor<Identity>("file:ident"))
+			p.Assign_Value(fileCompression_, (CompressorGeneralInterface *) new Compressor<Identity>()),
+			p.Assign_Value(fileRawCompression_, (CompressorRawInterface *) new Compressor<IdentityRaw>()),
+			p.Assign_Value(fileDecompression_, (CompressorGeneralInterface *) new Compressor<Identity>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-gzip","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<Zlib::Gzip>("file:gzip")),
-			p.Assign_Value(fileRawCompression_, (CompressorInterface *) new Compressor<Zlib::GzipRaw>("file:gzip")),
-			p.Assign_Value(fileDecompression_, (CompressorInterface *) new Compressor<Zlib::Gunzip>("file:gzip"))
+			p.Assign_Value(fileCompression_, (CompressorGeneralInterface *) new Compressor<Zlib::Gzip>()),
+			p.Assign_Value(fileRawCompression_, (CompressorRawInterface *) new Compressor<Zlib::GzipRaw>()),
+			p.Assign_Value(fileDecompression_, (CompressorGeneralInterface *) new Compressor<Zlib::Gunzip>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--file-zstd","file-compress files before archiving",
-			p.Assign_Value(fileCompression_, (CompressorInterface *) new Compressor<ZstdCompress>("file:zstd")),
-			p.Assign_Value(fileRawCompression_, (CompressorInterface *) new Compressor<ZstdCompressRaw>("file:zstd")),
-			p.Assign_Value(fileDecompression_, (CompressorInterface *) new Compressor<ZstdDecompress>("file:zstd"))
+			p.Assign_Value(fileCompression_, (CompressorGeneralInterface *) new Compressor<ZstdCompress>()),
+			p.Assign_Value(fileRawCompression_, (CompressorRawInterface *) new Compressor<ZstdCompressRaw>()),
+			p.Assign_Value(fileDecompression_, (CompressorGeneralInterface *) new Compressor<ZstdDecompress>())
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--base16","base16 encode files before archiving",
-			p.Assign_Value(encoding_,(CompressorInterface *) new Compressor<HexEncode>("encod:hex")),
-			p.Assign_Value(decoding_,(CompressorInterface *) new Compressor<HexDecode>("encod:hex"))
+			p.Assign_Value(encoding_,(CompressorGeneralInterface *) new Compressor<HexEncode>()),
+			p.Assign_Value(decoding_,(CompressorGeneralInterface *) new Compressor<HexDecode>())
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-identity","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Identity>(":member:ident")),
-			p.Assign_Value(archiveMemberRawCompression_,(CompressorInterface *) new Compressor<Identity>(":member:ident")),
-			p.Assign_Value(archiveMemberDecompression_,(CompressorInterface *) new Compressor<Identity>(":member:ident"))
+			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Identity>()),
+			p.Assign_Value(archiveMemberRawCompression_,(CompressorInterface *) new Compressor<Identity>()),
+			p.Assign_Value(archiveMemberDecompression_,(CompressorInterface *) new Compressor<Identity>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>(":member:gzip")),
-			p.Assign_Value(archiveMemberRawCompression_,(CompressorInterface *) new Compressor<Zlib::GzipRaw>(":member:gzip")),
-			p.Assign_Value(archiveMemberDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>(":member:gzip"))
+			p.Assign_Value(archiveMemberCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>()),
+			p.Assign_Value(archiveMemberRawCompression_,(CompressorInterface *) new Compressor<Zlib::GzipRaw>()),
+			p.Assign_Value(archiveMemberDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--member-zstd","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, (CompressorInterface *) new Compressor<ZstdCompress>(":member:zstd")),
-			p.Assign_Value(archiveMemberRawCompression_, (CompressorInterface *) new Compressor<ZstdCompressRaw>(":member:zstd")),
-			p.Assign_Value(archiveMemberDecompression_, (CompressorInterface *) new Compressor<ZstdDecompress>(":member:zstd"))
+			p.Assign_Value(archiveMemberCompression_, (CompressorInterface *) new Compressor<ZstdCompress>()),
+			p.Assign_Value(archiveMemberRawCompression_, (CompressorInterface *) new Compressor<ZstdCompressRaw>()),
+			p.Assign_Value(archiveMemberDecompression_, (CompressorInterface *) new Compressor<ZstdDecompress>())
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--identity","compress archive",
-			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Identity>("archive:ident")),
-			p.Assign_Value(archiveRawCompression_,(CompressorInterface *) new Compressor<Identity>("archive:ident")),
-			p.Assign_Value(archiveDecompression_,(CompressorInterface *) new Compressor<Identity>("archive:ident"))
+			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Identity>()),
+			p.Assign_Value(archiveRawCompression_,(CompressorInterface *) new Compressor<Identity>()),
+			p.Assign_Value(archiveDecompression_,(CompressorInterface *) new Compressor<Identity>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"-z","--gzip","compress archive",
-			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>("archive:gzip")),
-			p.Assign_Value(archiveRawCompression_,(CompressorInterface *) new Compressor<Zlib::GzipRaw>("archive:gzip")),
-			p.Assign_Value(archiveDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>("archive:gzip"))
+			p.Assign_Value(archiveCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>()),
+			p.Assign_Value(archiveRawCompression_,(CompressorInterface *) new Compressor<Zlib::GzipRaw>()),
+			p.Assign_Value(archiveDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,"","--zstd","compress archive",
-			p.Assign_Value(archiveCompression_, (CompressorInterface *) new Compressor<ZstdCompress>("archive:zstd")),
-			p.Assign_Value(archiveRawCompression_, (CompressorInterface *) new Compressor<ZstdCompressRaw>("archive:zstd")),
-			p.Assign_Value(archiveDecompression_, (CompressorInterface *) new Compressor<ZstdDecompress>("archive:zstd"))
+			p.Assign_Value(archiveCompression_, (CompressorInterface *) new Compressor<ZstdCompress>()),
+			p.Assign_Value(archiveRawCompression_, (CompressorInterface *) new Compressor<ZstdCompressRaw>()),
+			p.Assign_Value(archiveDecompression_, (CompressorInterface *) new Compressor<ZstdDecompress>())
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
 			p.Assign_Args(listed_incremental_file_));
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-identity","plaintext listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Identity>("identity")),
-			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<Identity>("identity"))
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Identity>()),
+			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<Identity>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-gzip","gzip listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>("gzip")),
-			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>("gzip"))
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<Zlib::Gzip>()),
+			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<Zlib::Gunzip>())
 	);
 	p.Add_Option(Parse_Opts::ARGS_0,  "","--listed-incremental-zstd","zstd listed-incremental file",
-			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<ZstdCompress>("zstd")),
-			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<ZstdDecompress>("zstd"))
+			p.Assign_Value(incrementalFileCompression_,(CompressorInterface *) new Compressor<ZstdCompress>()),
+			p.Assign_Value(incrementalFileDecompression_,(CompressorInterface *) new Compressor<ZstdDecompress>())
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_1,"","--level","set dump level",
