@@ -364,7 +364,30 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
-#if 0
+	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
+
+	std::cerr << dbg << ": desiredLength=" << desiredLength << std::endl;
+	size_t desiredMemberLength
+		=globals_.options_.archiveRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredLength);
+	std::cerr << dbg << ": desiredMemberLength=" << desiredMemberLength << std::endl;
+	size_t desiredPlaintextLength
+		=globals_.options_.archiveMemberRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredMemberLength);
+	std::cerr << dbg << ": desiredPlaintextLength=" << desiredPlaintextLength << std::endl;
+
+	size_t paddingLength=desiredPlaintextLength-ArchiveTrailerBegin().size()-ArchiveTrailerEnd().size();
+	std::cerr << dbg << ": paddingLength=" << paddingLength << std::endl;
+
+	std::string data=ArchiveTrailerBegin()+std::string(paddingLength,' ')+ArchiveTrailerEnd();
+	std::cerr << dbg << ": data.size()=" << data.size() << std::endl;
+
+	std::string memberData=globals_.options_.archiveMemberRawCompression_->GenerateCompressedText(desiredMemberLength, data);
+	std::cerr << dbg << ": memberData.size()=" << memberData.size() << std::endl;
+	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, memberData);
+
+	std::cerr << dbg << ": archiveData.size()=" << archiveData.size() << std::endl;
+
+	return archiveData;
+	#if 0
 	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
 
 	std::cerr << dbg << ": archiveCompression=" << globals_.options_.archiveCompression_->Name() << std::endl;
@@ -450,5 +473,4 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 
 	return compressedArchiveTrailerBegin+compressedArchiveTrailerMiddle+compressedArchiveTrailerEnd;
 #endif
-	return "";
 }

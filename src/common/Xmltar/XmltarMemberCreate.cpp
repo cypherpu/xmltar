@@ -104,7 +104,7 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
 			sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
-					globals_.options_.archiveCompression_->ForceWrite(
+				globals_.options_.archiveCompression_->ForceWrite(
 					globals_.options_.archiveMemberCompression_->ForceWrite(
 						globals_.options_.encoding_->ForceWrite(
 							globals_.options_.fileCompression_->ForceWrite(
@@ -271,7 +271,7 @@ std::string XmltarMemberCreate::CompressedMemberHeader(){
 }
 
 std::string XmltarMemberCreate::CompressedMemberTrailer(){
-	return globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(MemberTrailer());
+	return globals_.options_.archiveMemberRawCompression_.get()->OpenForceWriteAndClose(MemberTrailer());
 }
 
 size_t XmltarMemberCreate::MinimumSize(){
