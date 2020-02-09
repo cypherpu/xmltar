@@ -43,10 +43,8 @@ public:
 	~Snapshot();
 
 	void MergeSnapshotFiles();
-
+	void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression);
 	void NewTemporarySnapshotFile();
 };
-
-void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression);
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

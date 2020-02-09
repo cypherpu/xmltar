@@ -15,7 +15,7 @@
 #include "Snapshot/SnapshotXmlParser.hpp"
 #include "Xmltar/XmltarOptions.hpp"
 #include "Utilities/TemporaryFile.hpp"
-
+#if 0
 class IncrementalFile {
 public:
 	std::ifstream incrementalSnapshotIfs_;
@@ -27,7 +27,7 @@ public:
 	}
 };
 
-void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression){
+void Snapshot::MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, std::filesystem::path & targetPath, std::shared_ptr<CompressorInterface> compression){
 	std::vector<std::shared_ptr<IncrementalFile>> incrementalFiles;
 
 	for(auto & i : sourcePaths){
@@ -100,14 +100,14 @@ void MergeSnapshotFilesHelper(std::vector<std::filesystem::path> & sourcePaths, 
 
 void Snapshot::MergeSnapshotFiles(){
 }
-
+#endif
 Snapshot::Snapshot(XmltarGlobals & globals)
 	: globals_(globals) {
 
 	temporarySnapshotDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
 }
-
 Snapshot::~Snapshot(){
+#if 0
 	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
 	temporarySnapshotFileOfs_.close();
 
@@ -117,9 +117,11 @@ Snapshot::~Snapshot(){
 	MergeSnapshotFilesHelper(temporarySnapshotFilePaths_, sum, globals_.options_.incrementalFileCompression_);
 
 	std::filesystem::rename(sum,globals_.options_.listed_incremental_file_.get());
+#endif
 }
 
 void Snapshot::NewTemporarySnapshotFile(){
+#if 0
 	if (!temporarySnapshotFilePaths_.empty()){
 		std::cerr << "Snapshot::NewTemporarySnapshotFile: closing " << temporarySnapshotFilePaths_.back() << std::endl;
 		temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
@@ -138,4 +140,5 @@ void Snapshot::NewTemporarySnapshotFile(){
 	temporarySnapshotFileOfs_.open(temporarySnapshotFilePaths_.back());
 
 	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWrite(Prologue());
+#endif
 }

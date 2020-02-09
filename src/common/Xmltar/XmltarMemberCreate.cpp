@@ -84,18 +84,18 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 		// std::ifstream ifs(filepath_.string());
 		// ifs.seekg(nextByte_);
 
-		std::shared_ptr<CompressorInterface> precompression(globals_.options_.fileCompression_->clone());
-		std::shared_ptr<CompressorInterface> memberCompression(globals_.options_.archiveMemberCompression_->clone());
-		std::shared_ptr<CompressorInterface> encoding(globals_.options_.encoding_->clone());
+		// std::shared_ptr<CompressorInterface> precompression(globals_.options_.fileCompression_->clone());
+		// std::shared_ptr<CompressorInterface> memberCompression(globals_.options_.archiveMemberCompression_->clone());
+		// std::shared_ptr<CompressorInterface> encoding(globals_.options_.encoding_->clone());
 
 		size_t numberOfBytesToArchive=std::min(file_size-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
-		precompression->Open();
-		encoding->Open();
-		memberCompression->Open();
+		globals_.options_.fileCompression_->Open();
+		globals_.options_.encoding_->Open();
+		globals_.options_.archiveMemberCompression_->Open();
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
-		ofs << archiveCompression->ForceWrite(memberCompression->ForceWrite(memberHeader_));
+		ofs << archiveCompression->ForceWrite(globals_.options_.archiveMemberCompression_->ForceWrite(memberHeader_));
 		metadataWritten_=true;
 	    memberHeader_=MemberHeader();
 		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
@@ -105,21 +105,21 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 			sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
 				archiveCompression->ForceWrite(
-					memberCompression->ForceWrite(
-						encoding->ForceWrite(
-							precompression->ForceWrite(
+					globals_.options_.archiveMemberCompression_->ForceWrite(
+						globals_.options_.encoding_->ForceWrite(
+							globals_.options_.fileCompression_->ForceWrite(
 								std::string(buf,ifs_->gcount())))));
 		}
 
 		std::cerr << dbg << ": after read" << std::endl;
 
-		std::string tmpPreCompression=precompression->ForceWriteAndClose("");
+		std::string tmpPreCompression=globals_.options_.fileCompression_->ForceWriteAndClose("");
 		std::cerr << dbg << ": after tmpPreCompression" << std::endl;
 
 		std::cerr << "tmpPreCompression.size()=" << tmpPreCompression.size() << std::endl;
-		std::string tmpEncoding=encoding->ForceWriteAndClose(tmpPreCompression);
+		std::string tmpEncoding=globals_.options_.encoding_->ForceWriteAndClose(tmpPreCompression);
 		std::cerr << dbg << ": after tmpEncoding" << std::endl;
-		std::string tmpMemberCompression=memberCompression->ForceWriteAndClose(tmpEncoding+memberTrailer_);
+		std::string tmpMemberCompression=globals_.options_.archiveMemberCompression_->ForceWriteAndClose(tmpEncoding+memberTrailer_);
 
 		ofs <<
 			archiveCompression->ForceWrite(tmpMemberCompression);
@@ -132,12 +132,12 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 						precompression->ForceWriteAndClose(""))));
 
 #endif
-		std::cerr << dbg << ": precompression->ReadCount=" << precompression->ReadCount() << std::endl;
-		std::cerr << dbg << ": precompression->WriteCount=" << precompression->WriteCount() << std::endl;
-		std::cerr << dbg << ": encoding->ReadCount=" << encoding->ReadCount() << std::endl;
-		std::cerr << dbg << ": encoding->WriteCount=" << encoding->WriteCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->ReadCount=" << memberCompression->ReadCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->WriteCount=" << memberCompression->WriteCount() << std::endl;
+		std::cerr << dbg << ": precompression->ReadCount=" << globals_.options_.fileCompression_->ReadCount() << std::endl;
+		std::cerr << dbg << ": precompression->WriteCount=" << globals_.options_.fileCompression_->WriteCount() << std::endl;
+		std::cerr << dbg << ": encoding->ReadCount=" << globals_.options_.encoding_->ReadCount() << std::endl;
+		std::cerr << dbg << ": encoding->WriteCount=" << globals_.options_.encoding_->WriteCount() << std::endl;
+		std::cerr << dbg << ": memberCompression->ReadCount=" << globals_.options_.archiveMemberCompression_->ReadCount() << std::endl;
+		std::cerr << dbg << ": memberCompression->WriteCount=" << globals_.options_.archiveMemberCompression_->WriteCount() << std::endl;
 }
 
 size_t XmltarMemberCreate::MaximumSize(size_t n){
@@ -210,9 +210,9 @@ std::string XmltarMemberCreate::MemberHeader(){
     switch(f_type){
         case std::filesystem::file_type::regular:
             s=s+globals_.options_.Tabs("\t\t\t")+"<content type=\"regular\">"+globals_.options_.Newline();
-            s=s+globals_.options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+globals_.options_.fileCompression_.get()->Name();
+            s=s+globals_.options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+globals_.options_.fileCompression_.get()->CompressorName();
 
-            s+=std::string("\" encoding=\"") + globals_.options_.encoding_.get()->Name();
+            s+=std::string("\" encoding=\"") + globals_.options_.encoding_.get()->CompressorName();
 
             s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(ifs_->tellg())+"\">"+globals_.options_.Newline();
             break;
@@ -285,7 +285,7 @@ size_t XmltarMemberCreate::MinimumSize(){
 			);
 }
 
-size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
+size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes)
@@ -324,7 +324,7 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 #endif
 }
 
-bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
+bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	std::cerr << "XmltarMember::CanArchiveDirectory:"
@@ -353,7 +353,7 @@ bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendi
 	return numberOfFileBytesThatCanBeArchived;
 }
 
-bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorInterface> archiveCompression){
+bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived

@@ -46,10 +46,10 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
-		xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.encoding_->clone());
+		// xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.encoding_->clone());
 		xmltarArchiveExtractMultiVolume_.decoder_->Open();
 
-		xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.fileCompression_->clone());
+		// xmltarArchiveExtractMultiVolume_.fileDecompression_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.fileCompression_->clone());
 		xmltarArchiveExtractMultiVolume_.fileDecompression_->Open();
 	}
 
@@ -83,22 +83,22 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 
 	XML_Char buffer[1024];
 
-	std::shared_ptr<CompressorInterface> archiveDecompression(globals_.options_.archiveCompression_->clone());
-	std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberCompression_->clone());
+	// std::shared_ptr<CompressorInterface> archiveDecompression(globals_.options_.archiveCompression_->clone());
+	// std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberCompression_->clone());
 
-	archiveDecompression->Open();
-	memberDecompression->Open();
+	globals_.options_.archiveCompression_->Open();
+	globals_.options_.archiveMemberCompression_->Open();
 
 	std::string tmp;
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
 
-		tmp=memberDecompression->ForceWrite(archiveDecompression->ForceWrite(std::string(buffer,ifs.gcount())));
+		tmp=globals_.options_.archiveMemberCompression_->ForceWrite(globals_.options_.archiveCompression_->ForceWrite(std::string(buffer,ifs.gcount())));
 		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 		xmltarMultiVolumeHandler.Parse(tmp,false);
 	}
 
-	tmp=memberDecompression->ForceWriteAndClose(archiveDecompression->ForceWriteAndClose(""));
+	tmp=globals_.options_.archiveMemberCompression_->ForceWriteAndClose(globals_.options_.archiveCompression_->ForceWriteAndClose(""));
 	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 	xmltarMultiVolumeHandler.Parse(tmp,false);
 }

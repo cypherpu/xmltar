@@ -19,7 +19,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 	: XmltarArchive(globals,filename,volumeNumber)
 {
 	betz::Debug2 dbg("XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume");
-	std::shared_ptr<CompressorInterface> archiveCompression(globals_.options_.archiveCompression_.get()->clone());
+	// std::shared_ptr<CompressorInterface> archiveCompression(globals_.options_.archiveCompression_.get()->clone());
 
 	std::cerr << dbg << " starting archive **********" << std::endl;
 	std::ostream *ofs;
@@ -30,7 +30,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		outputFileStream.open(filename);
 		ofs=&outputFileStream;
 	}
-	archiveCompression->Open();
+	*ofs << globals_.options_.archiveCompression_->Open();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
@@ -45,7 +45,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
-			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
+			*ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 		}
 		else if (globals_.nextMember_->isSymLink()){
@@ -54,17 +54,17 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
 						tmp
 					);
-			*ofs << archiveCompression->ForceWrite(compressedDirectoryMember);
+			*ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
 		}
 		else if (globals_.nextMember_->isRegularFile()){
 			std::cerr << "********** isRegularFile" << std::endl;
 			std::cerr << dbg << ": archiving " << globals_.nextMember_->filepath().string() << std::endl;
 
-			globals_.nextMember_->write(archiveCompression,std::numeric_limits<size_t>::max(),*ofs);
+			globals_.nextMember_->write(globals_.options_.archiveCompression_,std::numeric_limits<size_t>::max(),*ofs);
 		}
 
 	}
-	*ofs << archiveCompression->ForceWriteAndClose("");
+	*ofs << globals_.options_.archiveCompression_->ForceWriteAndClose("");
 	*ofs << CompressedArchiveTrailer();
 }

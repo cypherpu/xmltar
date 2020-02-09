@@ -39,6 +39,8 @@ public:
 
 	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
+
+	virtual std::string CompressorName()=0;
 };
 
 class CompressorRawInterface : public CompressorInterface {
@@ -161,6 +163,62 @@ public:
 		return result;
 	}
 
+	std::string CompressorName(){ return compressor_.CompressorName(); }
+};
+
+template<typename T> class CompressorRaw : public CompressorRawInterface {
+	T compressor_;
+
+	size_t readCount_;
+	size_t writeCount_;
+public:
+	CompressorRaw() : readCount_(), writeCount_() {}
+	virtual ~CompressorRaw() {}
+
+	[[nodiscard]] std::string Open() override {
+		std::string tmp=compressor_.Open();
+		readCount_=tmp.size();
+		writeCount_=0;
+
+		return tmp;
+	}
+
+	std::string ForceWrite(std::string const & s) override {
+		std::string result(compressor_.ForceWrite(s));
+		writeCount_+=s.size();
+		readCount_+=result.size();
+
+		return result;
+	}
+
+	std::string ForceWriteAndClose(std::string const & s) override {
+		std::string result(compressor_.ForceWriteAndClose(s));
+		writeCount_+=s.size();
+		readCount_+=result.size();
+
+		return result;
+	}
+
+	std::string OpenForceWriteAndClose(std::string const & s) override {
+		std::string result(compressor_.OpenForceWriteAndClose(s));
+		writeCount_+=s.size();
+		readCount_+=result.size();
+
+		return result;
+	}
+
+	size_t ReadCount() override { return readCount_; }
+	size_t WriteCount() override { return writeCount_; }
+
+	std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize){
+		return compressor_.MaximumCompressedtextSizeGivenPlaintextSize(plaintextSize);
+	}
+
+	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){
+		return compressor_.MinimumPlaintextSizeGivenCompressedtextSize(compressedtextSize);
+	}
+
+	std::string CompressorName(){ return compressor_.CompressorName(); }
 };
 
 #endif /* SRC_COMMON_COMPRESSORS_COMPRESSOR_HPP_ */

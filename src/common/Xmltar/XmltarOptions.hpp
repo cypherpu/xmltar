@@ -30,6 +30,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/optional.hpp>
 
 #include "Utilities/CompressRaw.hpp"
+#include "Utilities/IdentityRaw.hpp"
 #include "Utilities/Options-TarStyle.hpp"
 #include "Compressors/Compressor.hpp"
 
@@ -46,8 +47,8 @@ public:
 	std::shared_ptr<CompressorRawInterface> fileRawCompression_;
 	std::shared_ptr<CompressorGeneralInterface> fileDecompression_;
 
-	std::shared_ptr<CompressorInterface> encoding_;
-	std::shared_ptr<CompressorInterface> decoding_;
+	std::shared_ptr<CompressorGeneralInterface> encoding_;
+	std::shared_ptr<CompressorGeneralInterface> decoding_;
 
 	std::shared_ptr<CompressorGeneralInterface> archiveMemberCompression_;
 	std::shared_ptr<CompressorRawInterface> archiveMemberRawCompression_;
@@ -60,8 +61,8 @@ public:
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
-	std::shared_ptr<CompressorInterface> incrementalFileCompression_;
-	std::shared_ptr<CompressorInterface> incrementalFileDecompression_;
+	std::shared_ptr<CompressorGeneralInterface> incrementalFileCompression_;
+	std::shared_ptr<CompressorGeneralInterface> incrementalFileDecompression_;
 	boost::optional<unsigned int> dump_level_;
 	boost::optional<std::filesystem::path> files_from_;
 	std::vector<std::string> excludeFileGlobs_;
@@ -75,9 +76,12 @@ public:
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
 		  fileCompression_(new Compressor<Identity>()),
+		  fileRawCompression_(new CompressorRaw<IdentityRaw>()),
 		  encoding_(new Compressor<HexEncode>()),
 		  archiveMemberCompression_(new Compressor<Identity>()),
+		  archiveMemberRawCompression_(new CompressorRaw<IdentityRaw>()),
 		  archiveCompression_(new Compressor<Identity>()),
+		  archiveRawCompression_(new CompressorRaw<IdentityRaw>()),
           tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new Compressor<Identity>()),
