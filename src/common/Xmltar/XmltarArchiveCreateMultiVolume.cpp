@@ -150,7 +150,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				}
 			}
 
-			globals_.nextMember_->write(globals_.options_.archiveCompression_,numberOfFileBytesThatCanBeArchived,ofs);
+			globals_.nextMember_->write(numberOfFileBytesThatCanBeArchived,ofs);
 			pendingBytes=globals_.options_.archiveCompression_->MaximumCompressedtextSizeGivenPlaintextSize(globals_.options_.archiveCompression_->WriteCount())+compressedArchiveTrailer.size();
 			if (globals_.nextMember_->IsComplete())
 				globals_.NextMember();

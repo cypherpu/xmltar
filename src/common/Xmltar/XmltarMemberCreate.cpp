@@ -78,7 +78,7 @@ XmltarMemberCreate::~XmltarMemberCreate(){
 	std::cerr << "XmltarMemberCreate::~XmltarMemberCreate: destructor" << std::endl;
 }
 
-void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
+void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
 		betz::Debug2 dbg("XmltarMember::write");
 		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 		// std::ifstream ifs(filepath_.string());
@@ -95,7 +95,7 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
-		ofs << archiveCompression->ForceWrite(globals_.options_.archiveMemberCompression_->ForceWrite(memberHeader_));
+		ofs << globals_.options_.archiveCompression_->ForceWrite(globals_.options_.archiveMemberCompression_->ForceWrite(memberHeader_));
 		metadataWritten_=true;
 	    memberHeader_=MemberHeader();
 		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
@@ -104,7 +104,7 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
 			sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
-				archiveCompression->ForceWrite(
+					globals_.options_.archiveCompression_->ForceWrite(
 					globals_.options_.archiveMemberCompression_->ForceWrite(
 						globals_.options_.encoding_->ForceWrite(
 							globals_.options_.fileCompression_->ForceWrite(
@@ -122,7 +122,7 @@ void XmltarMemberCreate::write(std::shared_ptr<CompressorInterface> archiveCompr
 		std::string tmpMemberCompression=globals_.options_.archiveMemberCompression_->ForceWriteAndClose(tmpEncoding+memberTrailer_);
 
 		ofs <<
-			archiveCompression->ForceWrite(tmpMemberCompression);
+				globals_.options_.archiveCompression_->ForceWrite(tmpMemberCompression);
 
 #if 0
 		ofs <<

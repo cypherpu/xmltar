@@ -61,7 +61,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 			std::cerr << "********** isRegularFile" << std::endl;
 			std::cerr << dbg << ": archiving " << globals_.nextMember_->filepath().string() << std::endl;
 
-			globals_.nextMember_->write(globals_.options_.archiveCompression_,std::numeric_limits<size_t>::max(),*ofs);
+			globals_.nextMember_->write(std::numeric_limits<size_t>::max(),*ofs);
 		}
 
 	}

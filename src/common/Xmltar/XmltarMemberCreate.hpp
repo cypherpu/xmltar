@@ -38,7 +38,7 @@ public:
 	XmltarMemberCreate(XmltarGlobals & globals, std::filesystem::path const & filepath);
 	~XmltarMemberCreate();
 
-	void write(std::shared_ptr<CompressorInterface> archiveCompression, size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
+	void write(size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs);
 
 	size_t MemberSize();
 	std::string MemberHeader();
