@@ -53,7 +53,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 
 		if (globals_.nextMember_->isDirectory()){
 			std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: isDirectory" << std::endl;
-			if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, globals_.options_.archiveCompression_)){
+			if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes)){
 				std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 				std::string compressedDirectoryMember
 					= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
@@ -73,7 +73,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				ofs.flush();
 				committedBytes+=globals_.options_.archiveCompression_->ReadCount();
 				pendingBytes=compressedArchiveTrailer.size();
-				if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes, globals_.options_.archiveCompression_)){
+				if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes)){
 					globals_.options_.archiveCompression_->Open();
 				}
 				else {
@@ -86,7 +86,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			}
 		}
 		else if (globals_.nextMember_->isSymLink()){
-			if (globals_.nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, globals_.options_.archiveCompression_)){
+			if (globals_.nextMember_->CanArchiveSymLink(committedBytes, pendingBytes)){
 				std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 				std::string compressedDirectoryMember
 					= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
@@ -104,7 +104,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				ofs.flush();
 				committedBytes+=globals_.options_.archiveCompression_->ReadCount();
 				pendingBytes=compressedArchiveTrailer.size();
-				if (globals_.nextMember_->CanArchiveSymLink(committedBytes, pendingBytes, globals_.options_.archiveCompression_)){
+				if (globals_.nextMember_->CanArchiveSymLink(committedBytes, pendingBytes)){
 					// globals_.options_.archiveCompression_.reset(globals_.options_.archiveCompression_->clone());
 					ofs << globals_.options_.archiveCompression_->Open();
 				}
@@ -119,7 +119,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		}
 		else if (globals_.nextMember_->isRegularFile()){
 			std::cerr << "********** isRegularFile" << std::endl;
-			size_t numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,globals_.options_.archiveCompression_);
+			size_t numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes);
 			std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << globals_.nextMember_->filepath().string() << std::endl;
 			if (numberOfFileBytesThatCanBeArchived==0){
 				if (firstPass)
@@ -128,7 +128,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					ofs << globals_.options_.archiveCompression_->ForceWriteAndClose("");
 					committedBytes+=globals_.options_.archiveCompression_->ReadCount();
 					pendingBytes=compressedArchiveTrailer.size();
-					numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes,globals_.options_.archiveCompression_);
+					numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes);
 					std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
 					std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 					std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;

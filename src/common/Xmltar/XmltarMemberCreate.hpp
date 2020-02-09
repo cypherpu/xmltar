@@ -47,9 +47,9 @@ public:
 	std::string CompressedMemberTrailer();
 	size_t MinimumSize();
 	size_t MaximumSize(size_t n);
-	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression);
-	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression);
-	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression);
+	size_t NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes);
+	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes);
+	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes);
 	bool IsComplete(){
 		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size << std::endl;
 		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;

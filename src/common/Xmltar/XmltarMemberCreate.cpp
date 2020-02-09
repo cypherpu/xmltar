@@ -285,7 +285,7 @@ size_t XmltarMemberCreate::MinimumSize(){
 			);
 }
 
-size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
+size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes){
 	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes)
@@ -294,7 +294,7 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 
 	size_t archiveBytes=globals_.options_.tape_length_.get()-committedBytes-pendingBytes;
 	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
-	size_t uncompressedArchiveBytes=archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
+	size_t uncompressedArchiveBytes=globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
 	size_t uncompressedMemberBytes=globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes);
 	size_t encodedMemberBytes;
 	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedMemberBytes)
@@ -324,7 +324,7 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 #endif
 }
 
-bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
+bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes){
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	std::cerr << "XmltarMember::CanArchiveDirectory:"
@@ -337,28 +337,28 @@ bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendi
 
 	size_t numberOfFileBytesThatCanBeArchived
 		=	globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-				archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(
+				globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
 						globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
 
 	std::cerr << "numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 	std::cerr << "archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())="
-			<< archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
+			<< globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
 			<< std::endl;
 	std::cerr << "options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))"
 			<< globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-					archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(
+					globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
 							globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))
 			<< std::endl;
 
 	return numberOfFileBytesThatCanBeArchived;
 }
 
-bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes, std::shared_ptr<CompressorGeneralInterface> archiveCompression){
+bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pendingBytes){
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived
 		=	globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-				archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(
+				globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
 						globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
 
 	return numberOfFileBytesThatCanBeArchived;
