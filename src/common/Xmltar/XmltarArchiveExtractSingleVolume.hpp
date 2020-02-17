@@ -15,9 +15,11 @@ class XmltarArchiveExtractSingleVolume;
 
 class XmltarSingleVolumeXmlHandler : public XmlParser {
 	XmltarArchiveExtractSingleVolume & xmltarArchiveExtractSingleVolume_;
+	bool firstDecodedLine_;
+	bool encounteredTrailingTabs_;
 public:
 	XmltarSingleVolumeXmlHandler(XmltarArchiveExtractSingleVolume & xmltarArchiveExtractSingleVolume)
-		: xmltarArchiveExtractSingleVolume_(xmltarArchiveExtractSingleVolume){
+		: xmltarArchiveExtractSingleVolume_(xmltarArchiveExtractSingleVolume), firstDecodedLine_(false), encounteredTrailingTabs_(false){
 	}
 
 	virtual void startElement(const XML_Char *name, const XML_Char **atts) override;
@@ -27,8 +29,8 @@ public:
 
 class XmltarArchiveExtractSingleVolume : public XmltarArchive {
 public:
-	std::unique_ptr<CompressorInterface> decoder_;
-	std::unique_ptr<CompressorInterface> fileDecompression_;
+	//std::unique_ptr<CompressorInterface> decoder_;
+	//std::unique_ptr<CompressorInterface> fileDecompression_;
 	std::fstream fs_;
 
 public:

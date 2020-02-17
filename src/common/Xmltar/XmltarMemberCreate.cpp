@@ -255,7 +255,7 @@ std::string XmltarMemberCreate::MemberTrailer(){
 
     // only include a content section if the file is a regular file
     if (f_type==std::filesystem::file_type::regular){
-        s=s+globals_.options_.Newline();
+        //s=s+globals_.options_.Newline();
         s=s+globals_.options_.Tabs("\t\t\t\t")+"</stream>"+globals_.options_.Newline();
     }
     if (f_type==std::filesystem::file_type::regular){

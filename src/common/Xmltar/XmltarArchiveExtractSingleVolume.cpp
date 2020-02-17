@@ -42,15 +42,20 @@ void XmltarSingleVolumeXmlHandler::startElement(const XML_Char *name, const XML_
 		if (p.has_parent_path())
 			std::filesystem::create_directories(p.parent_path());
 		// FIXME - investigate file open flags
-		xmltarArchiveExtractSingleVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::app);
+		if (boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start"))==0)
+			xmltarArchiveExtractSingleVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::out|std::fstream::trunc);
+		else
+			xmltarArchiveExtractSingleVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::ios::in|std::ios::out);
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractSingleVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
 		// xmltarArchiveExtractSingleVolume_.decoder_.reset(xmltarArchiveExtractSingleVolume_.globals_.options_.encoding_->clone());
-		xmltarArchiveExtractSingleVolume_.decoder_->Open();
+		xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->Open();
 
 		//xmltarArchiveExtractSingleVolume_.fileDecompression_.reset(xmltarArchiveExtractSingleVolume_.globals_.options_.fileCompression_->clone());
-		xmltarArchiveExtractSingleVolume_.fileDecompression_->Open();
+		xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->Open();
+		firstDecodedLine_=true;
+		encounteredTrailingTabs_=false;
 	}
 
 	std::cerr << std::string(elements_.size(),'\t') << "<" << name << ">" << std::endl;
@@ -60,7 +65,7 @@ void XmltarSingleVolumeXmlHandler::endElement(const XML_Char *name){
 	std::cerr << std::string(elements_.size(),'\t') << "</" << name << ">" << std::endl;
 
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.fileDecompression_->ForceWriteAndClose(xmltarArchiveExtractSingleVolume_.decoder_->ForceWriteAndClose(""));
+		xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->ForceWriteAndClose(xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->ForceWriteAndClose(""));
 		xmltarArchiveExtractSingleVolume_.fs_.close();
 	}
 
@@ -68,17 +73,35 @@ void XmltarSingleVolumeXmlHandler::endElement(const XML_Char *name){
 
 void XmltarSingleVolumeXmlHandler::characterData(XML_Char const *s, int len){
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.fileDecompression_->ForceWrite(xmltarArchiveExtractSingleVolume_.decoder_->ForceWrite(std::string(s,len)));
+		if (encounteredTrailingTabs_){
+			while(len>0 && s[len-1]=='\t')
+					--len;
+			if (len>0)
+				throw std::logic_error("non-tab character in trailing tabs");
+		}
+
+		if (len>0 && s[len-1]=='\t'){
+			encounteredTrailingTabs_=true;
+			while(len>0 && s[len-1]=='\t')
+					--len;
+		}
+		if (firstDecodedLine_ && len>=1 && s[0]=='\n')
+			xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->ForceWrite(xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->ForceWrite(std::string(s+1,len-1)));
+		else
+			xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->ForceWrite(xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->ForceWrite(std::string(s,len)));
+
+		firstDecodedLine_=false;
 	}
 }
 
 XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals & globals, std::string filename)
 	: ::XmltarArchive(globals,filename)
 {
-	std::cerr << "XmltarArchiveExtractMultiVolume::XmltarSingleVolumeXmlHandler: entering: filename=" << filename << std::endl;
-
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: entering: filename=" << filename << std::endl;
 
 	XmltarSingleVolumeXmlHandler xmltarSingleVolumeHandler(*this);
+
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: created handler" << std::endl;
 
 	std::ifstream ifs(filename);
 
@@ -87,8 +110,13 @@ XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals
 	//std::shared_ptr<CompressorInterface> archiveDecompression(globals_.options_.archiveDecompression_->clone());
 	//std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberDecompression_->clone());
 
+	if (ifs)
+		std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: opened fiiename" << std::endl;
 	globals_.options_.archiveDecompression_->Open();
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: after archive decompression" << std::endl;
 	globals_.options_.archiveMemberDecompression_->Open();
+
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: opened decompression" << std::endl;
 
 	std::string tmp;
 	while(ifs){

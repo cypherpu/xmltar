@@ -31,6 +31,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Utilities/CompressRaw.hpp"
 #include "Utilities/IdentityRaw.hpp"
+#include "Utilities/IdentityDecompress.hpp"
 #include "Utilities/Options-TarStyle.hpp"
 #include "Compressors/Compressor.hpp"
 
@@ -77,11 +78,15 @@ public:
         : operation_(), verbosity_(), multi_volume_(),
 		  fileCompression_(new Compressor<Identity>()),
 		  fileRawCompression_(new CompressorRaw<IdentityRaw>()),
+		  fileDecompression_(new Compressor<IdentityDecompress>()),
 		  encoding_(new Compressor<HexEncode>()),
+		  decoding_(new Compressor<HexDecode>()),
 		  archiveMemberCompression_(new Compressor<Identity>()),
 		  archiveMemberRawCompression_(new CompressorRaw<IdentityRaw>()),
+		  archiveMemberDecompression_(new Compressor<IdentityDecompress>()),
 		  archiveCompression_(new Compressor<Identity>()),
 		  archiveRawCompression_(new CompressorRaw<IdentityRaw>()),
+		  archiveDecompression_(new Compressor<IdentityDecompress>()),
           tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new Compressor<Identity>()),
