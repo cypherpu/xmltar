@@ -97,11 +97,11 @@ void XmltarSingleVolumeXmlHandler::characterData(XML_Char const *s, int len){
 XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals & globals, std::string filename)
 	: ::XmltarArchive(globals,filename)
 {
-	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: entering: filename=" << filename << std::endl;
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: entering: filename=" << filename << std::endl;
 
 	XmltarSingleVolumeXmlHandler xmltarSingleVolumeHandler(*this);
 
-	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: created handler" << std::endl;
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: created handler" << std::endl;
 
 	std::ifstream ifs(filename);
 
@@ -111,17 +111,17 @@ XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals
 	//std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberDecompression_->clone());
 
 	if (ifs)
-		std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: opened fiiename" << std::endl;
+		std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: opened fiiename" << std::endl;
 	globals_.options_.archiveDecompression_->Open();
-	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: after archive decompression" << std::endl;
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: after archive decompression" << std::endl;
 	globals_.options_.archiveMemberDecompression_->Open();
 
-	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarSingleVolumeXmlHandler: opened decompression" << std::endl;
+	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: opened decompression" << std::endl;
 
 	std::string tmp;
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-
+		std::cerr << "read buffer " << ifs.gcount() << std::endl;
 		tmp=globals_.options_.archiveMemberDecompression_->ForceWrite(globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount())));
 		std::cerr << "ifs.gcount()=" << ifs.gcount() << " tmp=\"" << tmp << "\"" << std::endl;
 		xmltarSingleVolumeHandler.Parse(tmp,false);
