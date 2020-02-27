@@ -1,13 +1,43 @@
 #!/bin/bash
 
-basepath=/home/dbetz/git/xmltar/bazel-bin
+exepath=/home/dbetz/git/xmltar/bazel-bin/xmltar
 targetpath=/home/dbetz/git/Utilities
-tarfile=Utilities
+archive=Utilities
+
+if [ ! -f test ]; then
+	echo "Creating directory 'test'"
+	mkdir test
+fi
+
+if [ ! -f test/foo ]; then
+	echo "Creating directory 'test/foo'"
+	mkdir test/foo
+fi
+
+pushd test/foo
+rm -f $archive.*.xmltar
 
 echo 'xmltar no precompression, no postcompression'
-rm -f $tarfile.id.16.id.xmltar $tarfile.tar
-$basepath/xmltar -c -f $tarfile.id.16.id.xmltar $targetpath &> $tarfile.id.16.id.out
-tar cf $tarfile.tar $targetpath &> $tarfile.out
+rm -f $archive.xmltar $archive.tar
+$exepath -c -f $archive.xmltar $targetpath &> $archive.xmltar.out
+tar cf $archive.tar $targetpath &> $archive.tar.out
+
+echo 'xmltar no precompression, postcompression'
+rm -f $archive.xmltar.gz $archive.xmltar.zstd $archive.tar.gz $archive.tar.zstd
+$exepath -c -f $archive.xmltar.gz --gzip $targetpath &> $archive.xmltar.gz.out
+$exepath -c -f $archive.xmltar.zstd --zstd $targetpath &> $archive.xmltar.zstd.out
+tar cf $archive.tar.gz --gzip $targetpath &> $archive.tar.gz.out
+tar cf $archive.tar.zstd --zstd $targetpath &> $archive.tar.zstd.out
+
+echo 'xmltar precompression, no postcompression'
+rm -f $archive.gz.xmltar $archive.zstd.xmltar
+$exepath -c -f $archive.gz.xmltar --file-gzip $targetpath &> $archive.gz.xmltar.out
+$exepath -c -f $archive.zstd.xmltar --file-zstd $targetpath &> $archive.zstd.xmltar.out
+
+echo 'xmltar precompression, postcompression'
+rm -f $archive.gz.xmltar.gz $archive.zstd.xmltar.zstd
+$exepath -c -f $archive.gz.xmltar.gz --file-gzip --gzip $targetpath &> $archive.gz.xmltar.gz.out
+$exepath -c -f $archive.zstd.xmltar.zstd --file-zstd --zstd $targetpath &> $archive.zstd.xmltar.zstd.out
 
 #echo 'xmltar no precompression, postcompression'
 #rm -f $tarfile.id.16.gz.xmltar.gz
