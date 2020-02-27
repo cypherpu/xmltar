@@ -5,9 +5,36 @@
  *      Author: dbetz
  */
 
+#include <string>
+#include <vector>
+#include <filesystem>
+#include <unistd.h>
+
 #include <gmock/gmock.h>
 
 #include "Xmltar/XmltarArchive.hpp"
+
+std::string exePath("/home/dbetz/git/xmltar/bazel-bin/xmltar");
+std::string workingDirPath("/home/dbetz/git");
+std::string targetBasePath("Utilities");
+
+void Execute(std::string exePath, std::vector<std::string> const & argv){
+	std::vector<std::string> tmp;
+
+	for(size_t i=0; i<argv.size(); ++i)
+		tmp.push_back(argv[i]+'\0');
+
+	std::vector<char *> tmp2;
+
+	for(size_t i=0; i<tmp.size(); ++i)
+		tmp2.push_back(tmp[i].data());
+	tmp2.push_back(nullptr);
+
+	const std::vector<char *> tmp3(tmp2);
+
+	execv(exePath.c_str(),tmp3.data());
+
+}
 
 TEST(XmltarTest,IsPaddingTrailer)
 {
@@ -15,4 +42,15 @@ TEST(XmltarTest,IsPaddingTrailer)
 	{
 		ASSERT_TRUE(XmltarArchive::IsPaddingTrailer(cleartext));
 	}
+}
+
+TEST(XmltarTest,SingleArchive)
+{
+	std::filesystem::path startingWorkingDirPath=std::filesystem::current_path();
+	std::filesystem::current_path(workingDirPath);
+
+	Execute(exePath,
+			std::vector<std::string>{exePath,"--create","--verbose",
+			"--file","/tmp/"+targetBasePath+".xmltar",
+			targetBasePath});
 }

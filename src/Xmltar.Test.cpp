@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
 	//::testing::GTEST_FLAG(filter) = "tA.*";
 	// ::testing::GTEST_FLAG(filter) = "SnapshotXmlParser.*";
-	::testing::GTEST_FLAG(filter) = "Snapshot.MergeSnapshotFilesHelper";
+	//::testing::GTEST_FLAG(filter) = "Snapshot.MergeSnapshotFilesHelper";
 
 	return RUN_ALL_TESTS();
 }
