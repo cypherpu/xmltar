@@ -32,8 +32,10 @@ void Execute(std::string exePath, std::vector<std::string> const & argv){
 
 	const std::vector<char *> tmp3(tmp2);
 
-	execv(exePath.c_str(),tmp3.data());
-
+	pid_t pid=fork();
+	if (!pid)
+		execv(exePath.c_str(),tmp3.data());
+	wait(nullptr);
 }
 
 TEST(XmltarTest,IsPaddingTrailer)
@@ -53,4 +55,10 @@ TEST(XmltarTest,SingleArchive)
 			std::vector<std::string>{exePath,"--create","--verbose",
 			"--file","/tmp/"+targetBasePath+".xmltar",
 			targetBasePath});
+
+	std::filesystem::current_path("/tmp");
+
+	Execute(exePath,
+			std::vector<std::string>{exePath,"--extract","--verbose",
+			"--file","/tmp/"+targetBasePath+".xmltar"});
 }
