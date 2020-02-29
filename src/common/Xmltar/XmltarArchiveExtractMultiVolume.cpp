@@ -11,6 +11,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "Utilities/XMLSafeString.hpp"
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 
 void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_Char **atts){
@@ -27,6 +28,10 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 	else if (elements_.back().name_=="content"){
 		if (elements_.size()!=4) throw std::domain_error("XmltarArchiveHandler::startElement: \"content\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="file") throw std::domain_error("XmltarArchiveHandler::startElement \"file\" not parent of \"content\"");
+
+		if (elements_.back().attributes_.at("type")=="symlink")
+			symlink(DecodeXMLSafeStringToString(elements_.back().attributes_.at("target")).c_str(),
+					elements_.end()[-2].attributes_.at("name").c_str());
 	}
 	else if (elements_.back().name_=="stream"){
 		if (elements_.size()!=5) throw std::domain_error("XmltarArchiveHandler::startElement: \"stream\" wrong nesting level");

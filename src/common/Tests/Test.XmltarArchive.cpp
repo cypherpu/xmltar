@@ -35,7 +35,8 @@ void Execute(std::string exePath, std::vector<std::string> const & argv){
 	pid_t pid=fork();
 	if (!pid)
 		execv(exePath.c_str(),tmp3.data());
-	wait(nullptr);
+	if (wait(nullptr)!=pid)
+			throw std::runtime_error("Execute: wait return != pid");
 }
 
 TEST(XmltarTest,IsPaddingTrailer)
