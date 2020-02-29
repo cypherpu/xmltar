@@ -13,6 +13,7 @@
 #include <gmock/gmock.h>
 
 #include "Xmltar/XmltarArchive.hpp"
+#include "Utilities/CompareFiles.hpp"
 
 std::string exePath("/home/dbetz/git/xmltar/bazel-bin/xmltar");
 std::string workingDirPath("/home/dbetz/git");
@@ -62,4 +63,7 @@ TEST(XmltarTest,SingleArchive)
 	Execute(exePath,
 			std::vector<std::string>{exePath,"--extract","--verbose",
 			"--file","/tmp/"+targetBasePath+".xmltar"});
+
+	std::filesystem::current_path(workingDirPath);
+	ASSERT_TRUE(CompareFiles(targetBasePath,"/tmp/"+targetBasePath));
 }
