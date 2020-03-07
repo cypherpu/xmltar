@@ -33,6 +33,9 @@ public:
 
     std::unique_ptr<XmltarMemberCreate> nextMember_;
 
+    int resultCode_;
+    std::vector<std::string> errorMessages_;
+
     XmltarGlobals();
     void NextMember();
 };

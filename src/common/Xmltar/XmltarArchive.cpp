@@ -380,6 +380,8 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 	std::string data=ArchiveTrailerBegin()+std::string(paddingLength,' ')+ArchiveTrailerEnd();
 	std::cerr << dbg << ": data.size()=" << data.size() << std::endl;
 
+	std::cerr << dbg << ": CompressorName=" << globals_.options_.archiveMemberRawCompression_->CompressorName() << std::endl;
+
 	std::string memberData=globals_.options_.archiveMemberRawCompression_->GenerateCompressedText(desiredMemberLength, data);
 	std::cerr << dbg << ": memberData.size()=" << memberData.size() << std::endl;
 	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, memberData);

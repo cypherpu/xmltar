@@ -34,25 +34,25 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
 	std::cerr << "XmltarMemberCreate::XmltarMemberCreate: constructor" << std::endl;
 	// betz::Debug dbg("XmltarMember::XmltarMember");
 
-    f_stat=std::filesystem::symlink_status(filepath_);
+    f_stat_=std::filesystem::symlink_status(filepath_);
 
-    if (!std::filesystem::exists(f_stat))
+    if (!std::filesystem::exists(f_stat_))
         throw "Archive_Member::Archive_Member: source file does not exist: "+filepath_.string();
 
-    f_type=f_stat.type();
+    f_type_=f_stat_.type();
 
-    if (std::filesystem::is_regular_file(f_stat)){
+    if (std::filesystem::is_regular_file(f_stat_)){
     	std::cerr << "########### is regular file" << std::endl;
-        file_size=std::filesystem::file_size(filepath_);
+        file_size_=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
 #if 0
     	std::cerr << "########### running sha3sum512_" << std::endl;
         sha3sum512_.run();
 #endif
     }
-    else file_size=0;
+    else file_size_=0;
 
-    if (lstat(filepath_.string().c_str(),&stat_buf)!=0)
+    if (lstat(filepath_.string().c_str(),&stat_buf_)!=0)
         throw "Archive_Member:Archive_Member: cannot lstat file";
 
     memberHeader_=MemberHeader();
@@ -64,7 +64,7 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
 XmltarMemberCreate::~XmltarMemberCreate(){
 	std::string output;
 
-	if (std::filesystem::is_regular_file(f_stat)){
+	if (std::filesystem::is_regular_file(f_stat_)){
 		output=sha3sum512_.ForceWriteAndClose("");
     }
 
@@ -88,7 +88,7 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		// std::shared_ptr<CompressorInterface> memberCompression(globals_.options_.archiveMemberCompression_->clone());
 		// std::shared_ptr<CompressorInterface> encoding(globals_.options_.encoding_->clone());
 
-		size_t numberOfBytesToArchive=std::min(file_size-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
+		size_t numberOfBytesToArchive=std::min(file_size_-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
 		globals_.options_.fileCompression_->Open();
 		globals_.options_.encoding_->Open();
 		globals_.options_.archiveMemberCompression_->Open();
@@ -153,7 +153,7 @@ size_t XmltarMemberCreate::MaximumSize(size_t n){
 }
 
 size_t XmltarMemberCreate::MemberSize(){
-	return MaximumSize(file_size);
+	return MaximumSize(file_size_);
 }
 
 std::string XmltarMemberCreate::MemberHeader(){
@@ -189,42 +189,42 @@ std::string XmltarMemberCreate::MemberHeader(){
 				+EncodeStringToXMLSafeString(attr_list[i].first)+"\" value=\""
 				+EncodeStringToXMLSafeString(attr_list[i].second)+"\"/>"+globals_.options_.Newline();
 
-		struct passwd *pw=getpwuid(stat_buf.st_uid);
-		struct group *g=getgrgid(stat_buf.st_gid);
+		struct passwd *pw=getpwuid(stat_buf_.st_uid);
+		struct group *g=getgrgid(stat_buf_.st_gid);
 
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf.st_mode)+"\"/>"+globals_.options_.Newline();
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf.st_atime) + "\"/>"+globals_.options_.Newline();
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf.st_ctime) + "\"/>"+globals_.options_.Newline();
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf.st_mtime) + "\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<mode value=\""+ToOctalInt(stat_buf_.st_mode)+"\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<atime posix=\"" + std::to_string(stat_buf_.st_atime) + "\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<ctime posix=\"" + std::to_string(stat_buf_.st_ctime) + "\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<mtime posix=\"" + std::to_string(stat_buf_.st_mtime) + "\"/>"+globals_.options_.Newline();
 
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+globals_.options_.Newline();
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+globals_.options_.Newline();
-		if (S_ISCHR(stat_buf.st_mode) || S_ISBLK(stat_buf.st_mode)){
-			s=s+globals_.options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf.st_rdev)+"\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<user uid=\""+ToDecimalInt(stat_buf_.st_uid)+"\" uname=\""+ (pw!=NULL?pw->pw_name:"") + "\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<group gid=\""+ToDecimalInt(stat_buf_.st_gid)+"\" gname=\""+ (g!=NULL?g->gr_name:"") + "\"/>"+globals_.options_.Newline();
+		if (S_ISCHR(stat_buf_.st_mode) || S_ISBLK(stat_buf_.st_mode)){
+			s=s+globals_.options_.Tabs("\t\t\t\t")+"<rdev value=\""+ToOctalInt(stat_buf_.st_rdev)+"\"/>"+globals_.options_.Newline();
 		}
-		s=s+globals_.options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf.st_size)+"\"/>"+globals_.options_.Newline();
+		s=s+globals_.options_.Tabs("\t\t\t\t")+"<size value=\""+ToDecimalInt(stat_buf_.st_size)+"\"/>"+globals_.options_.Newline();
 
 		s=s+globals_.options_.Tabs("\t\t\t")+"</meta-data>"+globals_.options_.Newline();
 	}
 
-    switch(f_type){
+    switch(f_type_){
         case std::filesystem::file_type::regular:
             s=s+globals_.options_.Tabs("\t\t\t")+"<content type=\"regular\">"+globals_.options_.Newline();
             s=s+globals_.options_.Tabs("\t\t\t\t")+"<stream name=\"data\" pre-compression=\""+globals_.options_.fileCompression_.get()->CompressorName();
 
             s+=std::string("\" encoding=\"") + globals_.options_.encoding_.get()->CompressorName();
 
-            s+="\" total-size=\""+std::to_string(file_size)+"\" this-extent-start=\""+std::to_string(ifs_->tellg())+"\">"+globals_.options_.Newline();
+            s+="\" total-size=\""+std::to_string(file_size_)+"\" this-extent-start=\""+std::to_string(ifs_->tellg())+"\">"+globals_.options_.Newline();
             break;
         case std::filesystem::file_type::directory:
             s=s+globals_.options_.Tabs("\t\t\t")+"<content type=\"directory\"/>"+globals_.options_.Newline();
             break;
         case std::filesystem::file_type::symlink:
 			{
-				std::unique_ptr<char[]> p(new char[stat_buf.st_size]);
-				if (readlink(filepath_.string().c_str(),p.get(),stat_buf.st_size)!=stat_buf.st_size)
+				std::unique_ptr<char[]> p(new char[stat_buf_.st_size]);
+				if (readlink(filepath_.string().c_str(),p.get(),stat_buf_.st_size)!=stat_buf_.st_size)
 					throw "Archive_Member::Generate_Metadata: symbolic link size changed";
-				s=s+globals_.options_.Tabs("\t\t\t")+"<content type=\"symlink\" target=\""+EncodeStringToXMLSafeString(std::string(p.get(),stat_buf.st_size))+"\"/>"+globals_.options_.Newline();
+				s=s+globals_.options_.Tabs("\t\t\t")+"<content type=\"symlink\" target=\""+EncodeStringToXMLSafeString(std::string(p.get(),stat_buf_.st_size))+"\"/>"+globals_.options_.Newline();
 			}
             break;
         case std::filesystem::file_type::block:
@@ -254,11 +254,11 @@ std::string XmltarMemberCreate::MemberTrailer(){
     std::string s;
 
     // only include a content section if the file is a regular file
-    if (f_type==std::filesystem::file_type::regular){
+    if (f_type_==std::filesystem::file_type::regular){
         //s=s+globals_.options_.Newline();
         s=s+globals_.options_.Tabs("\t\t\t\t")+"</stream>"+globals_.options_.Newline();
     }
-    if (f_type==std::filesystem::file_type::regular){
+    if (f_type_==std::filesystem::file_type::regular){
         s=s+globals_.options_.Tabs("\t\t\t")+"</content>"+globals_.options_.Newline();
     }
     s=s+globals_.options_.Tabs("\t\t")+"</file>"+globals_.options_.Newline();

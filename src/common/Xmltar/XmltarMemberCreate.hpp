@@ -21,10 +21,10 @@ extern "C" {
 class XmltarMemberCreate {
 	XmltarGlobals & globals_;
 	std::filesystem::path const filepath_;
-	struct stat stat_buf;
-	std::filesystem::file_status f_stat;
-	std::filesystem::file_type f_type;
-	off_t file_size;
+	struct stat stat_buf_;
+	std::filesystem::file_status f_stat_;
+	std::filesystem::file_type f_type_;
+	off_t file_size_;
 	std::string memberHeader_;
 	std::string memberTrailer_;
 	std::shared_ptr<std::ifstream> ifs_;
@@ -51,15 +51,15 @@ public:
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes);
 	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes);
 	bool IsComplete(){
-		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size << std::endl;
+		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size_ << std::endl;
 		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;
-		return ifs_->tellg()==file_size;
+		return ifs_->tellg()==file_size_;
 	}
 	std::ifstream *Ifs(){ return ifs_.get(); }
 	std::filesystem::path filepath(){ return filepath_; }
-	bool isDirectory(){ return f_type==std::filesystem::file_type::directory; }
-	bool isSymLink(){ return f_type==std::filesystem::file_type::symlink; }
-	bool isRegularFile(){ return f_type==std::filesystem::file_type::regular; }
+	bool isDirectory(){ return f_type_==std::filesystem::file_type::directory; }
+	bool isSymLink(){ return f_type_==std::filesystem::file_type::symlink; }
+	bool isRegularFile(){ return f_type_==std::filesystem::file_type::regular; }
 	void RecalculateMemberHeader(){ memberHeader_=MemberHeader(); }
 };
 

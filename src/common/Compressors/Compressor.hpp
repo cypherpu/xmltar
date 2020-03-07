@@ -51,6 +51,8 @@ public:
 	virtual std::streamoff MaximumCompressedtextSizeGivenPlaintextSize(std::streamoff plaintextSize)=0;
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
 	virtual std::string GenerateCompressedText(size_t desiredSize, std::string data)=0;
+
+	virtual std::string CompressorName()=0;
 };
 
 template<typename T> class Compressor : public CompressorGeneralInterface {
@@ -223,7 +225,7 @@ public:
 		return compressor_.GenerateCompressedText(desiredSize,data);
 	}
 
-	std::string CompressorName(){ return compressor_.CompressorName(); }
+	std::string CompressorName() { return compressor_.CompressorName(); }
 };
 
 #endif /* SRC_COMMON_COMPRESSORS_COMPRESSOR_HPP_ */
