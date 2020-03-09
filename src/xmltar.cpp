@@ -47,6 +47,8 @@ int main(int argc, char const *argv[])
 	spdlog::set_level(spdlog::level::info);
 	spdlog::set_pattern("[%Y-%m-%d] [%H:%M:%S %z] [%l] [%P] %v");
 
+	XmltarGlobals globals;
+
 	try {
 #if 0
 	    termios oldt;
@@ -130,7 +132,6 @@ int main(int argc, char const *argv[])
 	    return 0;
 #endif
 
-		XmltarGlobals globals;
 	    spdlog::debug("Before XmltarOptions");
 		globals.options_.ProcessOptions(argc, argv);
 	    spdlog::debug("Before XmltarInvocation");
@@ -194,5 +195,8 @@ int main(int argc, char const *argv[])
 	}
 #endif
 
-	return 0;
+	for(auto i : globals.errorMessages_)
+		std::cerr << i << std::endl;
+
+	return globals.resultCode_;;
 }
