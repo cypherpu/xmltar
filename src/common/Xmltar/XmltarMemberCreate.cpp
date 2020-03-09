@@ -45,6 +45,10 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
     	std::cerr << "########### is regular file" << std::endl;
         file_size_=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
+        if (!*ifs_){
+        	globals_.resultCode_=1;
+        	globals_.errorMessages_.push_back(filepath_.string()+": cannot open file");
+        }
 #if 0
     	std::cerr << "########### running sha3sum512_" << std::endl;
         sha3sum512_.run();

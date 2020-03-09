@@ -22,6 +22,7 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		if (elements_.size()!=2) throw std::domain_error("XmltarArchiveHandler::startElement: \"members\" wrong nesting level");
 	}
 	else if (elements_.back().name_=="file"){
+		std::cerr << "Member file=" << elements_.back().attributes_.at("name") << std::endl;
 		if (elements_.size()!=3) throw std::domain_error("XmltarArchiveHandler::startElement: \"file\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="members") throw std::domain_error("XmltarArchiveHandler::startElement \"members\" not parent of \"file\"");
 	}
@@ -124,12 +125,19 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 
 		tmp=globals_.options_.archiveMemberDecompression_->ForceWrite(globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount())));
 		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-		xmltarMultiVolumeHandler.Parse(tmp,false);
+		if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
+			std::cerr << "filename=" << filename << std::endl;
+			exit(-1);
+		}
 	}
 
 	tmp=globals_.options_.archiveMemberDecompression_->ForceWriteAndClose(globals_.options_.archiveDecompression_->ForceWriteAndClose(""));
 	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
-	xmltarMultiVolumeHandler.Parse(tmp,false);
+	if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
+		std::cerr << "filename=" << filename << std::endl;
+		exit(-1);
+	}
+
 }
 
 

@@ -53,7 +53,8 @@ public:
 	bool IsComplete(){
 		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size_ << std::endl;
 		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;
-		return ifs_->tellg()==file_size_;
+		if (!*ifs_) return true;
+		else return ifs_->tellg()==file_size_;
 	}
 	std::ifstream *Ifs(){ return ifs_.get(); }
 	std::filesystem::path filepath(){ return filepath_; }
