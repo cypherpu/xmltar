@@ -49,9 +49,9 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 			std::filesystem::create_directories(p.parent_path());
 		// FIXME - investigate file open flags
 		if (boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start"))==0)
-			xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::out|std::fstream::trunc);
+			xmltarArchiveExtractMultiVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::fstream::out|std::fstream::trunc);
 		else
-			xmltarArchiveExtractMultiVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::ios::in|std::ios::out);
+			xmltarArchiveExtractMultiVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::ios::in|std::ios::out);
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 

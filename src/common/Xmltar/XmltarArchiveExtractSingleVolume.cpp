@@ -48,9 +48,9 @@ void XmltarSingleVolumeXmlHandler::startElement(const XML_Char *name, const XML_
 			std::filesystem::create_directories(p.parent_path());
 		// FIXME - investigate file open flags
 		if (boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start"))==0)
-			xmltarArchiveExtractSingleVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::fstream::out|std::fstream::trunc);
+			xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::fstream::out|std::fstream::trunc);
 		else
-			xmltarArchiveExtractSingleVolume_.fs_.open(elements_.end()[-3].attributes_.at("name"),std::ios::in|std::ios::out);
+			xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::ios::in|std::ios::out);
 		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractSingleVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
