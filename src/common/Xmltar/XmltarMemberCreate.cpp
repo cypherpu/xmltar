@@ -93,9 +93,19 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		// std::shared_ptr<CompressorInterface> encoding(globals_.options_.encoding_->clone());
 
 		size_t numberOfBytesToArchive=std::min(file_size_-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
+#ifndef USE_OPEN_RETURN_VALUE
+		ofs <<	globals_.options_.archiveCompression_->ForceWrite(
+					globals_.options_.archiveMemberCompression_->Open(
+						globals_.options_.encoding_->Open(
+							globals_.options_.fileCompression_->Open()
+						)
+					)
+				);
+#else
 		globals_.options_.fileCompression_->Open();
 		globals_.options_.encoding_->Open();
 		globals_.options_.archiveMemberCompression_->Open();
+#endif
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;

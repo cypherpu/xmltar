@@ -23,7 +23,7 @@ public:
 	CompressorInterface(){}
 	virtual ~CompressorInterface(){}
 
-	virtual std::string Open()=0;
+	virtual std::string Open(std::string const & s="")=0;
 	virtual std::string ForceWrite(std::string const & s)=0;
 	virtual std::string ForceWriteAndClose(std::string const & s)=0;
 	virtual std::string OpenForceWriteAndClose(std::string const & s)=0;
@@ -64,12 +64,12 @@ public:
 	Compressor() : readCount_(), writeCount_() {}
 	virtual ~Compressor() {}
 
-	[[nodiscard]] std::string Open() override {
+	[[nodiscard]] std::string Open(std::string const & s="") override {
 		std::string tmp=compressor_.Open();
 		readCount_=tmp.size();
 		writeCount_=0;
 
-		return tmp;
+		return tmp+ForceWrite(s);
 	}
 
 	std::string ForceWrite(std::string const & s) override {
@@ -178,12 +178,12 @@ public:
 	CompressorRaw() : readCount_(), writeCount_() {}
 	virtual ~CompressorRaw() {}
 
-	[[nodiscard]] std::string Open() override {
+	[[nodiscard]] std::string Open(std::string const & s="") override {
 		std::string tmp=compressor_.Open();
 		readCount_=tmp.size();
 		writeCount_=0;
 
-		return tmp;
+		return tmp+ForceWrite(s);
 	}
 
 	std::string ForceWrite(std::string const & s) override {

@@ -126,9 +126,9 @@ XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals
 	std::string tmp;
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
-		std::cerr << "read buffer " << ifs.gcount() << std::endl;
+		// std::cerr << "read buffer " << ifs.gcount() << std::endl;
 		tmp=globals_.options_.archiveMemberDecompression_->ForceWrite(globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount())));
-		std::cerr << "ifs.gcount()=" << ifs.gcount() << " tmp=\"" << tmp << "\"" << std::endl;
+		// std::cerr << "ifs.gcount()=" << ifs.gcount() << " tmp=\"" << tmp << "\"" << std::endl;
 		xmltarSingleVolumeHandler.Parse(tmp,false);
 	}
 
