@@ -116,7 +116,7 @@ Snapshot::~Snapshot(){
 	std::filesystem::path sum=temporarySnapshotDirPath_ / "sum";
 	MergeSnapshotFilesHelper(temporarySnapshotFilePaths_, sum, globals_.options_.incrementalFileCompression_);
 
-	std::filesystem::rename(sum,globals_.options_.listed_incremental_file_.get());
+	std::filesystem::copy(sum,globals_.options_.listed_incremental_file_.get());
 }
 
 void Snapshot::NewTemporarySnapshotFile(){
