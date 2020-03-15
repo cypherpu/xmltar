@@ -41,6 +41,8 @@ public:
 	virtual std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize)=0;
 
 	virtual std::string CompressorName()=0;
+
+	virtual CompressorGeneralInterface *clone()=0;
 };
 
 class CompressorRawInterface : public CompressorInterface {
@@ -167,6 +169,10 @@ public:
 	}
 
 	std::string CompressorName(){ return compressor_.CompressorName(); }
+
+	CompressorGeneralInterface *clone(){
+		return new Compressor<T>();
+	}
 };
 
 template<typename T> class CompressorRaw : public CompressorRawInterface {
