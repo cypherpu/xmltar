@@ -26,10 +26,8 @@ public:
 	std::unique_ptr<Snapshot> snapshot_;	// FIXME - make sure snapshot_ is destructed before options
 	time_t invocationTime_;
 
-	std::vector<std::filesystem::path> globsToBeIncluded_;
 	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedComplete_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcludedTruncated_;
+	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;
 
     std::unique_ptr<XmltarMemberCreate> nextMember_;
 

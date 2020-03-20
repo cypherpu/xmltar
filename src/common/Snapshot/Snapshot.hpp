@@ -24,7 +24,7 @@ class CompressorInterface;
 class Snapshot {
 public:
 	XmltarGlobals & globals_;
-	std::filesystem::path temporarySnapshotDirPath_;
+	std::filesystem::path newSnapshotFileDirPath_;
 	std::vector<std::filesystem::path> temporarySnapshotFilePaths_;
 
 	std::ofstream temporarySnapshotFileOfs_;

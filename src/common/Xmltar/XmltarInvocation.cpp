@@ -19,6 +19,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <glob.h>
+
 #include <limits>
 #include <stdexcept>
 #include <filesystem>
@@ -38,6 +40,14 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarArchiveCreateMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractMultiVolume.hpp"
 #include "Xmltar/XmltarArchiveExtractSingleVolume.hpp"
+
+static int globError=0;
+static char const *globErrorPath=nullptr;
+
+extern "C" GlobErrorFunction(char const *epath, int eerrno){
+	globErrorPath=epath;
+	globError=eerrno;
+}
 
 XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 	: version("Xmltar_0_0_1"), globals_(globals)  {
@@ -65,29 +75,31 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 	}
 
 	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
-	if (globals_.options_.sourceFileGlobs_.size()){
-		for(auto & i : globals_.options_.sourceFileGlobs_)
-			globals_.globsToBeIncluded_.push_back(i);
-	}
-	else if (globals_.options_.files_from_){
-		std::ifstream ifs(globals_.options_.files_from_.get().string());
-
-		if (ifs){
-			std::string line;
-			while(std::getline(ifs,line))
-				globals_.globsToBeIncluded_.push_back(std::filesystem::path(line));
+	{
+		if (globals_.options_.sourceFileGlobs_.size()){
+			for(auto & i : globals_.options_.sourceFileGlobs_)
+				globals_.globsToBeIncluded_.push_back(i);
 		}
-		else
-			throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
+		else if (globals_.options_.files_from_){
+			std::ifstream ifs(globals_.options_.files_from_.get().string());
+
+			if (ifs){
+				std::string line;
+				while(std::getline(ifs,line))
+					globals_.globsToBeIncluded_.push_back(std::filesystem::path(line));
+			}
+			else
+				throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open files_from");
+		}
+		else if (globals_.options_.operation_==XmltarOptions::CREATE || globals_.options_.operation_==XmltarOptions::APPEND)
+			throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
+
+		MatchingPathsFromGlobs(globals_.options_.sourceFileGlobs_,globals_.filesToBeIncluded_);
 	}
-	else if (globals_.options_.operation_==XmltarOptions::CREATE || globals_.options_.operation_==XmltarOptions::APPEND)
-		throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 	spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
-	if (globals_.options_.excludeFileGlobs_.size()){
-		std::vector<std::string> tmp=BashGlob(globals_.options_.excludeFileGlobs_);
-		for(auto & i : tmp)
-			globals_.filesToBeExcludedComplete_.push(std::filesystem::path(i));
+	{
+		MatchingPathsFromGlobs(globals_.options_.excludeFileGlobs_,globals_.filesToBeExcluded_);
 	}
 
 	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
@@ -227,3 +239,29 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 	}
 #endif
 }
+
+void XmltarInvocation::MatchingPathsFromGlobs(
+		std::vector<std::string> const & patterns,
+		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> & matchingPaths
+	){
+	std::set<std::filesystem::path> tmp;
+	for(auto & pattern : patterns){
+		glob_t globs;
+		globs.gl_offs=0;
+		if (glob(pattern.c_str(),GlobErrorFunction,&globs)!=0){
+			std::cerr << "MatchingPathsFromGlobs: " << globErrorPath << std::endl;
+			throw std::runtime_error("MatchingPathsFromGlobs: error");
+		}
+
+		for(size_t i=0; i<globs.gl_pathc; ++i)
+			tmp.insert(globs.gl_pathv[i]);
+
+		globfree(&globs);
+
+		for(auto & i : tmp)
+			matchingPaths.push_back(i);
+	}
+
+	return matchingPaths;
+}
+
