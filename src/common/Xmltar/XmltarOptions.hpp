@@ -33,6 +33,10 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Utilities/IdentityRaw.hpp"
 #include "Utilities/IdentityDecompress.hpp"
 #include "Utilities/Options-TarStyle.hpp"
+#include "Utilities/Crypto/Encryptor.hpp"
+#include "Utilities/Crypto/Decryptor.hpp"
+#include "Utilities/Crypto/EncryptIdentity.hpp"
+#include "Utilities/Crypto/DecryptIdentity.hpp"
 #include "Compressors/Compressor.hpp"
 
 class XmltarOptions {
@@ -58,6 +62,9 @@ public:
 	std::shared_ptr<CompressorGeneralInterface> archiveCompression_;
 	std::shared_ptr<CompressorRawInterface> archiveRawCompression_;
 	std::shared_ptr<CompressorGeneralInterface> archiveDecompression_;
+
+	std::shared_ptr<EncryptorInterface> archiveEncryption_;
+	std::shared_ptr<DecryptorInterface> archiveDecryption_;
 
 	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> stop_after_;
@@ -87,6 +94,8 @@ public:
 		  archiveCompression_(new Compressor<Identity>()),
 		  archiveRawCompression_(new CompressorRaw<IdentityRaw>()),
 		  archiveDecompression_(new Compressor<IdentityDecompress>()),
+		  archiveEncryption_(new EncryptIdentity()),
+		  archiveDecryption_(new DecryptIdentity()),
           tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new Compressor<Identity>()),

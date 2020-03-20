@@ -14,6 +14,8 @@
 #include "Generated/Utilities/Identity.hpp"
 #include "Generated/Utilities/ZstdCompressRaw.hpp"
 #include "Generated/Utilities/ZstdDecompress.hpp"
+#include "Generated/Utilities/Crypto/EncryptAES256GCM.hpp"
+#include "Generated/Utilities/Crypto/DecryptAES256GCM.hpp"
 
 void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	Parse_Opts::Option_Parser p;
@@ -81,6 +83,11 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(archiveCompression_, (CompressorGeneralInterface *) new Compressor<ZstdCompress>()),
 			p.Assign_Value(archiveRawCompression_, (CompressorRawInterface *) new CompressorRaw<ZstdCompressRaw>()),
 			p.Assign_Value(archiveDecompression_, (CompressorGeneralInterface *) new Compressor<ZstdDecompress>())
+	);
+
+	p.Add_Option(Parse_Opts::ARGS_0,"","--aes256gcm","encrypt/decrypt archive",
+			p.Assign_Value(archiveEncryption_, (EncryptorInterface *) new EncryptAES256GCM),
+			p.Assign_Value(archiveDecryption_, (DecryptorInterface *) new DecryptAES256GCM)
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",

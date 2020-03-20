@@ -25,7 +25,8 @@ cc_binary(
 				"-lcryptopp",
 				"-lpthread",
 				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
-				"-lstdc++fs"
+				"-lstdc++fs",
+				"-lcrypto",
 				]
 )
 
@@ -51,6 +52,7 @@ cc_binary(
 				"-lcryptopp",
 				"-lpthread",
 				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
-				"-lstdc++fs"
+				"-lstdc++fs",
+				"-lcrypto",
 				]
 )
