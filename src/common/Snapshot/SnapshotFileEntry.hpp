@@ -25,6 +25,15 @@ public:
 	SnapshotFileEntry(std::filesystem::path & pathname, std::vector<std::shared_ptr<SnapshotEvent>> & snapshotEvents)
 		: pathname_(pathname), snapshotEvents_(snapshotEvents) {}
 
+	std::string LastAction(size_t dumpLevel){
+		for(int i=snapshotEvents_.size()-1; i>=0; --i){
+			if (snapshotEvents_[i]->dumpLevel_<dumpLevel)
+				return snapshotEvents_[i]->action_;
+		}
+
+		return "";
+	}
+
 	friend std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry);
 };
 

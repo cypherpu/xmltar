@@ -25,7 +25,10 @@ void SnapshotXmlParser::startElement(const XML_Char *name, const XML_Char **atts
 			(
 				elements_.end()[-1].attributes_.at("backup-time"),
 				elements_.end()[-1].attributes_.at("dump-level"),
-				elements_.end()[-1].attributes_.at("volume-number"),
+				elements_.end()[-1].attributes_.at("action"),
+				elements_.end()[-1].attributes_.at("start-volume-number"),
+				elements_.end()[-1].attributes_.at("modification-time"),
+				elements_.end()[-1].attributes_.at("size"),
 				elements_.end()[-1].attributes_.at("sha3-512")
 			)
 		);

@@ -16,16 +16,22 @@ class SnapshotEvent {
 public:
 	time_t backupTime_;
 	size_t dumpLevel_;
-	size_t volumeNumber_;
+	std::string action_;
+	std::string startingVolumeName_;
+	time_t modificationTime_;
+	size_t size_;
 	std::string sha3_512_;
 
-	SnapshotEvent(time_t backupTime, size_t dumpLevel, size_t volumeNumber, std::string sha3_512)
-		: backupTime_(backupTime), dumpLevel_(dumpLevel), volumeNumber_(volumeNumber), sha3_512_(sha3_512){}
+	SnapshotEvent(time_t backupTime, size_t dumpLevel, std::string action, std::string startingVolumeName, time_t modificationTime, size_t size, std::string sha3_512)
+		: backupTime_(backupTime), dumpLevel_(dumpLevel), action_(action), startingVolumeName_(startingVolumeName), modificationTime_(modificationTime), size_(size), sha3_512_(sha3_512){}
 
-	SnapshotEvent(std::string backupTimeString, std::string dumpLevelString, std::string volumeNumberString, std::string sha3_512){
+	SnapshotEvent(std::string backupTimeString, std::string dumpLevelString, std::string action, std::string startingVolumeName, std::string modificationTime, std::string size, std::string sha3_512){
 		backupTime_=boost::lexical_cast<time_t>(backupTimeString);
 		dumpLevel_=boost::lexical_cast<size_t>(dumpLevelString);
-		volumeNumber_=boost::lexical_cast<size_t>(volumeNumberString);
+		action_=action;
+		startingVolumeName_=startingVolumeName;
+		modificationTime_=boost::lexical_cast<time_t>(modificationTime);
+		size_=boost::lexical_cast<size_t>(size);
 		sha3_512_=sha3_512;
 	}
 
