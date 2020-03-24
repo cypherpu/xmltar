@@ -44,7 +44,7 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 static int globError=0;
 static char const *globErrorPath=nullptr;
 
-extern "C" GlobErrorFunction(char const *epath, int eerrno){
+extern "C" void GlobErrorFunction(char const *epath, int eerrno){
 	globErrorPath=epath;
 	globError=eerrno;
 }

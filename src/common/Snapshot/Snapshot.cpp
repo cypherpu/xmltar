@@ -35,7 +35,7 @@ Snapshot::~Snapshot(){
 
 	std::filesystem::copy(newSnapshotFilePath_,globals_.options_.listed_incremental_file_.get());
 }
-
+#if 0
 void Snapshot::NewTemporarySnapshotFile(){
 	if (!temporarySnapshotFilePaths_.empty()){
 		std::cerr << "Snapshot::NewTemporarySnapshotFile: closing " << temporarySnapshotFilePaths_.back() << std::endl;
@@ -56,3 +56,4 @@ void Snapshot::NewTemporarySnapshotFile(){
 
 	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWrite(Prologue());
 }
+#endif
