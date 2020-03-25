@@ -17,18 +17,18 @@
 class SnapshotFileEntry {
 public:
 	std::filesystem::path pathname_;
-	std::vector<std::shared_ptr<SnapshotEvent>> snapshotEvents_;
+	std::vector<SnapshotEvent> snapshotEvents_;
 
 	SnapshotFileEntry(std::filesystem::path & pathname)
 		: pathname_(pathname), snapshotEvents_() {}
 
-	SnapshotFileEntry(std::filesystem::path & pathname, std::vector<std::shared_ptr<SnapshotEvent>> & snapshotEvents)
+	SnapshotFileEntry(std::filesystem::path & pathname, std::vector<SnapshotEvent> & snapshotEvents)
 		: pathname_(pathname), snapshotEvents_(snapshotEvents) {}
 
 	std::string LastAction(size_t dumpLevel){
 		for(int i=snapshotEvents_.size()-1; i>=0; --i){
-			if (snapshotEvents_[i]->dumpLevel_<dumpLevel)
-				return snapshotEvents_[i]->action_;
+			if (snapshotEvents_[i].dumpLevel_<dumpLevel)
+				return snapshotEvents_[i].action_;
 		}
 
 		return "";

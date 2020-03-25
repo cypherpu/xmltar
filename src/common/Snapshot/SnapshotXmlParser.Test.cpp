@@ -13,6 +13,7 @@
 
 TEST(SnapshotXmlParser,PlaintextParse)
 {
+#if 0
 	SnapshotXmlParser snapshotParser;
 
 	std::string xml=
@@ -33,7 +34,7 @@ TEST(SnapshotXmlParser,PlaintextParse)
 			"</snapshot>";
 
 	snapshotParser.Parse(xml.c_str(),true);
-#if 0
+
 	EXPECT_EQ(snapshotParser.fileEntries_.size(),4);
 	// EXPECT_EQ(snapshotParser.fileEntries_[2]->pathname_,"../xmltar/.git");
 	EXPECT_EQ(snapshotParser.fileEntries_[0]->snapshotEvents_[0]->backupTime_,99);

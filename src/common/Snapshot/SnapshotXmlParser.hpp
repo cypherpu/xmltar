@@ -16,16 +16,14 @@
 
 class Snapshot;
 
-#include "Snapshot/Snapshot.hpp"
+#include "Snapshot/SnapshotFileEntry.hpp"
 #include "XmlParser/XmlParser.hpp"
 
 class SnapshotXmlParser : public XmlParser {
-	std::fstream fs_;
+	std::deque<SnapshotFileEntry> & fileEntries_;
 public:
-	std::vector<std::shared_ptr<SnapshotEvent>> events_;
-	std::deque<std::shared_ptr<SnapshotFileEntry>> fileEntries_;
-public:
-	SnapshotXmlParser(){
+	SnapshotXmlParser(std::deque<SnapshotFileEntry> & fileEntries)
+		: fileEntries_(fileEntries){
 	}
 
 	virtual void startElement(const XML_Char *name, const XML_Char **atts) override;

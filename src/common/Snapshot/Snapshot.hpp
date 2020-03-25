@@ -15,6 +15,7 @@
 #include <filesystem>
 
 #include "Snapshot/SnapshotFileEntry.hpp"
+#include "Snapshot/SnapshotXmlParser.hpp"
 #include "Compressors/Compressor.hpp"
 
 class XmltarOptions;
@@ -33,6 +34,8 @@ public:
 	std::ifstream oldSnapshotFileIfs_;
 
 	std::deque<SnapshotFileEntry> fileEntries_;
+
+	SnapshotXmlParser snapshotXmlParser_;
 
 	static std::string Prologue(){
 		return  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"

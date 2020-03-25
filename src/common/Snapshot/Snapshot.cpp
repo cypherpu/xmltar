@@ -18,7 +18,7 @@
 #include "Utilities/TemporaryFile.hpp"
 
 Snapshot::Snapshot(XmltarGlobals & globals)
-	: globals_(globals) {
+	: globals_(globals), snapshotXmlParser_(fileEntries_) {
 
 	if (std::filesystem::exists(globals_.options_.listed_incremental_file_.get())){
 		oldSnapshotFileIfs_.open(globals_.options_.listed_incremental_file_.get());
@@ -35,25 +35,3 @@ Snapshot::~Snapshot(){
 
 	std::filesystem::copy(newSnapshotFilePath_,globals_.options_.listed_incremental_file_.get());
 }
-#if 0
-void Snapshot::NewTemporarySnapshotFile(){
-	if (!temporarySnapshotFilePaths_.empty()){
-		std::cerr << "Snapshot::NewTemporarySnapshotFile: closing " << temporarySnapshotFilePaths_.back() << std::endl;
-		temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWriteAndClose(Epilogue());
-		temporarySnapshotFileOfs_.close();
-	}
-
-    boost::format fmt("snapshot_%06d");
-    fmt % temporarySnapshotFilePaths_.size();
-	temporarySnapshotFilePaths_.push_back(temporarySnapshotDirPath_ / str(fmt));
-
-	std::cerr << "Snapshot::NewTemporarySnapshotFile: opening " << temporarySnapshotFilePaths_.back() << std::endl;
-
-	temporaryFileCompression_.reset(globals_.options_.incrementalFileCompression_->clone());
-	temporaryFileCompression_->Open();
-
-	temporarySnapshotFileOfs_.open(temporarySnapshotFilePaths_.back());
-
-	temporarySnapshotFileOfs_ << temporaryFileCompression_->ForceWrite(Prologue());
-}
-#endif

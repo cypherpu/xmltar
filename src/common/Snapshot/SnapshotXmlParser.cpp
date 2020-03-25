@@ -16,12 +16,16 @@ void SnapshotXmlParser::startElement(const XML_Char *name, const XML_Char **atts
 	else if (elements_.back().name_=="file"){
 		if (elements_.size()!=2) throw std::domain_error("SnapshotXmlParser::startElement: \"file\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="snapshot") throw std::domain_error("SnapshotXmlParser::endElement \"snapshot\" not parent of \"file\"");
+
+		std::filesystem::path filePath(DecodeXMLSafeStringToString(elements_.end()[-1].attributes_["name"]));
+		fileEntries_.push_back(SnapshotFileEntry(filePath));
 	}
 	else if (elements_.back().name_=="event"){
 		if (elements_.size()!=3) throw std::domain_error("SnapshotXmlParser::startElement: \"event\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="file") throw std::domain_error("SnapshotXmlParser::startElement \"file\" not parent of \"event\"");
 
-		events_.push_back(std::make_shared<SnapshotEvent>
+		fileEntries_.end()[-1].snapshotEvents_.push_back(
+			SnapshotEvent
 			(
 				elements_.end()[-1].attributes_.at("backup-time"),
 				elements_.end()[-1].attributes_.at("dump-level"),
@@ -46,10 +50,6 @@ void SnapshotXmlParser::endElement(const XML_Char *name){
 	else if (elements_.back().name_=="file"){
 		if (elements_.size()!=2) throw std::domain_error("SnapshotXmlParser::endElement: \"event\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="snapshot") throw std::domain_error("SnapshotXmlParser::endElement \"snapshot\" not parent of \"event\"");
-
-		std::filesystem::path filePath(DecodeXMLSafeStringToString(elements_.end()[-1].attributes_["name"]));
-		fileEntries_.push_back(std::make_shared<SnapshotFileEntry>(filePath,events_));
-		events_.clear();
 	}
 	else if (elements_.back().name_=="event"){
 		if (elements_.size()!=3) throw std::domain_error("SnapshotXmlParser::endElement: \"event\" wrong nesting level");

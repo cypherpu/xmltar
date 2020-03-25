@@ -88,7 +88,7 @@ void XmltarGlobals::NextMember(){
 							&& !ExcludedFile(snapshot_->fileEntries_.front().pathname_)
 							&& snapshot_->fileEntries_.front().LastAction(options_.dump_level_.get())!="deleted"){
 							snapshot_->fileEntries_.front().snapshotEvents_.push_back(
-								std::make_shared<SnapshotEvent>(
+								SnapshotEvent(
 									invocationTime_,
 									options_.dump_level_.get(),
 									"del",
@@ -111,7 +111,7 @@ void XmltarGlobals::NextMember(){
 							&& ExcludedFile(snapshot_->fileEntries_.front().pathname_)
 							&& snapshot_->fileEntries_.front().LastAction(options_.dump_level_.get())!="delete"){
 							snapshot_->fileEntries_.front().snapshotEvents_.push_back(
-								std::make_shared<SnapshotEvent>(
+								SnapshotEvent(
 									invocationTime_,
 									options_.dump_level_.get(),
 									"delete",

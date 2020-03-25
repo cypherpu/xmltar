@@ -11,7 +11,7 @@
 std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry){
 	os << "\t<file name=\"" << EncodeStringToXMLSafeString(snapshotFileEntry.pathname_) << "\">\n";
 	for(auto & i : snapshotFileEntry.snapshotEvents_){
-		os << "\t\t" << (*i) << std::endl;
+		os << "\t\t" << i << std::endl;
 	}
 	os << "\t</file>" << std::endl;
 
