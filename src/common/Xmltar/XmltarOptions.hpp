@@ -80,6 +80,7 @@ public:
 	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
 	boost::optional<unsigned int> starting_volume_;				// starting_volume;
 	std::vector<std::string> sourceFileGlobs_;
+	bool sha3_512_;
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
@@ -102,7 +103,7 @@ public:
 		  dump_level_(),
 		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
-		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(){ }
+		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(), sha3_512_(false){ }
 
     void ProcessOptions(int argc, char const *argv[]);
 

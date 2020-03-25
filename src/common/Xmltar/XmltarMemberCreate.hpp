@@ -28,7 +28,7 @@ class XmltarMemberCreate {
 	std::string memberHeader_;
 	std::string memberTrailer_;
 	std::shared_ptr<std::ifstream> ifs_;
-	size_t startingVolume_;
+	std::string startingVolumeName_;
 
 	Sha3_512 sha3sum512_;
 

@@ -43,8 +43,7 @@ public:
     void MatchingPathsFromGlobs(
     	std::vector<std::string> const & patterns,
 		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> *matchingPaths
-	){
-)
+	);
 };
 
 #endif // COMMON_XMLTAR_XMLTARINVOCATION_HPP_

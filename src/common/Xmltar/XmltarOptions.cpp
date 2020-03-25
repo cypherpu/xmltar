@@ -131,6 +131,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(tabs_,false));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--no-newlines","do not include any newlines in the xml archive",
 			p.Assign_Value(newlines_,false));
+	p.Add_Option(Parse_Opts::ARGS_0,"","--sha3-512","compute sha3 512 and se for file comparisons",
+			p.Assign_Value(newlines_,true));
 
 	std::vector<std::string> remaining_args=p.Parse(argc,argv);
 

@@ -62,7 +62,7 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
     memberHeader_=MemberHeader();
     memberTrailer_=MemberTrailer();
 
-    startingVolume_=globals_.current_volume_;
+    startingVolumeName_=globals_.current_volume_;
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
@@ -73,9 +73,17 @@ XmltarMemberCreate::~XmltarMemberCreate(){
     }
 
 	if (globals_.options_.listed_incremental_file_){
-		(*globals_.snapshot_).temporarySnapshotFileOfs_
+		(*globals_.snapshot_).newSnapshotFileOfs_
 			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
-			<< "\t\t" << SnapshotEvent(globals_.invocationTime_,globals_.options_.dump_level_.get(),startingVolume_,output) << std::endl
+			<< "\t\t" << SnapshotEvent(
+							globals_.invocationTime_,
+							globals_.options_.dump_level_.get(),
+							"add",
+							startingVolumeName_,
+							stat_buf_.st_mtim.tv_sec,
+							stat_buf_.st_size,
+							output)
+						<< std::endl
 			<< "\t</file>" << std::endl;
 		std::cerr << "Digest=" << output << std::endl;
 	}
