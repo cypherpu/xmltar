@@ -37,6 +37,8 @@ public:
 
 	SnapshotXmlParser snapshotXmlParser_;
 
+	bool finishedParsing_;
+
 	static std::string Prologue(){
 		return  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 				"<snapshot xmlns=\"http://www.xmltar.org/0.1\" version=\"0.1\">\n";
@@ -50,7 +52,12 @@ public:
 
 	~Snapshot();
 
-	void ReplenishFileEntries(){ throw std::domain_error("Snapshot::ReplenishFileEntries not implemented"); }
+	void ReplenishFileEntries(){
+		while(oldSnapshotFileIfs_){
+			snapshotXmlParser_.Parse(s,false);
+		}
+		throw std::domain_error("Snapshot::ReplenishFileEntries not implemented");
+	}
 	void CopyFrontFileEntryAndPop(){ throw std::domain_error("Snapshot::CopyFrontFileEntryAndPop not implemented"); }
 };
 

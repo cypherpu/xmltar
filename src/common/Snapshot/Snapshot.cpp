@@ -18,7 +18,7 @@
 #include "Utilities/TemporaryFile.hpp"
 
 Snapshot::Snapshot(XmltarGlobals & globals)
-	: globals_(globals), snapshotXmlParser_(fileEntries_) {
+	: globals_(globals), snapshotXmlParser_(fileEntries_), finishedParsing_(false) {
 
 	if (std::filesystem::exists(globals_.options_.listed_incremental_file_.get())){
 		oldSnapshotFileIfs_.open(globals_.options_.listed_incremental_file_.get());
