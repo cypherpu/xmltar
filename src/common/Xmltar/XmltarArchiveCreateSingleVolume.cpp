@@ -30,6 +30,7 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		outputFileStream.open(filename);
 		ofs=&outputFileStream;
 	}
+	globals_.current_xmltar_file_name_=std::filesystem::path(filename).filename().string();
 	*ofs << globals_.options_.archiveCompression_->Open();
 	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;

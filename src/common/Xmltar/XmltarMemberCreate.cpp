@@ -45,14 +45,11 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
     	std::cerr << "########### is regular file" << std::endl;
         file_size_=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
+        sha3sum512_.Open();
         if (!*ifs_){
         	globals_.resultCode_=1;
         	globals_.errorMessages_.push_back(filepath_.string()+": cannot open file");
         }
-#if 0
-    	std::cerr << "########### running sha3sum512_" << std::endl;
-        sha3sum512_.run();
-#endif
     }
     else file_size_=0;
 
@@ -62,31 +59,10 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
     memberHeader_=MemberHeader();
     memberTrailer_=MemberTrailer();
 
-    startingVolumeName_=globals_.current_volume_;
+    startingVolumeName_=globals_.current_xmltar_file_name_;
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
-	std::string output;
-
-	if (std::filesystem::is_regular_file(f_stat_)){
-		output=sha3sum512_.ForceWriteAndClose("");
-    }
-
-	if (globals_.options_.listed_incremental_file_){
-		(*globals_.snapshot_).newSnapshotFileOfs_
-			<< "\t<file name=\"" << EncodeStringToXMLSafeString(filepath_.string()) << "\">\n"
-			<< "\t\t" << SnapshotEvent(
-							globals_.invocationTime_,
-							globals_.options_.dump_level_.get(),
-							"add",
-							startingVolumeName_,
-							stat_buf_.st_mtim.tv_sec,
-							stat_buf_.st_size,
-							output)
-						<< std::endl
-			<< "\t</file>" << std::endl;
-		std::cerr << "Digest=" << output << std::endl;
-	}
 	std::cerr << "XmltarMemberCreate::~XmltarMemberCreate: destructor" << std::endl;
 }
 
@@ -124,7 +100,8 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 
 		for( size_t i=numberOfBytesToArchive; *ifs_ && i>0; i-=ifs_->gcount()){
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
-			sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
+			if (globals_.options_.sha3_512_)
+				sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
 				globals_.options_.archiveCompression_->ForceWrite(
 					globals_.options_.archiveMemberCompression_->ForceWrite(

@@ -25,6 +25,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
 
 	std::ofstream ofs(filename_);
+	globals_.current_xmltar_file_name_=std::filesystem::path(filename).filename().string();
 	std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,globals_.current_volume_);
 	std::string compressedArchiveTrailer=CompressedArchiveTrailer();
 

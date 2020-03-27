@@ -27,9 +27,11 @@ Snapshot::Snapshot(XmltarGlobals & globals)
 	newSnapshotFileDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
 	newSnapshotFilePath_=newSnapshotFileDirPath_ / "new_snapshot_file.xml";
 	newSnapshotFileOfs_.open(newSnapshotFilePath_.string());
+	newSnapshotFileOfs_ << Prologue() << std::endl;
 }
 
 Snapshot::~Snapshot(){
+	newSnapshotFileOfs_ << Epilogue() << std::endl;
 	newSnapshotFileOfs_.close();
 	oldSnapshotFileIfs_.close();
 

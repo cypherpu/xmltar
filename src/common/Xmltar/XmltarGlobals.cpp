@@ -51,6 +51,30 @@ void XmltarGlobals::NextMemberAux(std::filesystem::path filepath){
 
 void XmltarGlobals::NextMember(){
 	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
+	if (nextMember_){
+		std::string sha3_512;
+
+		if (std::filesystem::is_regular_file(nextMember_->f_stat_) && options_.sha3_512_){
+			sha3_512=nextMember_->sha3sum512_.ForceWriteAndClose("");
+	    }
+
+		if (options_.listed_incremental_file_){
+			snapshot_->newSnapshotFileOfs_
+				<< "\t<file name=\"" << EncodeStringToXMLSafeString(nextMember_->filepath_.string()) << "\">\n";
+			snapshot_->newSnapshotFileOfs_
+				<< "\t\t" << SnapshotEvent(
+								invocationTime_,
+								options_.dump_level_.get(),
+								"add",
+								nextMember_->startingVolumeName_,
+								nextMember_->stat_buf_.st_mtim.tv_sec,
+								nextMember_->stat_buf_.st_size,
+								sha3_512)
+							<< std::endl
+				<< "\t</file>" << std::endl;
+			std::cerr << "Digest=" << sha3_512 << std::endl;
+		}
+	}
 	nextMember_.reset(nullptr);
 
 	std::filesystem::path filepath;
@@ -86,7 +110,7 @@ void XmltarGlobals::NextMember(){
 					for( ; !snapshot_->fileEntries_.empty(); snapshot_->ReplenishFileEntries()){
 						if (IncludedFile(snapshot_->fileEntries_.front().pathname_)
 							&& !ExcludedFile(snapshot_->fileEntries_.front().pathname_)
-							&& snapshot_->fileEntries_.front().LastAction(options_.dump_level_.get())!="deleted"){
+							&& snapshot_->fileEntries_.front().LastAction(options_.dump_level_.get())!="del"){
 							snapshot_->fileEntries_.front().snapshotEvents_.push_back(
 								SnapshotEvent(
 									invocationTime_,
@@ -114,7 +138,7 @@ void XmltarGlobals::NextMember(){
 								SnapshotEvent(
 									invocationTime_,
 									options_.dump_level_.get(),
-									"delete",
+									"del",
 									"",
 									0,
 									0,

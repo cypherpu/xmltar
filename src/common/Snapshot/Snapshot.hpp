@@ -53,10 +53,11 @@ public:
 	~Snapshot();
 
 	void ReplenishFileEntries(){
-		while(oldSnapshotFileIfs_){
-			snapshotXmlParser_.Parse(s,false);
+		while(fileEntries_.size()==0 && oldSnapshotFileIfs_){
+			char buffer[1024];
+			oldSnapshotFileIfs_.read(buffer,sizeof(buffer)/sizeof(char));
+			snapshotXmlParser_.Parse(std::string(buffer,oldSnapshotFileIfs_.gcount()),false);
 		}
-		throw std::domain_error("Snapshot::ReplenishFileEntries not implemented");
 	}
 	void CopyFrontFileEntryAndPop(){ throw std::domain_error("Snapshot::CopyFrontFileEntryAndPop not implemented"); }
 };
