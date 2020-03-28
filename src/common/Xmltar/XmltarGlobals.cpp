@@ -42,7 +42,7 @@ void XmltarGlobals::NextMemberAux(std::filesystem::path filepath){
 
 	if (std::filesystem::is_directory(f_stat)){
 		for(auto & p : std::filesystem::directory_iterator(filepath) ){
-			filesToBeIncluded_.push(p);
+			filesToBeIncluded_.push(ExtendedPath(p));
 		}
 	}
 
@@ -51,14 +51,14 @@ void XmltarGlobals::NextMemberAux(std::filesystem::path filepath){
 
 void XmltarGlobals::NextMember(){
 	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
-	if (nextMember_){
-		std::string sha3_512;
-
-		if (std::filesystem::is_regular_file(nextMember_->f_stat_) && options_.sha3_512_){
-			sha3_512=nextMember_->sha3sum512_.ForceWriteAndClose("");
-	    }
-
+	if (currentSnapshotFileEntry_){
 		if (options_.listed_incremental_file_){
+			std::string sha3_512;
+#if 0
+			if (std::filesystem::is_regular_file(nextMember_->f_stat_) && options_.sha3_512_){
+				sha3_512=nextMember_->sha3sum512_.ForceWriteAndClose("");
+			}
+
 			snapshot_->newSnapshotFileOfs_
 				<< "\t<file name=\"" << EncodeStringToXMLSafeString(nextMember_->filepath_.string()) << "\">\n";
 			snapshot_->newSnapshotFileOfs_
@@ -73,6 +73,7 @@ void XmltarGlobals::NextMember(){
 							<< std::endl
 				<< "\t</file>" << std::endl;
 			std::cerr << "Digest=" << sha3_512 << std::endl;
+#endif
 		}
 	}
 	nextMember_.reset(nullptr);
@@ -101,11 +102,46 @@ void XmltarGlobals::NextMember(){
 				snapshot_->ReplenishFileEntries();
 
 			if (snapshot_->fileEntries_.empty())
+				/*
+				 * case: no more files to be included, no more snapshot entries
+				 * action: done
+				 */
 				if (filesToBeIncluded_.empty())
 					return;
-				else // !filesToBeIncluded_.empty()
-					break;
-			else { // !snapshot_->fileEntries_.empty()
+				/*
+				 * case: more files to be included, no more snapshot entries
+				 * action: add files meeting inclusion/exclusion criteria to snapshot
+				 */
+				else
+					for(;;){
+						if (filesToBeIncluded_.empty()){
+							return;
+						}
+						else if (filesToBeExcluded_.empty()){
+							filepath=filesToBeIncluded_.top().path();
+							filesToBeIncluded_.pop();
+							NextMemberAux(filepath);
+							return;
+						}
+						else if (filesToBeIncluded_.top()==filesToBeExcluded_.top()){
+							filesToBeIncluded_.pop();
+							filesToBeExcluded_.pop();
+						}
+						else if (filesToBeIncluded_.top()>filesToBeExcluded_.top()){
+							filesToBeExcluded_.pop();
+						}
+						else {
+							filepath=filesToBeIncluded_.top().path();
+							filesToBeIncluded_.pop();
+							NextMemberAux(filepath);
+							return;
+						}
+					}
+			else {
+				/*
+				 * case: no more files to be included, but more snapshot entries
+				 * action: update those snapshot entries which meat inclusion/criteria
+				 */
 				if (filesToBeIncluded_.empty()){
 					for( ; !snapshot_->fileEntries_.empty(); snapshot_->ReplenishFileEntries()){
 						if (IncludedFile(snapshot_->fileEntries_.front().pathname_)
@@ -153,7 +189,7 @@ void XmltarGlobals::NextMember(){
 					}
 					else if (snapshot_->fileEntries_.front().pathname_>filesToBeIncluded_.top()){
 						if (!ExcludedFile(snapshot_->fileEntries_.front().pathname_)){
-							filepath=filesToBeIncluded_.top();
+							filepath=filesToBeIncluded_.top().path();
 							filesToBeIncluded_.pop();
 							NextMemberAux(filepath);
 							return;
@@ -173,7 +209,7 @@ void XmltarGlobals::NextMember(){
 								 * this file is present, but marked as deleted
 								 * add it to the incremental file list
 								 */
-								filepath=filesToBeIncluded_.top();
+								filepath=filesToBeIncluded_.top().path();
 								filesToBeIncluded_.pop();
 								NextMemberAux(filepath);
 								return;
@@ -196,7 +232,7 @@ void XmltarGlobals::NextMember(){
 			return;
 		}
 		else if (filesToBeExcluded_.empty()){
-			filepath=filesToBeIncluded_.top();
+			filepath=filesToBeIncluded_.top().path();
 			filesToBeIncluded_.pop();
 			NextMemberAux(filepath);
 			return;
@@ -209,7 +245,7 @@ void XmltarGlobals::NextMember(){
 			filesToBeExcluded_.pop();
 		}
 		else {
-			filepath=filesToBeIncluded_.top();
+			filepath=filesToBeIncluded_.top().path();
 			filesToBeIncluded_.pop();
 			NextMemberAux(filepath);
 			return;

@@ -9,7 +9,7 @@
 #include "Utilities/XMLSafeString.hpp"
 
 std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry){
-	os << "\t<file name=\"" << EncodeStringToXMLSafeString(snapshotFileEntry.pathname_) << "\">\n";
+	os << "\t<file name=\"" << EncodeStringToXMLSafeString(snapshotFileEntry.pathname_.path()) << "\">\n";
 	for(auto & i : snapshotFileEntry.snapshotEvents_){
 		os << "\t\t" << i << std::endl;
 	}

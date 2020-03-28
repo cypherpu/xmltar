@@ -42,7 +42,7 @@ public:
 
     void MatchingPathsFromGlobs(
     	std::vector<std::string> const & patterns,
-		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> *matchingPaths
+		std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> *matchingPaths
 	);
 };
 

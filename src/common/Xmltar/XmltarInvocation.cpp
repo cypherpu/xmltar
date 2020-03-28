@@ -96,11 +96,13 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 				throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 		MatchingPathsFromGlobs(globals_.options_.sourceFileGlobs_,&globals_.filesToBeIncluded_);
+		globals_.filesToBeIncluded_.push(ExtendedPath(ExtendedPath::PathType::MAX));
 	}
 
 	spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
 	{
 		MatchingPathsFromGlobs(globals_.options_.excludeFileGlobs_,&globals_.filesToBeExcluded_);
+		globals_.filesToBeExcluded_.push(ExtendedPath(ExtendedPath::PathType::MAX));
 	}
 
 	spdlog::debug("Before boost::optional<Snapshot> snapshot(options_)");
@@ -243,7 +245,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 
 void XmltarInvocation::MatchingPathsFromGlobs(
 		std::vector<std::string> const & patterns,
-		std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> *matchingPaths
+		std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> *matchingPaths
 	){
 	std::set<std::filesystem::path> tmp;
 	for(auto & pattern : patterns){

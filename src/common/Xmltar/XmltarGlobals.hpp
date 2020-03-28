@@ -15,6 +15,7 @@
 
 #include <fnmatch.h>
 
+#include "Utilities/ExtendedPath.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Xmltar/XmltarOptions.hpp"
 
@@ -28,10 +29,11 @@ public:
 	std::unique_ptr<Snapshot> snapshot_;	// FIXME - make sure snapshot_ is destructed before options
 	time_t invocationTime_;
 
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeIncluded_;
-	std::priority_queue<std::filesystem::path,std::vector<std::filesystem::path>,std::greater<std::filesystem::path>> filesToBeExcluded_;
+	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeIncluded_;
+	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeExcluded_;
 
 	void NextMemberAux(std::filesystem::path filepath);
+	std::shared_ptr<SnapshotFileEntry> currentSnapshotFileEntry_;
 	std::unique_ptr<XmltarMemberCreate> nextMember_;
 
     int resultCode_;
@@ -51,12 +53,12 @@ public:
     	return false;
     }
 
-    bool IncludedFile(std::filesystem::path p){
-    	return MatchesGlobs(p,options_.sourceFileGlobs_);
+    bool IncludedFile(ExtendedPath p){
+    	return MatchesGlobs(p.path(),options_.sourceFileGlobs_);
     }
 
-    bool ExcludedFile(std::filesystem::path p){
-    	return MatchesGlobs(p,options_.excludeFileGlobs_);
+    bool ExcludedFile(ExtendedPath p){
+    	return MatchesGlobs(p.path(),options_.excludeFileGlobs_);
     }
 };
 

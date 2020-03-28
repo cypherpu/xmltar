@@ -12,17 +12,18 @@
 #include <string>
 #include <filesystem>
 
+#include "Utilities/ExtendedPath.hpp"
 #include "Snapshot/SnapshotEvent.hpp"
 
 class SnapshotFileEntry {
 public:
-	std::filesystem::path pathname_;
+	ExtendedPath pathname_;
 	std::vector<SnapshotEvent> snapshotEvents_;
 
-	SnapshotFileEntry(std::filesystem::path & pathname)
+	SnapshotFileEntry(ExtendedPath const & pathname)
 		: pathname_(pathname), snapshotEvents_() {}
 
-	SnapshotFileEntry(std::filesystem::path & pathname, std::vector<SnapshotEvent> & snapshotEvents)
+	SnapshotFileEntry(ExtendedPath const & pathname, std::vector<SnapshotEvent> & snapshotEvents)
 		: pathname_(pathname), snapshotEvents_(snapshotEvents) {}
 
 	std::string LastAction(size_t dumpLevel){

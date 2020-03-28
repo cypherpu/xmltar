@@ -18,7 +18,7 @@ void SnapshotXmlParser::startElement(const XML_Char *name, const XML_Char **atts
 		else if (elements_.end()[-2].name_!="snapshot") throw std::domain_error("SnapshotXmlParser::endElement \"snapshot\" not parent of \"file\"");
 
 		std::filesystem::path filePath(DecodeXMLSafeStringToString(elements_.end()[-1].attributes_["name"]));
-		fileEntries_.push_back(SnapshotFileEntry(filePath));
+		fileEntries_.push_back(SnapshotFileEntry(ExtendedPath(filePath)));
 	}
 	else if (elements_.back().name_=="event"){
 		if (elements_.size()!=3) throw std::domain_error("SnapshotXmlParser::startElement: \"event\" wrong nesting level");
