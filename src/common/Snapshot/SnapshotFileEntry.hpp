@@ -26,13 +26,13 @@ public:
 	SnapshotFileEntry(ExtendedPath const & pathname, std::vector<SnapshotEvent> & snapshotEvents)
 		: pathname_(pathname), snapshotEvents_(snapshotEvents) {}
 
-	std::string LastAction(size_t dumpLevel){
+	SnapshotEvent const & LastEvent(size_t dumpLevel){
 		for(int i=snapshotEvents_.size()-1; i>=0; --i){
 			if (snapshotEvents_[i].dumpLevel_<dumpLevel)
-				return snapshotEvents_[i].action_;
+				return snapshotEvents_[i];
 		}
 
-		return "";
+		throw std::logic_error("SnapshotFileEntry::Last: no last Event");
 	}
 
 	friend std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry);

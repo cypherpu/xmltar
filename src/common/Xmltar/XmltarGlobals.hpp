@@ -32,15 +32,14 @@ public:
 	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeIncluded_;
 	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeExcluded_;
 
-	void NextMemberAux(std::filesystem::path filepath);
-	std::shared_ptr<SnapshotFileEntry> currentSnapshotFileEntry_;
+	std::string Sha3(std::filesystem::path filepath);
+	std::string nextAction_;
 	std::unique_ptr<XmltarMemberCreate> nextMember_;
 
     int resultCode_;
     std::vector<std::string> errorMessages_;
 
     XmltarGlobals();
-    void NextMemberAux();
     void NextMember();
     bool MatchesGlobs(std::filesystem::path p, std::vector<std::string> globs){
     	for(auto & s : globs){

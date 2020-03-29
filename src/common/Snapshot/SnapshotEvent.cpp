@@ -13,6 +13,7 @@ std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent)
 	os << "<event "
 			"backup-time=\"" << snapshotEvent.backupTime_ << "\" "
 			"dump-level=\"" << snapshotEvent.dumpLevel_ << "\" "
+			"action=\"" << snapshotEvent.action_ << "\" "
 			"start-volume-name=\"" << snapshotEvent.startingVolumeName_ << "\" "
 			"modification-time=\"" << snapshotEvent.modificationTime_ << "\" "
 			"size=\"" << snapshotEvent.size_ << "\" "

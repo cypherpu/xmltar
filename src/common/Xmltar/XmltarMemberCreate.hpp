@@ -20,18 +20,20 @@ extern "C" {
 
 class XmltarMemberCreate {
 	XmltarGlobals & globals_;
+public:
 	std::filesystem::path const filepath_;
 	struct stat stat_buf_;
 	std::filesystem::file_status f_stat_;
 	std::filesystem::file_type f_type_;
+private:
 	off_t file_size_;
 	std::string memberHeader_;
 	std::string memberTrailer_;
 	std::shared_ptr<std::ifstream> ifs_;
+public:
 	std::string startingVolumeName_;
-
 	Sha3_512 sha3sum512_;
-
+private:
 	bool metadataWritten_;
 
 public:

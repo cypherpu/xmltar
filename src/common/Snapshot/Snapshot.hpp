@@ -64,7 +64,10 @@ public:
 
 		if (!oldSnapshotFileIfs_) fileEntries_.push_back(SnapshotFileEntry(ExtendedPath::PathType::MAX));
 	}
-	void CopyFrontFileEntryAndPop(){ throw std::domain_error("Snapshot::CopyFrontFileEntryAndPop not implemented"); }
+	void CopyFrontFileEntryAndPop(){
+		newSnapshotFileOfs_ << fileEntries_.front();
+		fileEntries_.pop_front();
+	}
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */
