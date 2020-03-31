@@ -20,6 +20,7 @@ class Snapshot;
 #include "XmlParser/XmlParser.hpp"
 
 class SnapshotXmlParser : public XmlParser {
+	SnapshotFileEntry tmp_;
 	std::deque<SnapshotFileEntry> & fileEntries_;
 public:
 	SnapshotXmlParser(std::deque<SnapshotFileEntry> & fileEntries)

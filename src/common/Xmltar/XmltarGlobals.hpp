@@ -59,6 +59,16 @@ public:
     bool ExcludedFile(ExtendedPath p){
     	return MatchesGlobs(p.path(),options_.excludeFileGlobs_);
     }
+
+    void AddSubdirectories(std::filesystem::path const & p){
+		std::filesystem::file_status f_stat=std::filesystem::symlink_status(p);
+
+		if (std::filesystem::is_directory(f_stat)){
+			for(auto & i : std::filesystem::directory_iterator(p) ){
+				filesToBeIncluded_.push(ExtendedPath(i));
+			}
+		}
+    }
 };
 
 

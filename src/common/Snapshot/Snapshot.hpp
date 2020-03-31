@@ -53,6 +53,7 @@ public:
 	~Snapshot();
 
 	void ReplenishFileEntries(){
+		betz::Debug2("Snapshot::ReplenishFileEntries: ");
 		if (fileEntries_.size()!=0 && fileEntries_.back().pathname_==ExtendedPath(ExtendedPath::PathType::MAX))
 			return;
 

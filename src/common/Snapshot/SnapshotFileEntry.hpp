@@ -20,11 +20,17 @@ public:
 	ExtendedPath pathname_;
 	std::vector<SnapshotEvent> snapshotEvents_;
 
+	SnapshotFileEntry()
+		: pathname_(), snapshotEvents_() {}
+
 	SnapshotFileEntry(ExtendedPath const & pathname)
 		: pathname_(pathname), snapshotEvents_() {}
 
 	SnapshotFileEntry(ExtendedPath const & pathname, std::vector<SnapshotEvent> & snapshotEvents)
 		: pathname_(pathname), snapshotEvents_(snapshotEvents) {}
+
+	SnapshotFileEntry(SnapshotFileEntry const & snapshotFileEntry)
+		: pathname_(snapshotFileEntry.pathname_), snapshotEvents_(snapshotFileEntry.snapshotEvents_) {}
 
 	SnapshotEvent const & LastEvent(size_t dumpLevel){
 		for(int i=snapshotEvents_.size()-1; i>=0; --i){

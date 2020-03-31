@@ -62,37 +62,9 @@ void XmltarGlobals::NextMember(){
 			snapshot_->CopyFrontFileEntryAndPop();
 		}
 
-		std::filesystem::file_status f_stat=std::filesystem::symlink_status(nextMember_->filepath_);
-
-		if (std::filesystem::is_directory(f_stat)){
-			for(auto & p : std::filesystem::directory_iterator(nextMember_->filepath_) ){
-				filesToBeIncluded_.push(ExtendedPath(p));
-			}
-		}
+		AddSubdirectories(nextMember_->filepath_);
 	}
 	nextMember_.reset(nullptr);
-
-#if 0
-		}
-		if (options_.listed_incremental_file_){
-
-			snapshot_->newSnapshotFileOfs_
-				<< "\t<file name=\"" << EncodeStringToXMLSafeString(nextMember_->filepath_.string()) << "\">\n";
-			snapshot_->newSnapshotFileOfs_
-				<< "\t\t" << SnapshotEvent(
-								invocationTime_,
-								options_.dump_level_.get(),
-								"add",
-								nextMember_->startingVolumeName_,
-								nextMember_->stat_buf_.st_mtim.tv_sec,
-								nextMember_->stat_buf_.st_size,
-								sha3_512)
-							<< std::endl
-				<< "\t</file>" << std::endl;
-			std::cerr << "Digest=" << sha3_512 << std::endl;
-		}
-	}
-#endif
 
 	std::filesystem::path filepath;
 
@@ -104,6 +76,8 @@ void XmltarGlobals::NextMember(){
 			while(filesToBeExcluded_.top()<snapshot_->fileEntries_.front().pathname_
 					&& filesToBeExcluded_.top()<filesToBeIncluded_.top())
 				filesToBeExcluded_.pop();
+
+			std::cerr << "NextMember: " << snapshot_->fileEntries_.front().pathname_ << " " << filesToBeIncluded_.top() << std::endl;
 
 			if (snapshot_->fileEntries_.front().pathname_<filesToBeIncluded_.top()){
 				if (IncludedFile(snapshot_->fileEntries_.front().pathname_)
@@ -138,8 +112,6 @@ void XmltarGlobals::NextMember(){
 				if (snapshot_->fileEntries_.front().pathname_.pathType()==ExtendedPath::PathType::MAX)
 					if (filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX)
 						return;
-					else
-						throw std::logic_error("XmltarGlobals::NextMember: both paths should be MAX 1");
 
 				if (ExcludedFile(filesToBeIncluded_.top())){
 					snapshot_->CopyFrontFileEntryAndPop();
@@ -154,9 +126,19 @@ void XmltarGlobals::NextMember(){
 						return;
 					}
 					else if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="modified"
-							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="added"){
+							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="created"){
 						nextAction_="modified";
 						nextMember_.reset(new XmltarMemberCreate(*this,filesToBeIncluded_.top().path()));
+
+						std::cerr
+							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).modificationTime_ << " "
+							<< nextMember_->stat_buf_.st_mtim.tv_sec << " "
+							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).size_ << " "
+							<< nextMember_->stat_buf_.st_size
+							<< std::endl;
+
+
+
 						if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).modificationTime_
 								!=nextMember_->stat_buf_.st_mtim.tv_sec
 							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).size_
@@ -165,12 +147,12 @@ void XmltarGlobals::NextMember(){
 								&& snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).sha3_512_
 									!=Sha3(filesToBeIncluded_.top().path()))){
 							filesToBeIncluded_.pop();
-							snapshot_->fileEntries_.pop_front();
 							return;
 						}
 						else {
+							AddSubdirectories(filesToBeIncluded_.top().path());
 							filesToBeIncluded_.pop();
-							snapshot_->fileEntries_.pop_front();
+							snapshot_->CopyFrontFileEntryAndPop();
 							nextMember_.reset(nullptr);
 						}
 					}
