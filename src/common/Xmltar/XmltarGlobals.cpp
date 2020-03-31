@@ -43,10 +43,10 @@ void XmltarGlobals::NextMember(){
 
 	std::string sha3_512;
 
-	if (std::filesystem::is_regular_file(nextMember_->f_stat_) && options_.sha3_512_){
-		sha3_512=nextMember_->sha3sum512_.ForceWriteAndClose("");
-	}
 	if (nextMember_){
+		if (std::filesystem::is_regular_file(nextMember_->f_stat_) && options_.sha3_512_){
+			sha3_512=nextMember_->sha3sum512_.ForceWriteAndClose("");
+		}
 		if (snapshot_){
 			snapshot_->fileEntries_.front().snapshotEvents_.push_back(
 				SnapshotEvent(
@@ -59,6 +59,7 @@ void XmltarGlobals::NextMember(){
 					sha3_512
 				)
 			);
+			snapshot_->CopyFrontFileEntryAndPop();
 		}
 
 		std::filesystem::file_status f_stat=std::filesystem::symlink_status(nextMember_->filepath_);
