@@ -172,11 +172,12 @@ void XmltarGlobals::NextMember(){
 				return;
 			}
 			else {
-				if (filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX)
-					if (filesToBeExcluded_.top().pathType()==ExtendedPath::PathType::MAX)
-						return;
-					else
-						throw std::logic_error("XmltarGlobals::NextMember: both paths should be MAX 2");
+				if (filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX
+					&& filesToBeExcluded_.top().pathType()==ExtendedPath::PathType::MAX)
+					return;
+				else if (filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX
+					|| filesToBeExcluded_.top().pathType()==ExtendedPath::PathType::MAX)
+					throw std::logic_error("XmltarGlobals::NextMember: both paths should be MAX 2");
 
 				filesToBeIncluded_.pop();
 				filesToBeExcluded_.pop();

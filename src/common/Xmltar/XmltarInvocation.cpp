@@ -133,7 +133,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
                 // 1. we ran out of files to archive
                 // 2. we ran out of space in the archive
 
-            	if (!globals_.nextMember_ && globals_.filesToBeIncluded_.empty()) break;
+            	if (!globals_.nextMember_ && globals_.filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX) break;
             }
 		}
 		else {	// !options_.multi_volume_

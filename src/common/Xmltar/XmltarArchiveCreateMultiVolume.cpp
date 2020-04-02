@@ -42,7 +42,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	ofs << globals_.options_.archiveCompression_->Open();
 
 	std::cerr << "filesToBeIncluded_.size()=" << globals_.filesToBeIncluded_.size() << std::endl;
-	if (!globals_.filesToBeIncluded_.empty() && !globals_.nextMember_)
+	if (globals_.filesToBeIncluded_.top().pathType()!=ExtendedPath::PathType::MAX && !globals_.nextMember_)
 		globals_.NextMember();
 
 	for(bool firstPass=true; globals_.nextMember_; firstPass=false){
