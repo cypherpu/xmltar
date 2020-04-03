@@ -53,21 +53,6 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(decoding_,(CompressorGeneralInterface *) new Compressor<HexDecode>())
 	);
 
-	p.Add_Option(Parse_Opts::ARGS_0,"","--member-identity","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(CompressorGeneralInterface *) new Compressor<Identity>()),
-			p.Assign_Value(archiveMemberRawCompression_,(CompressorRawInterface *) new CompressorRaw<IdentityRaw>()),
-			p.Assign_Value(archiveMemberDecompression_,(CompressorGeneralInterface *) new Compressor<Identity>())
-	);
-	p.Add_Option(Parse_Opts::ARGS_0,"","--member-gzip","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_,(CompressorGeneralInterface *) new Compressor<Zlib::Gzip>()),
-			p.Assign_Value(archiveMemberRawCompression_,(CompressorRawInterface *) new CompressorRaw<Zlib::GzipRaw>()),
-			p.Assign_Value(archiveMemberDecompression_,(CompressorGeneralInterface *) new Compressor<Zlib::Gunzip>())
-	);
-	p.Add_Option(Parse_Opts::ARGS_0,"","--member-zstd","member-compress members before archiving",
-			p.Assign_Value(archiveMemberCompression_, (CompressorGeneralInterface *) new Compressor<ZstdCompress>()),
-			p.Assign_Value(archiveMemberRawCompression_, (CompressorRawInterface *) new CompressorRaw<ZstdCompressRaw>()),
-			p.Assign_Value(archiveMemberDecompression_, (CompressorGeneralInterface *) new Compressor<ZstdDecompress>())
-	);
 
 	p.Add_Option(Parse_Opts::ARGS_0,"","--identity","compress archive",
 			p.Assign_Value(archiveCompression_,(CompressorGeneralInterface *) new Compressor<Identity>()),
@@ -171,7 +156,6 @@ std::string XmltarOptions::toXMLString(){
 
 	oss << Tabs("\t\t\t") << "<option>--file-" << fileCompression_.get()->CompressorName() << "</option>" << std::endl;
 	oss << Tabs("\t\t\t") << "<option>--" << encoding_.get()->CompressorName() << "</option>" << std::endl;
-	oss << Tabs("\t\t\t") << "<option>--member-" << archiveMemberCompression_.get()->CompressorName() << "</option>" << std::endl;
 	oss << Tabs("\t\t\t") << "<option>--" << archiveCompression_.get()->CompressorName() << "</option>" << std::endl;
 
 	if (tape_length_)

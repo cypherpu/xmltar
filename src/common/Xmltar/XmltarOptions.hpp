@@ -55,10 +55,6 @@ public:
 	std::shared_ptr<CompressorGeneralInterface> encoding_;
 	std::shared_ptr<CompressorGeneralInterface> decoding_;
 
-	std::shared_ptr<CompressorGeneralInterface> archiveMemberCompression_;
-	std::shared_ptr<CompressorRawInterface> archiveMemberRawCompression_;
-	std::shared_ptr<CompressorGeneralInterface> archiveMemberDecompression_;
-
 	std::shared_ptr<CompressorGeneralInterface> archiveCompression_;
 	std::shared_ptr<CompressorRawInterface> archiveRawCompression_;
 	std::shared_ptr<CompressorGeneralInterface> archiveDecompression_;
@@ -89,9 +85,6 @@ public:
 		  fileDecompression_(new Compressor<IdentityDecompress>()),
 		  encoding_(new Compressor<HexEncode>()),
 		  decoding_(new Compressor<HexDecode>()),
-		  archiveMemberCompression_(new Compressor<Identity>()),
-		  archiveMemberRawCompression_(new CompressorRaw<IdentityRaw>()),
-		  archiveMemberDecompression_(new Compressor<IdentityDecompress>()),
 		  archiveCompression_(new Compressor<Identity>()),
 		  archiveRawCompression_(new CompressorRaw<IdentityRaw>()),
 		  archiveDecompression_(new Compressor<IdentityDecompress>()),

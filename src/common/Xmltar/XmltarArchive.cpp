@@ -303,11 +303,7 @@ bool XmltarArchive::IsCompressedPaddingTrailer(std::fstream & iofs, std::ios::of
 	std::string compressedContent(	(std::istreambuf_iterator<char>(iofs)),
 									(std::istreambuf_iterator<char>()    ));
 
-	std::string uncompressedContent=globals_.options_.archiveCompression_.get()->OpenForceWriteAndClose(
-			globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
-											compressedContent
-										)
-									);
+	std::string uncompressedContent=globals_.options_.archiveCompression_.get()->OpenForceWriteAndClose(compressedContent);
 
 	return IsPaddingTrailer(uncompressedContent);
 }
@@ -325,10 +321,8 @@ std::string XmltarArchive::ArchiveHeader(std::string filename, int archive_seque
 
 std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int archive_sequence_number){
 	return globals_.options_.archiveCompression_.get()->OpenForceWriteAndClose(
-			globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(
 						ArchiveHeader(filename, archive_sequence_number)
-				)
-			);
+					);
 }
 
 std::string XmltarArchive::ArchiveTrailerBegin(){
@@ -355,9 +349,7 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 
 	std::string compressedArchiveTrailer
 			=globals_.options_.archiveRawCompression_.get()->OpenForceWriteAndClose(
-					globals_.options_.archiveMemberRawCompression_.get()->OpenForceWriteAndClose(
 								ArchiveTrailerBegin()+ArchiveTrailerEnd()
-				)
 			);
 
 	return compressedArchiveTrailer;
@@ -370,21 +362,14 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 	size_t desiredMemberLength
 		=globals_.options_.archiveRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredLength);
 	std::cerr << dbg << ": desiredMemberLength=" << desiredMemberLength << std::endl;
-	size_t desiredPlaintextLength
-		=globals_.options_.archiveMemberRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredMemberLength);
-	std::cerr << dbg << ": desiredPlaintextLength=" << desiredPlaintextLength << std::endl;
 
-	size_t paddingLength=desiredPlaintextLength-ArchiveTrailerBegin().size()-ArchiveTrailerEnd().size();
+	size_t paddingLength=desiredMemberLength-ArchiveTrailerBegin().size()-ArchiveTrailerEnd().size();
 	std::cerr << dbg << ": paddingLength=" << paddingLength << std::endl;
 
 	std::string data=ArchiveTrailerBegin()+std::string(paddingLength,' ')+ArchiveTrailerEnd();
 	std::cerr << dbg << ": data.size()=" << data.size() << std::endl;
 
-	std::cerr << dbg << ": CompressorName=" << globals_.options_.archiveMemberRawCompression_->CompressorName() << std::endl;
-
-	std::string memberData=globals_.options_.archiveMemberRawCompression_->GenerateCompressedText(desiredMemberLength, data);
-	std::cerr << dbg << ": memberData.size()=" << memberData.size() << std::endl;
-	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, memberData);
+	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, data);
 
 	std::cerr << dbg << ": archiveData.size()=" << archiveData.size() << std::endl;
 

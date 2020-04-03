@@ -117,13 +117,12 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 	// std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberCompression_->clone());
 
 	globals_.options_.archiveDecompression_->Open();
-	globals_.options_.archiveMemberDecompression_->Open();
 
 	std::string tmp;
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
 
-		tmp=globals_.options_.archiveMemberDecompression_->ForceWrite(globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount())));
+		tmp=globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount()));
 		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 		if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
 			std::cerr << "filename=" << filename << std::endl;
@@ -131,7 +130,7 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 		}
 	}
 
-	tmp=globals_.options_.archiveMemberDecompression_->ForceWriteAndClose(globals_.options_.archiveDecompression_->ForceWriteAndClose(""));
+	tmp=globals_.options_.archiveDecompression_->ForceWriteAndClose("");
 	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 	if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
 		std::cerr << "filename=" << filename << std::endl;

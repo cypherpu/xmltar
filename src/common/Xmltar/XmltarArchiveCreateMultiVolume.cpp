@@ -56,14 +56,10 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: isDirectory" << std::endl;
 			if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes)){
 				std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-				std::string compressedDirectoryMember
-					= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-							tmp
-						);
-				ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
+				ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
 				globals_.NextMember();
 				pendingBytes=globals_.options_.archiveCompression_->MaximumCompressedtextSizeGivenPlaintextSize(globals_.options_.archiveCompression_->WriteCount())+compressedArchiveTrailer.size();
-				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 			}
 			else if (firstPass){
 				std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: failure first pass" << std::endl;
@@ -89,14 +85,10 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		else if (globals_.nextMember_->isSymLink()){
 			if (globals_.nextMember_->CanArchiveSymLink(committedBytes, pendingBytes)){
 				std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-				std::string compressedDirectoryMember
-					= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-							tmp
-						);
-				ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
+				ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
 				globals_.NextMember();
 				pendingBytes=globals_.options_.archiveCompression_->MaximumCompressedtextSizeGivenPlaintextSize(globals_.options_.archiveCompression_->WriteCount())+compressedArchiveTrailer.size();
-				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 			}
 			else if (firstPass)
 				throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold directory archive member");

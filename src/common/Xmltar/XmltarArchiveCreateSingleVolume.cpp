@@ -42,21 +42,13 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 
 		if (globals_.nextMember_->isDirectory()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-			std::string compressedDirectoryMember
-				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-						tmp
-					);
-			*ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
-			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+			*ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
+			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 		}
 		else if (globals_.nextMember_->isSymLink()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-			std::string compressedDirectoryMember
-				= globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-						tmp
-					);
-			*ofs << globals_.options_.archiveCompression_->ForceWrite(compressedDirectoryMember);
-			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << compressedDirectoryMember.size() << std::endl;
+			*ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
+			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " <<  std::endl;
 		}
 		else if (globals_.nextMember_->isRegularFile()){
 			std::cerr << "********** isRegularFile" << std::endl;

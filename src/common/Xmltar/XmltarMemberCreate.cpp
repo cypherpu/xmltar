@@ -79,10 +79,8 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		size_t numberOfBytesToArchive=std::min(file_size_-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
 #ifndef USE_OPEN_RETURN_VALUE
 		ofs <<	globals_.options_.archiveCompression_->ForceWrite(
-					globals_.options_.archiveMemberCompression_->Open(
-						globals_.options_.encoding_->Open(
-							globals_.options_.fileCompression_->Open()
-						)
+					globals_.options_.encoding_->Open(
+						globals_.options_.fileCompression_->Open()
 					)
 				);
 #else
@@ -93,7 +91,7 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		char buf[1024];
 
 		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
-		ofs << globals_.options_.archiveCompression_->ForceWrite(globals_.options_.archiveMemberCompression_->ForceWrite(memberHeader_));
+		ofs << globals_.options_.archiveCompression_->ForceWrite(memberHeader_);
 		metadataWritten_=true;
 	    memberHeader_=MemberHeader();
 		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
@@ -104,10 +102,9 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 				sha3sum512_.ForceWrite(std::string(buf,ifs_->gcount()));
 			ofs <<
 				globals_.options_.archiveCompression_->ForceWrite(
-					globals_.options_.archiveMemberCompression_->ForceWrite(
 						globals_.options_.encoding_->ForceWrite(
 							globals_.options_.fileCompression_->ForceWrite(
-								std::string(buf,ifs_->gcount())))));
+								std::string(buf,ifs_->gcount()))));
 		}
 
 		std::cerr << dbg << ": after read" << std::endl;
@@ -118,10 +115,9 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		std::cerr << "tmpPreCompression.size()=" << tmpPreCompression.size() << std::endl;
 		std::string tmpEncoding=globals_.options_.encoding_->ForceWriteAndClose(tmpPreCompression);
 		std::cerr << dbg << ": after tmpEncoding" << std::endl;
-		std::string tmpMemberCompression=globals_.options_.archiveMemberCompression_->ForceWriteAndClose(tmpEncoding+memberTrailer_);
 
 		ofs <<
-				globals_.options_.archiveCompression_->ForceWrite(tmpMemberCompression);
+				globals_.options_.archiveCompression_->ForceWrite(tmpEncoding+memberTrailer_);
 
 #if 0
 		ofs <<
@@ -135,19 +131,16 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 		std::cerr << dbg << ": precompression->WriteCount=" << globals_.options_.fileCompression_->WriteCount() << std::endl;
 		std::cerr << dbg << ": encoding->ReadCount=" << globals_.options_.encoding_->ReadCount() << std::endl;
 		std::cerr << dbg << ": encoding->WriteCount=" << globals_.options_.encoding_->WriteCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->ReadCount=" << globals_.options_.archiveMemberCompression_->ReadCount() << std::endl;
-		std::cerr << dbg << ": memberCompression->WriteCount=" << globals_.options_.archiveMemberCompression_->WriteCount() << std::endl;
 }
 
 size_t XmltarMemberCreate::MaximumSize(size_t n){
 	return
-			globals_.options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
 				memberHeader_.size()
 				+globals_.options_.encoding_->MaximumCompressedtextSizeGivenPlaintextSize(
 						globals_.options_.fileCompression_->MaximumCompressedtextSizeGivenPlaintextSize(n)
 					)
 				+memberTrailer_.size()
-			);
+			;
 
 }
 
@@ -266,22 +259,21 @@ std::string XmltarMemberCreate::MemberTrailer(){
 }
 
 std::string XmltarMemberCreate::CompressedMemberHeader(){
-	return globals_.options_.archiveMemberCompression_.get()->OpenForceWriteAndClose(MemberHeader());
+	return MemberHeader();
 }
 
 std::string XmltarMemberCreate::CompressedMemberTrailer(){
-	return globals_.options_.archiveMemberRawCompression_.get()->OpenForceWriteAndClose(MemberTrailer());
+	return MemberTrailer();
 }
 
 size_t XmltarMemberCreate::MinimumSize(){
 	return
-			globals_.options_.archiveMemberCompression_->MaximumCompressedtextSizeGivenPlaintextSize(
 				memberHeader_.size()
 				+globals_.options_.encoding_->MaximumCompressedtextSizeGivenPlaintextSize(
 						globals_.options_.fileCompression_.get()->MaximumCompressedtextSizeGivenPlaintextSize(1)
 					)
 				+memberTrailer_.size()
-			);
+			;
 }
 
 size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes){
@@ -294,17 +286,15 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 	size_t archiveBytes=globals_.options_.tape_length_.get()-committedBytes-pendingBytes;
 	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
 	size_t uncompressedArchiveBytes=globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
-	size_t uncompressedMemberBytes=globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes);
 	size_t encodedMemberBytes;
-	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedMemberBytes)
+	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedArchiveBytes)
 		encodedMemberBytes=0;
 	else
-		encodedMemberBytes=globals_.options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedMemberBytes-memberHeader_.size()-memberTrailer_.size());
+		encodedMemberBytes=globals_.options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes-memberHeader_.size()-memberTrailer_.size());
 	size_t precompressedBytes=globals_.options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
 
 	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
 	std::cerr << dbg << ": uncompressedArchiveBytes= " << std::right << std::setw(6) << uncompressedArchiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedMemberBytes=  " << std::right << std::setw(6) << uncompressedMemberBytes << std::endl;
 	std::cerr << dbg << ": encodedMemberBytes=       " << std::right << std::setw(6) << encodedMemberBytes << std::endl;
 	std::cerr << dbg << ":     memberHeader_.size()=     " << std::right << std::setw(6) << memberHeader_.size() << std::endl;
 	std::cerr << dbg << ":     memberTrailer_.size()=    " << std::right << std::setw(6) << memberTrailer_.size() << std::endl;
@@ -335,18 +325,18 @@ bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendi
 			<< std::endl;
 
 	size_t numberOfFileBytesThatCanBeArchived
-		=	globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-				globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-						globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
+		=
+			globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
+					globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size());
 
 	std::cerr << "numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 	std::cerr << "archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())="
 			<< globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
 			<< std::endl;
 	std::cerr << "options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))"
-			<< globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
+			<<
 					globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-							globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))
+							globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
 			<< std::endl;
 
 	return numberOfFileBytesThatCanBeArchived;
@@ -356,9 +346,9 @@ bool XmltarMemberCreate::CanArchiveSymLink(size_t committedBytes, size_t pending
 	if (globals_.options_.tape_length_.get()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
 	size_t numberOfFileBytesThatCanBeArchived
-		=	globals_.options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
+		=
 				globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-						globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()));
+						globals_.options_.tape_length_.get()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size());
 
 	return numberOfFileBytesThatCanBeArchived;
 }
