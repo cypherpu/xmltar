@@ -21,7 +21,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	betz::Debug2 dbg("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume");
 	// std::shared_ptr<CompressorInterface> archiveCompression(globals_.options_.archiveCompression_.get()->clone());
 
-	if (!globals_.options_.tape_length_)
+	if (!globals_.options_.preencrypted_tape_length_)
 		throw std::runtime_error("XmltarArchive::XmltarArchive: --tape-length must be specified when creating multi-volume archive");
 
 	std::ofstream ofs(filename_);
@@ -29,7 +29,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	std::string compressedArchiveHeader=CompressedArchiveHeader(filename_,globals_.current_volume_);
 	std::string compressedArchiveTrailer=CompressedArchiveTrailer();
 
-	if (globals_.options_.tape_length_.get()<compressedArchiveHeader.size()+compressedArchiveTrailer.size())
+	if (globals_.options_.preencrypted_tape_length_.get()<compressedArchiveHeader.size()+compressedArchiveTrailer.size())
 		throw std::logic_error("XmltarArchive::XmltarArchive: archive too small to hold header and trailer of archive member");
 
 	ofs << compressedArchiveHeader;
@@ -74,7 +74,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					globals_.options_.archiveCompression_->Open();
 				}
 				else {
-					std::string tmp=CompressedArchiveTrailer(globals_.options_.tape_length_.get()-committedBytes);
+					std::string tmp=CompressedArchiveTrailer(globals_.options_.preencrypted_tape_length_.get()-committedBytes);
 					std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
 					ofs << tmp;
 					ofs.flush();
@@ -102,7 +102,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					ofs << globals_.options_.archiveCompression_->Open();
 				}
 				else {
-					std::string tmp=CompressedArchiveTrailer(globals_.options_.tape_length_.get()-committedBytes);
+					std::string tmp=CompressedArchiveTrailer(globals_.options_.preencrypted_tape_length_.get()-committedBytes);
 					std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
 					ofs << tmp;
 					ofs.flush();
@@ -126,8 +126,8 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 					std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0){
-						if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.tape_length_.get()){
-							std::string tmp=CompressedArchiveTrailer(globals_.options_.tape_length_.get()-committedBytes);
+						if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.preencrypted_tape_length_.get()){
+							std::string tmp=CompressedArchiveTrailer(globals_.options_.preencrypted_tape_length_.get()-committedBytes);
 							std::cerr << dbg << ": tmp.size()=" << tmp.size() << std::endl;
 							ofs << tmp;
 							ofs.flush();
@@ -159,8 +159,8 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
 	std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 
-	if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.tape_length_.get()){
-		std::string tmp=CompressedArchiveTrailer(globals_.options_.tape_length_.get()-committedBytes);
+	if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.preencrypted_tape_length_.get()){
+		std::string tmp=CompressedArchiveTrailer(globals_.options_.preencrypted_tape_length_.get()-committedBytes);
 		std::cerr << dbg << ": tmp=" << tmp.size() << std::endl;
 		ofs << tmp;
 		return;

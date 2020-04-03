@@ -40,6 +40,8 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 #include "Compressors/Compressor.hpp"
 
 class XmltarOptions {
+private:
+	boost::optional<size_t> tape_length_;
 public:
     enum Operation { NOOP, APPEND, CREATE, LIST, EXTRACT };
 	enum Encoding { BASE16, BASE64 };
@@ -59,10 +61,10 @@ public:
 	std::shared_ptr<CompressorRawInterface> archiveRawCompression_;
 	std::shared_ptr<CompressorGeneralInterface> archiveDecompression_;
 
-	std::shared_ptr<EncryptorInterface> archiveEncryption_;
-	std::shared_ptr<DecryptorInterface> archiveDecryption_;
+	std::shared_ptr<EncryptorInterface> aes256gcmEncrypt_;
+	std::shared_ptr<DecryptorInterface> aes256gcmDecrypt_;
 
-	boost::optional<size_t> tape_length_;
+	boost::optional<size_t> preencrypted_tape_length_;
 	boost::optional<size_t> stop_after_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
 	std::shared_ptr<CompressorGeneralInterface> incrementalFileCompression_;
@@ -88,9 +90,9 @@ public:
 		  archiveCompression_(new Compressor<Identity>()),
 		  archiveRawCompression_(new CompressorRaw<IdentityRaw>()),
 		  archiveDecompression_(new Compressor<IdentityDecompress>()),
-		  archiveEncryption_(new EncryptIdentity()),
-		  archiveDecryption_(new DecryptIdentity()),
-          tape_length_(), stop_after_(std::numeric_limits<size_t>::max()),
+		  aes256gcmEncrypt_(new EncryptIdentity()),
+		  aes256gcmDecrypt_(new DecryptIdentity()),
+          tape_length_(), preencrypted_tape_length_(),stop_after_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new Compressor<Identity>()),
 		  dump_level_(),

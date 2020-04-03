@@ -63,7 +63,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 		std::cerr << "verbosity=" << globals_.options_.verbosity_.get() << std::endl;
 		if (globals_.options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
 		if (globals_.options_.starting_volume_) std::cerr << "starting_volume=" << globals_.options_.starting_volume_.get() << std::endl;
-		if (globals_.options_.tape_length_) std::cerr << "tape length=" << globals_.options_.tape_length_.get() << std::endl;
+		if (globals_.options_.preencrypted_tape_length_) std::cerr << "tape length=" << globals_.options_.preencrypted_tape_length_.get() << std::endl;
 		if (globals_.options_.stop_after_) std::cerr << "stop after=" << globals_.options_.stop_after_.get() << std::endl;
 		std::cerr << "base_xmltar_file_name=" << globals_.options_.base_xmltar_file_name_.get() << std::endl;
 		if (globals_.options_.sourceFileGlobs_.size()) std::cerr << "Source file size=" << globals_.options_.sourceFileGlobs_.size() << std::endl;
