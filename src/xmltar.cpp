@@ -132,6 +132,10 @@ int main(int argc, char const *argv[])
 	    return 0;
 #endif
 
+	    globals.passphrase_="The quick brown fox jumps over t";
+	    globals.key_=globals.KeyFromPassphrase(globals.passphrase_);
+	    globals.key_="The quick brown fox jumps over t";
+
 	    spdlog::debug("Before XmltarOptions");
 		globals.options_.ProcessOptions(argc, argv);
 	    spdlog::debug("Before XmltarInvocation");

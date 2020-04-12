@@ -31,8 +31,13 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		ofs=&outputFileStream;
 	}
 	globals_.current_xmltar_file_name_=std::filesystem::path(filename).filename().string();
-	*ofs << globals_.options_.archiveCompression_->Open();
-	*ofs << CompressedArchiveHeader(filename_,volumeNumber);
+	*ofs << globals_.options_.archiveEncryption_->Open(globals_.key_,"","");
+	*ofs << globals_.options_.archiveEncryption_->Encrypt(
+				globals_.options_.archiveCompression_->Open()
+			);
+	*ofs << globals_.options_.archiveEncryption_->Encrypt(
+				CompressedArchiveHeader(filename_,volumeNumber)
+			);
 	std::cerr << dbg << ": " << globals_.filesToBeIncluded_.size() << std::endl;
 
 	globals_.NextMember();
@@ -42,12 +47,16 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 
 		if (globals_.nextMember_->isDirectory()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-			*ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
+			*ofs << globals_.options_.archiveEncryption_->Encrypt(
+						globals_.options_.archiveCompression_->ForceWrite(tmp)
+					);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 		}
 		else if (globals_.nextMember_->isSymLink()){
 			std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
-			*ofs << globals_.options_.archiveCompression_->ForceWrite(tmp);
+			*ofs << globals_.options_.archiveEncryption_->Encrypt(
+						globals_.options_.archiveCompression_->ForceWrite(tmp)
+					);
 			std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " <<  std::endl;
 		}
 		else if (globals_.nextMember_->isRegularFile()){
@@ -58,6 +67,12 @@ XmltarArchiveCreateSingleVolume::XmltarArchiveCreateSingleVolume(
 		}
 
 	}
-	*ofs << globals_.options_.archiveCompression_->ForceWriteAndClose("");
-	*ofs << CompressedArchiveTrailer();
+	*ofs << globals_.options_.archiveEncryption_->Encrypt(
+				globals_.options_.archiveCompression_->ForceWriteAndClose("")
+			);
+	*ofs << globals_.options_.archiveEncryption_->Encrypt(
+				CompressedArchiveTrailer()
+			);
+
+	*ofs << globals_.options_.archiveEncryption_->Close();
 }

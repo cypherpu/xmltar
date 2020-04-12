@@ -13,7 +13,7 @@
 
 XmltarGlobals::XmltarGlobals()
 	: current_xmltar_file_name_(), current_volume_(),
-	  invocationTime_(time(nullptr)), resultCode_(0), errorMessages_() {
+	  invocationTime_(time(nullptr)), key_(), resultCode_(0), errorMessages_() {
 
 	if (options_.starting_volume_)
 		current_volume_=options_.starting_volume_.get();

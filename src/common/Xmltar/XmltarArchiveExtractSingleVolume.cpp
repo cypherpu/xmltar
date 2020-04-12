@@ -121,15 +121,25 @@ XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals
 	std::cerr << "XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume: after archive decompression" << std::endl;
 
 	std::string tmp;
+	tmp+=globals_.options_.archiveDecompression_->ForceWrite(
+			globals_.options_.archiveDecryption_->Open(
+				globals_.key_
+			)
+		);
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
 		// std::cerr << "read buffer " << ifs.gcount() << std::endl;
-		tmp=globals_.options_.archiveDecompression_->ForceWrite(std::string(buffer,ifs.gcount()));
+		tmp+=globals_.options_.archiveDecompression_->ForceWrite(
+				globals_.options_.archiveDecryption_->Decrypt(
+					std::string(buffer,ifs.gcount())
+				)
+			);
 		// std::cerr << "ifs.gcount()=" << ifs.gcount() << " tmp=\"" << tmp << "\"" << std::endl;
 		xmltarSingleVolumeHandler.Parse(tmp,false);
+		tmp.clear();
 	}
 
-	tmp=globals_.options_.archiveDecompression_->ForceWriteAndClose("");
+	tmp=globals_.options_.archiveDecompression_->ForceWriteAndClose(globals_.options_.archiveDecryption_->Close());
 	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 	xmltarSingleVolumeHandler.Parse(tmp,false);
 }

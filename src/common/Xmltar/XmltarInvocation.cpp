@@ -33,6 +33,9 @@ along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Utilities/Glob.hpp"
 #include "Utilities/Options-TarStyle.hpp"
+#include "Utilities/Crypto/EncryptXChaCha20Poly1305.hpp"
+#include "Utilities/Crypto/DecryptXChaCha20Poly1305.hpp"
+#include "Utilities/Options-TarStyle.hpp"
 #include "Snapshot/Snapshot.hpp"
 
 #include "Xmltar/XmltarInvocation.hpp"
@@ -63,7 +66,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 		std::cerr << "verbosity=" << globals_.options_.verbosity_.get() << std::endl;
 		if (globals_.options_.multi_volume_) std::cerr << "Multivolume" << std::endl;
 		if (globals_.options_.starting_volume_) std::cerr << "starting_volume=" << globals_.options_.starting_volume_.get() << std::endl;
-		if (globals_.options_.preencrypted_tape_length_) std::cerr << "tape length=" << globals_.options_.preencrypted_tape_length_.get() << std::endl;
+		if (globals_.options_.preencryptedTapeLength_) std::cerr << "tape length=" << globals_.options_.preencryptedTapeLength_.get() << std::endl;
 		if (globals_.options_.stop_after_) std::cerr << "stop after=" << globals_.options_.stop_after_.get() << std::endl;
 		std::cerr << "base_xmltar_file_name=" << globals_.options_.base_xmltar_file_name_.get() << std::endl;
 		if (globals_.options_.sourceFileGlobs_.size()) std::cerr << "Source file size=" << globals_.options_.sourceFileGlobs_.size() << std::endl;
@@ -75,6 +78,25 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 				std::cerr << "Source file=" << i << std::endl;
 		if (globals_.options_.listed_incremental_file_) std::cerr << "listed-incremental file=" << globals_.options_.listed_incremental_file_.get() << std::endl;
 		if (globals_.options_.files_from_) std::cerr << "files from=" << globals_.options_.files_from_.get() << std::endl;
+	}
+
+	if (globals_.options_.encrypted_){
+		globals_.options_.archiveEncryption_.reset(new EncryptXChaCha20Poly1305Decorator(globals_.xChaCha20Poly1305MessageLength));
+		globals_.options_.archiveDecryption_.reset(new DecryptXChaCha20Poly1305Decorator(globals_.xChaCha20Poly1305MessageLength));
+		globals_.options_.snapshotEncryption_.reset(new EncryptXChaCha20Poly1305Decorator(globals_.xChaCha20Poly1305MessageLength));
+		globals_.options_.snapshotDecryption_.reset(new DecryptXChaCha20Poly1305Decorator(globals_.xChaCha20Poly1305MessageLength));
+
+		if (globals_.options_.multi_volume_){
+			if (!globals_.options_.tape_length_)
+				throw std::runtime_error("XmltarInvocation::XmltarInvocation: when multi-volume is used, tape_length must be specified");
+			size_t nMessages=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)
+									/(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
+			size_t remainder=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)
+									%(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
+			size_t compressedTextLength=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
+
+			globals_.options_.preencryptedTapeLength_=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
+		}
 	}
 
 	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");

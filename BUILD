@@ -27,6 +27,7 @@ cc_binary(
 				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
 				"-lstdc++fs",
 				"-lcrypto",
+				"-lsodium",
 				]
 )
 
@@ -54,5 +55,6 @@ cc_binary(
 				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
 				"-lstdc++fs",
 				"-lcrypto",
+				"-lsodium",
 				]
 )

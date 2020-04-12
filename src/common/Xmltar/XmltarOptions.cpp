@@ -14,8 +14,8 @@
 #include "Generated/Utilities/Identity.hpp"
 #include "Generated/Utilities/ZstdCompressRaw.hpp"
 #include "Generated/Utilities/ZstdDecompress.hpp"
-#include "Generated/Utilities/Crypto/EncryptAES256GCM.hpp"
-#include "Generated/Utilities/Crypto/DecryptAES256GCM.hpp"
+#include "Generated/Utilities/Crypto/EncryptXChaCha20Poly1305.hpp"
+#include "Generated/Utilities/Crypto/DecryptXChaCha20Poly1305.hpp"
 
 void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 	Parse_Opts::Option_Parser p;
@@ -65,9 +65,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(archiveDecompression_, (CompressorGeneralInterface *) new Compressor<ZstdDecompress>())
 	);
 
-	p.Add_Option(Parse_Opts::ARGS_0,"","--aes256gcm","encrypt/decrypt archive",
-			p.Assign_Value(aes256gcmEncrypt_, (EncryptorInterface *) new EncryptAES256GCM),
-			p.Assign_Value(aes256gcmDecrypt_, (DecryptorInterface *) new DecryptAES256GCM)
+	p.Add_Option(Parse_Opts::ARGS_0,"","--encrypt","encrypt/decrypt archive",
+			p.Assign_Value(encrypted_,true)
 	);
 
 	p.Add_Option(Parse_Opts::ARGS_1,"-g","--listed-incremental","work with listed-incremental archives",
@@ -94,10 +93,9 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Append_Args(excludeFileGlobs_));
 	p.Add_Option(Parse_Opts::ARGS_0,"-M","--multi-volume","work with multivolume archives",
 			p.Assign_Value(multi_volume_,true));
-	bool tape_length_option=false;
 	p.Add_Option(Parse_Opts::ARGS_1,"-L","--tape-length","specify size of a multivolume archive",
 			p.Assign_Args(tape_length_),
-			p.Assign_Args(preencrypted_tape_length_),
+			p.Assign_Args(preencryptedTapeLength_),
 			p.Assign_Value(multi_volume_,true));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--starting-volume","starting volume number of a multivolume archive",
 			p.Assign_Args(starting_volume_));
@@ -122,12 +120,6 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 
 	for(std::vector<std::string>::iterator i=excludeFileGlobs_.begin(); i!=excludeFileGlobs_.end(); ++i){
 		std::cerr << "ExcludeFileGlobs=" << *i << std::endl;
-	}
-
-	if (aes256gcmEncrypt_){
-		if (tape_length_.get()%128!=0)
-			throw std::logic_error("XmltarOptions::ProcessOptions: for aes256gcm encryption, tape length must be a multiple of 128");
-		preencrypted_tape_length_.get()-=128+128;
 	}
 
 	if (listed_incremental_file_ && !dump_level_)
