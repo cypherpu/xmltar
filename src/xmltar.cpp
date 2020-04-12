@@ -1,27 +1,27 @@
 /*
 
-Copyright 2010 by David A. Betz
+xmltar.cpp
+Copyright 2010-2020 David A. Betz
+David.A.Betz.MD@gmail.com
+Created on: 2010
+Author: dbetz
 
-This file is part of xmltar.
+This file is part of Xmltar.
 
-xmltar is free software: you can redistribute it and/or modify
+Xmltar is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-xmltar is distributed in the hope that it will be useful,
+Xmltar is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with xmltar.  If not, see <http://www.gnu.org/licenses/>.
+along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 */
-
-/*
- * ../xmltar/bazel-bin/xmltar -c -f test.id.16.gz.mv.xmltar.%04d.gz --multi-volume --starting-volume=1 --tape-length=1000000 --base16 --gzip /home/dbetz/git/xmltar
- */
 
 #include <fstream>
 #include <iostream>
