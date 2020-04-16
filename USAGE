@@ -1,0 +1,30 @@
+# single volume, no compression, no encryption, no snapshot
+(rm -rf /home/backup/Utilities)
+(cd /home/dbetz/git ; /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /home/backup/Utilities.xmltar Utilities)
+(cd /home/backup ; /home/dbetz/git/xmltar/bazel-bin/xmltar --extract --file /home/backup/Utilities.xmltar)
+(cd /home/backup ; diff -r /home/dbetz/git/Utilities /home/backup/Utilities)
+
+# single volume, compression, no encryption, no snapshot
+(rm -rf /home/backup/Utilities)
+(cd /home/dbetz/git ; /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd Utilities)
+(cd /home/backup ; /home/dbetz/git/xmltar/bazel-bin/xmltar --extract --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd)
+(cd /home/backup ; diff -r /home/dbetz/git/Utilities /home/backup/Utilities)
+
+# single volume, compression, no encryption, snapshot, no compression
+(rm -rf /home/backup/Utilities)
+(cd /home/dbetz/git ; /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd --listed-incremental /home/backup/snapshot.xml --level 1 Utilities)
+(cd /home/backup ; /home/dbetz/git/xmltar/bazel-bin/xmltar --extract --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd)
+(cd /home/backup ; diff -r /home/dbetz/git/Utilities /home/backup/Utilities)
+
+# single volume, compression, no encryption, snapshot, compression
+(rm -rf /home/backup/Utilities)
+(cd /home/dbetz/git ; /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd --listed-incremental /home/backup/snapshot.xml.zstd --listed-incremental-zstd --level 1 Utilities)
+(cd /home/backup ; /home/dbetz/git/xmltar/bazel-bin/xmltar --extract --file /home/backup/Utilities.xmltar.zstd --zstd --file-zstd)
+(cd /home/backup ; diff -r /home/dbetz/git/Utilities /home/backup/Utilities)
+
+# single volume, compression, encryption, snapshot, compression
+(rm -rf /home/backup/Utilities)
+(cd /home/dbetz/git ; /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /home/backup/Utilities.xmltar.zstd.enc --zstd --file-zstd --encrypt --listed-incremental /home/backup/snapshot.xml.zstd.enc --listed-incremental-zstd --level 1 Utilities)
+(cd /home/backup ; /home/dbetz/git/xmltar/bazel-bin/xmltar --extract --file /home/backup/Utilities.xmltar.zstd.enc --zstd --file-zstd --encrypt)
+(cd /home/backup ; diff -r /home/dbetz/git/Utilities /home/backup/Utilities)
+

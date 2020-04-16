@@ -70,23 +70,8 @@ public:
 
 	~Snapshot();
 
-	void ReplenishFileEntries(){
-		betz::Debug2("Snapshot::ReplenishFileEntries: ");
-		if (fileEntries_.size()!=0 && fileEntries_.back().pathname_==ExtendedPath(ExtendedPath::PathType::MAX))
-			return;
-
-		while(fileEntries_.size()==0 && oldSnapshotFileIfs_){
-			char buffer[1024];
-			oldSnapshotFileIfs_.read(buffer,sizeof(buffer)/sizeof(char));
-			snapshotXmlParser_.Parse(std::string(buffer,oldSnapshotFileIfs_.gcount()),false);
-		}
-
-		if (!oldSnapshotFileIfs_) fileEntries_.push_back(SnapshotFileEntry(ExtendedPath::PathType::MAX));
-	}
-	void CopyFrontFileEntryAndPop(){
-		newSnapshotFileOfs_ << fileEntries_.front();
-		fileEntries_.pop_front();
-	}
+	void ReplenishFileEntries();
+	void CopyFrontFileEntryAndPop();
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOT_HPP_ */

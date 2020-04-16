@@ -45,13 +45,62 @@ Snapshot::Snapshot(XmltarGlobals & globals)
 	newSnapshotFileDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
 	newSnapshotFilePath_=newSnapshotFileDirPath_ / "new_snapshot_file.xml";
 	newSnapshotFileOfs_.open(newSnapshotFilePath_.string());
-	newSnapshotFileOfs_ << Prologue();
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Open(globals_.key_,"","");
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Encrypt(
+								globals_.options_.incrementalFileCompression_->Open()
+							);
+
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Encrypt(
+								globals_.options_.incrementalFileCompression_->ForceWrite(Prologue())
+							);
+
+	if (oldSnapshotFileIfs_){
+		std::string tmp;
+		globals_.options_.incrementalFileDecompression_->Open();
+		tmp+=globals_.options_.incrementalFileDecompression_->ForceWrite(
+				globals_.options_.snapshotDecryption_->Open(
+					globals_.key_
+				)
+			);
+		snapshotXmlParser_.Parse(tmp,false);
+	}
 }
 
 Snapshot::~Snapshot(){
-	newSnapshotFileOfs_ << Epilogue();
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Encrypt(
+								globals_.options_.incrementalFileCompression_->ForceWriteAndClose(Epilogue())
+							);
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Close();
+
 	newSnapshotFileOfs_.close();
 	oldSnapshotFileIfs_.close();
 
 	std::filesystem::copy(newSnapshotFilePath_,globals_.options_.listed_incremental_file_.get());
 }
+
+void Snapshot::ReplenishFileEntries(){
+	betz::Debug2("Snapshot::ReplenishFileEntries: ");
+	if (fileEntries_.size()!=0 && fileEntries_.back().pathname_==ExtendedPath(ExtendedPath::PathType::MAX))
+		return;
+
+	while(fileEntries_.size()==0 && oldSnapshotFileIfs_){
+		char buffer[1024];
+		oldSnapshotFileIfs_.read(buffer,sizeof(buffer)/sizeof(char));
+		std::string tmp=globals_.options_.archiveDecompression_->ForceWrite(
+				globals_.options_.archiveDecryption_->Decrypt(
+					std::string(buffer,oldSnapshotFileIfs_.gcount()))
+			);
+
+		snapshotXmlParser_.Parse(tmp,false);
+	}
+
+	if (!oldSnapshotFileIfs_) fileEntries_.push_back(SnapshotFileEntry(ExtendedPath::PathType::MAX));
+}
+
+void Snapshot::CopyFrontFileEntryAndPop(){
+	newSnapshotFileOfs_ << globals_.options_.snapshotEncryption_->Encrypt(
+								globals_.options_.incrementalFileCompression_->ForceWrite(fileEntries_.front().ToString())
+							);
+	fileEntries_.pop_front();
+}
+

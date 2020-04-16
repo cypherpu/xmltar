@@ -53,7 +53,23 @@ public:
 		sha3_512_=sha3_512;
 	}
 
-	friend std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent);
+	std::string ToString(){
+		std::ostringstream oss;
+
+		oss << "<event "
+				"backup-time=\"" << backupTime_ << "\" "
+				"dump-level=\"" << dumpLevel_ << "\" "
+				"action=\"" << action_ << "\" "
+				"start-volume-name=\"" << startingVolumeName_ << "\" "
+				"modification-time=\"" << modificationTime_ << "\" "
+				"size=\"" << size_ << "\" "
+				"sha3-512=\"" << sha3_512_ << "\" "
+				<< "/>";
+
+		return oss.str();
+
+	}
+	// friend std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent);
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTEVENT_HPP_ */

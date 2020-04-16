@@ -32,6 +32,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Utilities/ExtendedPath.hpp"
 #include "Snapshot/SnapshotEvent.hpp"
+#include "Utilities/XMLSafeString.hpp"
 
 class SnapshotFileEntry {
 public:
@@ -59,7 +60,19 @@ public:
 		throw std::logic_error("SnapshotFileEntry::Last: no last Event");
 	}
 
-	friend std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry);
+	std::string ToString(){
+		std::ostringstream oss;
+
+		oss << "\t<file name=\"" << EncodeStringToXMLSafeString(pathname_.path()) << "\">\n";
+		for(auto & i : snapshotEvents_){
+			oss << "\t\t" << i.ToString() << std::endl;
+		}
+		oss << "\t</file>" << std::endl;
+
+		return oss.str();
+	}
+
+	// friend std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry);
 };
 
 #endif /* SRC_COMMON_SNAPSHOT_SNAPSHOTFILEENTRY_HPP_ */

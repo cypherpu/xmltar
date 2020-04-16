@@ -27,6 +27,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Snapshot/SnapshotEvent.hpp"
 
+#if 0
 std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent){
 	os << "<event "
 			"backup-time=\"" << snapshotEvent.backupTime_ << "\" "
@@ -40,3 +41,4 @@ std::ostream & operator<<(std::ostream &os, SnapshotEvent const & snapshotEvent)
 
 	return os;
 }
+#endif

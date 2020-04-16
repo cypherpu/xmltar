@@ -26,6 +26,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include "Snapshot/SnapshotFileEntry.hpp"
 #include "Utilities/XMLSafeString.hpp"
 
+#if 0
 std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFileEntry){
 	os << "\t<file name=\"" << EncodeStringToXMLSafeString(snapshotFileEntry.pathname_.path()) << "\">\n";
 	for(auto & i : snapshotFileEntry.snapshotEvents_){
@@ -35,3 +36,4 @@ std::ostream & operator<<(std::ostream &os, SnapshotFileEntry const & snapshotFi
 
 	return os;
 }
+#endif
