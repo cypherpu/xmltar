@@ -56,8 +56,27 @@ std::string XmltarGlobals::Sha3(std::filesystem::path filepath){
 	return sha.ForceWriteAndClose("");
 }
 
+size_t  XmltarGlobals::ArchiveDirectorySize(){
+	std::filesystem::path p(options_.base_xmltar_file_name_.value());
+	std::filesystem::path archiveDirectory;
+
+	if (p.has_parent_path()) archiveDirectory=p.parent_path();
+	else archiveDirectory="./";
+
+	size_t result=0;
+    for(auto& p: std::filesystem::directory_iterator(archiveDirectory))
+    	result+=p.file_size();
+
+    return result;
+}
+
 void XmltarGlobals::NextMember(){
 	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
+
+	while(ArchiveDirectorySize()>options_.wait_for_space_.value()){
+		std::cerr << "Waiting for archive directory to empty" << std::endl;
+		sleep(10);
+	}
 
 	std::string sha3_512;
 

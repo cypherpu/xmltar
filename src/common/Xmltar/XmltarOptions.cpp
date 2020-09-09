@@ -121,6 +121,8 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Args(files_from_));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--stop-after","stop archiving additional files once n volumes have been created",
 			p.Assign_Args(stop_after_));
+	p.Add_Option(Parse_Opts::ARGS_1,"","--wait-for-space","pause archiving additional files if output directory size exceeds n bytes",
+			p.Assign_Args(wait_for_space_));
 	p.Add_Option(Parse_Opts::ARGS_1,"","--tag","tag archived files with identifier",
 			p.Assign_Args(archiveMemberTag_));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--no-tabs","do not tab-indent the xml archive",

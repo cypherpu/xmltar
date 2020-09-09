@@ -65,6 +65,7 @@ public:
     std::vector<std::string> errorMessages_;
 
     XmltarGlobals();
+    size_t ArchiveDirectorySize();
     void NextMember();
     bool MatchesGlobs(std::filesystem::path p, std::vector<std::string> globs){
     	for(auto & s : globs){

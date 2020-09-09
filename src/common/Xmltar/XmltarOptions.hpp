@@ -46,8 +46,6 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 class XmltarOptions {
 private:
 public:
-	boost::optional<size_t> tape_length_;
-
 	enum Operation { NOOP, APPEND, CREATE, LIST, EXTRACT };
 	enum Encoding { BASE16, BASE64 };
 
@@ -72,8 +70,10 @@ public:
 	std::shared_ptr<DecryptorInterface> snapshotDecryption_;
 	bool encrypted_;
 
+	boost::optional<size_t> tape_length_;
 	boost::optional<size_t> preencryptedTapeLength_;
 	boost::optional<size_t> stop_after_;
+	boost::optional<size_t> wait_for_space_;
 	boost::optional<std::filesystem::path> listed_incremental_file_;
 	std::shared_ptr<CompressorGeneralInterface> incrementalFileCompression_;
 	std::shared_ptr<CompressorGeneralInterface> incrementalFileDecompression_;
@@ -83,8 +83,8 @@ public:
 	boost::optional<std::string> archiveMemberTag_;
 	boost::optional<bool> tabs_;
 	boost::optional<bool> newlines_;
-	boost::optional<std::string> base_xmltar_file_name_;		// xmltar_file;
-	boost::optional<unsigned int> starting_volume_;				// starting_volume;
+	boost::optional<std::string> base_xmltar_file_name_;
+	boost::optional<unsigned int> starting_volume_;
 	std::vector<std::string> sourceFileGlobs_;
 	bool sha3_512_;
 
@@ -103,7 +103,10 @@ public:
 		  snapshotEncryption_(new EncryptIdentityDecorator()),
 		  snapshotDecryption_(new DecryptIdentityDecorator()),
 		  encrypted_(false),
-          tape_length_(), preencryptedTapeLength_(),stop_after_(std::numeric_limits<size_t>::max()),
+          tape_length_(),
+		  preencryptedTapeLength_(),
+		  stop_after_(std::numeric_limits<size_t>::max()),
+		  wait_for_space_(std::numeric_limits<size_t>::max()),
 		  listed_incremental_file_(),
 		  incrementalFileCompression_(new Compressor<Identity>()),
 		  dump_level_(),
