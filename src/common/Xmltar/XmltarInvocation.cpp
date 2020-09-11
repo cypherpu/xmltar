@@ -97,7 +97,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 									/(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
 			size_t remainder=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)
 									%(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
-			size_t compressedTextLength=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
+			// size_t compressedTextLength=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
 
 			globals_.options_.preencryptedTapeLength_=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
 		}

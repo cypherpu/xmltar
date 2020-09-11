@@ -60,8 +60,9 @@ size_t  XmltarGlobals::ArchiveDirectorySize(){
 	std::filesystem::path p(options_.base_xmltar_file_name_.value());
 	std::filesystem::path archiveDirectory;
 
-	if (p.has_parent_path()) archiveDirectory=p.parent_path();
-	else archiveDirectory="./";
+	if (p.has_root_path()) archiveDirectory=p.parent_path();			// absolute path
+	else if (p.has_parent_path()) archiveDirectory=p.parent_path();		// relative path with at least one directory component
+	else archiveDirectory=std::filesystem::current_path();				// only filename was specified
 
 	size_t result=0;
     for(auto& p: std::filesystem::directory_iterator(archiveDirectory))
