@@ -156,6 +156,13 @@ int main(int argc, char *argv[]){
 
     if (mount(loopDevicePath.c_str(),mountPath.c_str(),"udf",0,"")==-1)
     	throw std::runtime_error("bdr_writer: cannot mount loop device");
+
+	std::istringstream iss1;
+	std::ostringstream oss1;
+
+	Process mkudffs("/usr/sbin/mkudffs",{"mkudffs",mountPath.c_str()},"mkudffs");
+	Chain1e(mkudffs,iss1,oss1);
+
 /*
 
 	/usr/bin/dd if=/dev/zero of=/backup/bluray.udf count=25025314816 iflag=count_bytes
