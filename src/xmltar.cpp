@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
 		auto j=nlohmann::json::parse(ifs);
 		globals.passphrase_=j["passphrase"];
 
-		std::cerr << "passphrase=\"" << globals.passphrase_ << "\""
+		std::cerr << "passphrase=\"" << globals.passphrase_ << "\"" << std::endl;
 
 	    globals.key_=globals.KeyFromPassphrase(globals.passphrase_);
 

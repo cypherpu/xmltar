@@ -93,13 +93,19 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 		if (globals_.options_.multi_volume_){
 			if (!globals_.options_.tape_length_)
 				throw std::runtime_error("XmltarInvocation::XmltarInvocation: when multi-volume is used, tape_length must be specified");
-			size_t nMessages=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)
+			size_t nMessages=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)	// tape_length_ - 32 -
 									/(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
 			size_t remainder=(globals_.options_.tape_length_.get()-crypto_secretstream_xchacha20poly1305_HEADERBYTES-crypto_secretstream_xchacha20poly1305_ABYTES)
 									%(globals_.xChaCha20Poly1305MessageLength+crypto_secretstream_xchacha20poly1305_ABYTES);
 			// size_t compressedTextLength=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
 
 			globals_.options_.preencryptedTapeLength_=nMessages*globals_.xChaCha20Poly1305MessageLength+remainder;
+
+			spdlog::debug("tape_length_={}",globals.options_.tape_length_.get());
+			spdlog::debug("crypto_secretstream_xchacha20poly1305_HEADERBYTES={}",crypto_secretstream_xchacha20poly1305_HEADERBYTES);
+			spdlog::debug("crypto_secretstream_xchacha20poly1305_ABYTES={}",crypto_secretstream_xchacha20poly1305_ABYTES);
+			spdlog::debug("globals_.xChaCha20Poly1305MessageLength={}",globals_.xChaCha20Poly1305MessageLength);
+			spdlog::debug("globals_.options_.preencryptedTapeLength_={}",globals_.options_.preencryptedTapeLength_.get());
 		}
 	}
 

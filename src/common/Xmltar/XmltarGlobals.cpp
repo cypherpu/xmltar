@@ -29,6 +29,8 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include "Generated/Utilities/IsPrefixPath.hpp"
 #include "Utilities/Sha3.hpp"
 
+const size_t XmltarGlobals::xChaCha20Poly1305MessageLength;
+
 XmltarGlobals::XmltarGlobals()
 	: current_xmltar_file_name_(), current_volume_(),
 	  invocationTime_(time(nullptr)), key_(), resultCode_(0), errorMessages_() {
