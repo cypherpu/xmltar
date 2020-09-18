@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mount.h>
+#include <sys/statvfs.h>
+#include <sys/ioctl.h>
+#include <linux/cdrom.h>
+#include <errno.h>
 
 #include <json.hpp>
 
@@ -83,8 +87,46 @@ std::map<std::string,Device> IdentifyBDRs(){
 	return result;
 }
 
+void isOpen(std::string device){
+	int fd;
 
+	if ((fd=open(device.c_str(),O_NONBLOCK))==-1)
+		throw std::runtime_error(std::string("isOpen: could not open: ")+sys_errlist[errno]);
+
+	int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
+
+	if (result==CDS_TRAY_OPEN)
+		std::cerr << device << " is open" << std::endl;
+	else
+		std::cerr << device << " is closed" << std::endl;
+}
+
+// lsscsi
+/*
+ *
+#include <sys/ioctl.h>
+#include <linux/cdrom.h>
+
+int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
+
+switch(result) {
+  case CDS_NO_INFO: ... break;
+  case CDS_NO_DISC: ... break;
+  case CDS_TRAY_OPEN: ... break;
+  case CDS_DRIVE_NOT_READY: ... break;
+  case CDS_DISC_OK: ... break;
+  default: // error
+}
+
+ *
+ */
 int main(int argc, char *argv[]){
+
+	 isOpen("/dev/sr0");
+	 isOpen("/dev/sr1");
+	 exit(0);
+
+#if 0
 	std::vector<std::string> orderedSerialNumbers {
 		"M64IB9I0842",
 		"M6IIB9H5304",
@@ -95,7 +137,12 @@ int main(int argc, char *argv[]){
 		"M69IA3H2850",
 		"M6JIA3H2107"
 	};
-
+#else
+	std::vector<std::string> orderedSerialNumbers {
+		"M6BIB9H4809",
+		"M66IB9H5249"
+	};
+#endif
 	std::map<std::string,Device> serialToScsi=IdentifyBDRs();
 
 	std::ifstream ifs("/home/dbetz/git/Private/xmltar.json");
@@ -154,15 +201,45 @@ int main(int argc, char *argv[]){
     if (ioctl(fdLoopDevice, LOOP_SET_FD, fdBackingFile) == -1)
     	throw std::runtime_error("bdr_writer: cannot attach backing file to loop device");
 
-    if (mount(loopDevicePath.c_str(),mountPath.c_str(),"udf",0,"")==-1)
-    	throw std::runtime_error("bdr_writer: cannot mount loop device");
-
 	std::istringstream iss1;
 	std::ostringstream oss1;
 
-	Process mkudffs("/usr/sbin/mkudffs",{"mkudffs",mountPath.c_str()},"mkudffs");
+	Process mkudffs("/usr/sbin/mkudffs",{"mkudffs",loopDevicePath.c_str()},"mkudffs");
 	Chain1e(mkudffs,iss1,oss1);
 
+	if (mount(loopDevicePath.c_str(),mountPath.c_str(),"udf",0,"")==-1)
+    	throw std::runtime_error("bdr_writer: cannot mount loop device");
+
+#if 1
+	char buffer[1024];
+	ssize_t nBytes;
+	for(;;){
+		nBytes=read(fdRead,buffer,sizeof(buffer));
+		if (nBytes==0) continue; // no process is writing this fifo
+		if (nBytes<0)
+			throw std::runtime_error("bdr_writer: cannot read fifo");
+
+		std::istringstream iss(std::string(buffer,nBytes));
+
+		std::string action;
+		iss >> action;
+		if (action=="REQUEST_WRITE_VOLUME"){
+			size_t requestedSize;
+			iss >> requestedSize;
+			struct statvfs buf;
+			if (statvfs(mountPath.c_str(),&buf)!=0)
+				throw std::runtime_error("bdr_writer: could not statvfs");
+			if (requestedSize>buf.f_bavail*buf.f_bsize){
+				if (umount(mountPath.c_str())!=0)
+					throw std::runtime_error("bdr_writer: could not unmount");
+			}
+			Process cdrecord("/usr/local/bin/cdrecord",{"cdrecord"});
+
+		}
+		else if (action=="FINISHED")
+			;
+	}
+#endif
 /*
 
 	/usr/bin/dd if=/dev/zero of=/backup/bluray.udf count=25025314816 iflag=count_bytes
