@@ -131,6 +131,10 @@ void XmltarOptions::ProcessOptions(int argc, char const *argv[]){
 			p.Assign_Value(newlines_,false));
 	p.Add_Option(Parse_Opts::ARGS_0,"","--sha3-512","compute sha3 512 and se for file comparisons",
 			p.Assign_Value(newlines_,true));
+	p.Add_Option(Parse_Opts::ARGS_1,"","--read-fifo","read commands from fifo",
+			p.Assign_Args(readFifo_));
+	p.Add_Option(Parse_Opts::ARGS_1,"","--write-fifo","write requests to fifoS",
+			p.Assign_Args(writeFifo_));
 
 	std::vector<std::string> remaining_args=p.Parse(argc,argv);
 

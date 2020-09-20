@@ -28,21 +28,74 @@
 #include "Process/Connection.hpp"
 #include "Process/Utilities.hpp"
 
-class Device {
+class SCSIDevice {
 public:
-	int scsibus_;
+	int host_;
+	int channel_;
 	int target_;
 	int lun_;
+	std::string deviceName_;
+	std::string serialNumber_;
 
-	Device()
-		: scsibus_(-1), target_(-1), lun_(-1){}
+	SCSIDevice()
+		: host_(-1), channel_(-1), target_(-1), lun_(-1), deviceName_(), serialNumber_(){}
 
-	Device(int scsibus, int target, int lun)
-		: scsibus_(scsibus), target_(target), lun_(lun){}
+	SCSIDevice(int host, int channel, int target, int lun, std::string serialNumber)
+		: host_(host), channel_(channel), target_(target), lun_(lun), deviceName_(), serialNumber_(serialNumber){
+		std::filesystem::path scsiHostChannelTargetLunToDeviceNameMappingDirectory("/sys/dev/block");
+
+		for(auto p : std::filesystem::directory_iterator(scsiHostChannelTargetLunToDeviceNameMappingDirectory)){
+			if (!std::filesystem::is_symlink(p.path()))
+				throw std::runtime_error("Device::Device: "+scsiHostChannelTargetLunToDeviceNameMappingDirectory.string()+" has non-symlink entry");
+
+			// look for cdrom-type devices
+			std::filesystem::path::iterator i=p.path().end();
+
+			if (i==p.path().begin())
+				throw std::runtime_error("Device::Device: linkTarget has too few path elements");
+			else --i;
+			if (std::stoi(i->string())!=11) continue;
+
+			std::filesystem::path linkTarget=std::filesystem::read_symlink(p.path());
+			i=linkTarget.end();
+
+			if (i==linkTarget.begin())
+				throw std::runtime_error("Device::Device: linkTarget has too few path elements");
+			else --i;
+			if (i->string().substr(0,2)!="sr")
+				throw std::runtime_error("Device::Device: linkTarget does not end in srN");
+			size_t nCharacters;
+			std::stoi(i->string().substr(2),&nCharacters);
+			if (nCharacters+2!=i->string().size())
+				throw std::runtime_error("Device::Device: linkTarget does not end in srN");
+			std::string deviceName="/dev/"+i->string();
+
+			--i;
+			if (i==linkTarget.begin())
+				throw std::runtime_error("Device::Device: linkTarget has too few path elements");
+			if (i->string()!="block")
+				throw std::runtime_error("Device::Device: linkTarget does not end in block/srN");
+
+			--i;
+			if (i==linkTarget.begin())
+				throw std::runtime_error("Device::Device: linkTarget has too few path elements");
+			int host1=std::stoi(i->string(),&nCharacters);
+			if (i->string().substr(nCharacters)!=":0:0:0")
+				throw std::runtime_error("Device::Device: linkTarget does not end in N:0:0:0/block/srN");
+
+			if (host1==host){
+				std::cerr << "host=" << host << "  device=" << deviceName << std::endl;
+				deviceName_=deviceName;
+				return;
+			}
+		}
+
+		throw std::runtime_error("Device::Device: could not find matching host entry");
+	}
 };
 
-std::map<std::string,Device> IdentifyBDRs(){
-	std::map<std::string,Device> result;
+std::map<std::string,SCSIDevice> IdentifyBDRs(){
+	std::map<std::string,SCSIDevice> result;
 
 	std::istringstream iss1;
 	std::ostringstream oss1;
@@ -78,7 +131,7 @@ std::map<std::string,Device> IdentifyBDRs(){
 					if (logicalUnitSerialNumber.back()=='\'') logicalUnitSerialNumber.erase(logicalUnitSerialNumber.length()-1,1);
 					std::cerr << logicalUnitSerialNumber << std::endl;
 
-					result[logicalUnitSerialNumber]=Device(scsibus,target,lun);
+					result[logicalUnitSerialNumber]=SCSIDevice(scsibus,scsibus,target,lun,logicalUnitSerialNumber);
 				}
 			}
 		}
@@ -87,46 +140,135 @@ std::map<std::string,Device> IdentifyBDRs(){
 	return result;
 }
 
-void isOpen(std::string device){
+bool trayIsOpen(std::string device){
 	int fd;
 
 	if ((fd=open(device.c_str(),O_NONBLOCK))==-1)
-		throw std::runtime_error(std::string("isOpen: could not open: ")+sys_errlist[errno]);
+		throw std::runtime_error(std::string("isOpen: could not open: ")+strerror(errno));
 
 	int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
 
 	if (result==CDS_TRAY_OPEN)
-		std::cerr << device << " is open" << std::endl;
+		return true;	//std::cerr << device << " is open" << std::endl;
 	else
-		std::cerr << device << " is closed" << std::endl;
+		return false;	//std::cerr << device << " is closed" << std::endl;
 }
 
-// lsscsi
-/*
- *
-#include <sys/ioctl.h>
-#include <linux/cdrom.h>
+bool mediaAlreadyBurnedOrNoMedia(int host){
+	std::istringstream iss1;
+	std::ostringstream oss1;
 
-int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
+	Process scanbus("/usr/local/bin/cdrecord",{"cdrecord","dev="+std::to_string(host)+",0,0","-minfo","-v"},"cdrecord");
+	Chain1(scanbus,iss1,oss1);
 
-switch(result) {
-  case CDS_NO_INFO: ... break;
-  case CDS_NO_DISC: ... break;
-  case CDS_TRAY_OPEN: ... break;
-  case CDS_DRIVE_NOT_READY: ... break;
-  case CDS_DISC_OK: ... break;
-  default: // error
+	std::istringstream inputLines1(oss1.str());
+	for(std::string line1; std::getline(inputLines1,line1); ){
+		if (line1.find("disk status:              complete")!=std::string::npos)
+			for(std::string line2; std::getline(inputLines1,line2); ){
+				if (line2.find("session status:           complete")!=std::string::npos) return true;
+			}
+		if (line1.find("disk status:              empty")!=std::string::npos)
+			for(std::string line2; std::getline(inputLines1,line2); ){
+				if (line2.find("session status:           empty")!=std::string::npos) return false;
+			}
+		if (line1.find("medium not present - tray closed")!=std::string::npos) return true;
+	}
+
+	throw std::runtime_error("bdr_writer: medialAlreadyBurned: unknown media status");
 }
 
- *
- */
+class LoopDevice {
+public:
+	std::filesystem::path path_;
+	int fdLoopDevice_;
+	std::optional<std::filesystem::path> backingFile_;
+	std::optional<int> fdBackingFile_;
+
+	LoopDevice(){
+		int fdLoopControl;
+		do {
+			long availableLoopDeviceNumber;;
+
+			if ((fdLoopControl = open("/dev/loop-control", O_RDWR))==-1)
+				throw std::runtime_error("bdr_writer: cannot open /dev/loop-control");
+
+			if ((availableLoopDeviceNumber = ioctl(fdLoopControl, LOOP_CTL_GET_FREE))==-1)
+				throw std::runtime_error("bdr_writer: cannot obtain available loop device number");
+
+			path_="/dev/loop"+std::to_string(availableLoopDeviceNumber);
+
+			fdLoopDevice_ = open(path_.c_str(), O_RDWR);
+		}
+		while(fdLoopDevice_==-1);
+
+		if (close(fdLoopControl))
+			throw std::runtime_error("LoopDevice::LoopDevice: "+std::string(strerror(errno)));
+	}
+
+	void setBackingFile(std::filesystem::path backingFile){
+		if (fdBackingFile_) detach();
+		fdBackingFile_.reset();
+		backingFile_=backingFile;
+	}
+
+	void attach(){
+	    if ((fdBackingFile_ = open(backingFile_->c_str(), O_RDWR))==-1)
+	    	throw std::runtime_error("bdr_writer: cannot open backing file "+backingFile_->string());
+
+	    if (ioctl(fdLoopDevice_, LOOP_SET_FD, fdBackingFile_.value()) == -1)
+	    	throw std::runtime_error("bdr_writer: cannot attach backing file to loop device");
+	}
+
+	void detach(){
+	    if (ioctl(fdLoopDevice_, LOOP_CLR_FD) == -1)
+	    	throw std::runtime_error("bdr_writer: cannot detach backing file from loop device");
+
+	    if (close(fdBackingFile_.value()))
+	    	throw std::runtime_error("bdr_writer: cannot close backing file ");
+
+	    fdBackingFile_.reset();
+	}
+
+};
+
+void System(std::string const command){
+	int wstatus=system(command.c_str());
+	if (wstatus && WIFEXITED(wstatus) && WEXITSTATUS(wstatus))
+    	throw std::runtime_error("bdr_writer:System: failed command: \""+command+"\"");
+}
+
+void AttachFormatAndMount(LoopDevice & loopDevice, std::filesystem::path mountPath){
+	loopDevice.attach();
+	System("/usr/sbin/mkudffs "+loopDevice.path_.string());
+
+	if (mount(loopDevice.path_.c_str(),mountPath.c_str(),"udf",0,"")==-1)
+		throw std::runtime_error("bdr_writer: cannot mount loop device");
+}
+
+void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::filesystem::path mountPath){
+	if (umount(mountPath.c_str())!=0)
+		throw std::runtime_error("bdr_writer: could not unmount");
+	loopDevice.detach();
+
+	for(;;){
+		if (!trayIsOpen(scsiDevice.deviceName_))
+			if (!mediaAlreadyBurnedOrNoMedia(scsiDevice.host_))
+				break;
+			else {
+				std::cerr << "Insert fresh media in " << scsiDevice.serialNumber_ << std::endl;
+				System("/usr/local/bin/cdrecord dev="+std::to_string(scsiDevice.host_)+",0,0 -eject");
+			}
+		else {
+			std::cerr << "Close tray " << scsiDevice.serialNumber_ << std::endl;
+			while(trayIsOpen(scsiDevice.deviceName_))
+				sleep(10);
+		}
+	}
+	System("/usr/local/bin/cdrecord dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->string());
+}
+
 int main(int argc, char *argv[]){
-
-	 isOpen("/dev/sr0");
-	 isOpen("/dev/sr1");
-	 exit(0);
-
-#if 0
+#if 1
 	std::vector<std::string> orderedSerialNumbers {
 		"M64IB9I0842",
 		"M6IIB9H5304",
@@ -143,7 +285,7 @@ int main(int argc, char *argv[]){
 		"M66IB9H5249"
 	};
 #endif
-	std::map<std::string,Device> serialToScsi=IdentifyBDRs();
+	std::map<std::string,SCSIDevice> serialToScsi=IdentifyBDRs();
 
 	std::ifstream ifs("/home/dbetz/git/Private/xmltar.json");
 	auto j=nlohmann::json::parse(ifs);
@@ -152,7 +294,8 @@ int main(int argc, char *argv[]){
 
 	std::filesystem::path readPath("/backup/xmltar_write");
 	std::filesystem::path writePath("/backup/xmltar_read");
-	std::filesystem::path imagePath("/backup/bluray.udf");
+	// std::filesystem::path imagePath("/backup/bluray.udf");
+	std::filesystem::path imagePath("/backup/dvd.udf");
 	std::filesystem::path mountPath("/backup/bluray_mnt");
 
 	if (!std::filesystem::exists(readPath))
@@ -168,7 +311,7 @@ int main(int argc, char *argv[]){
 		throw std::runtime_error("bdr_writer: "+writePath.string()+" is not a fifo");
 	if (!std::filesystem::is_regular_file(std::filesystem::symlink_status(imagePath)))
 		throw std::runtime_error("bdr_writer: "+imagePath.string()+" is not a regular file");
-	if (std::filesystem::file_size(imagePath)!=25025314816)
+	if (std::filesystem::file_size(imagePath)!=25025314816 && std::filesystem::file_size(imagePath)!=4706074624)
 		throw std::runtime_error("bdr_writer: "+imagePath.string()+" is wrong size");
 
 	int fdRead;
@@ -179,41 +322,13 @@ int main(int argc, char *argv[]){
 	if ((fdWrite=open(writePath.c_str(),O_RDWR))==-1)
 		throw std::runtime_error("bdr_writer: cannot open fifo "+writePath.string());
 
-	// losetup
-    int fdLoopControl, fdLoopDevice, fdBackingFile;
-    long availableLoopDeviceNumber;;
-    std::filesystem::path loopDevicePath;
+	LoopDevice loopDevice;
+	loopDevice.setBackingFile(imagePath);
+	AttachFormatAndMount(loopDevice, mountPath);
 
-    if ((fdLoopControl = open("/dev/loop-control", O_RDWR))==-1)
-    	throw std::runtime_error("bdr_writer: cannot open /dev/loop-control");
-
-    if ((availableLoopDeviceNumber = ioctl(fdLoopControl, LOOP_CTL_GET_FREE))==-1)
-    	throw std::runtime_error("bdr_writer: cannot obtain available loop device number");
-
-    loopDevicePath="/dev/loop"+std::to_string(availableLoopDeviceNumber);
-
-    if ((fdLoopDevice = open(loopDevicePath.c_str(), O_RDWR))==-1)
-    	throw std::runtime_error("bdr_writer: cannot open loop device "+loopDevicePath.string());
-
-    if ((fdBackingFile = open(imagePath.c_str(), O_RDWR))==-1)
-    	throw std::runtime_error("bdr_writer: cannot open backing file "+imagePath.string());
-
-    if (ioctl(fdLoopDevice, LOOP_SET_FD, fdBackingFile) == -1)
-    	throw std::runtime_error("bdr_writer: cannot attach backing file to loop device");
-
-	std::istringstream iss1;
-	std::ostringstream oss1;
-
-	Process mkudffs("/usr/sbin/mkudffs",{"mkudffs",loopDevicePath.c_str()},"mkudffs");
-	Chain1e(mkudffs,iss1,oss1);
-
-	if (mount(loopDevicePath.c_str(),mountPath.c_str(),"udf",0,"")==-1)
-    	throw std::runtime_error("bdr_writer: cannot mount loop device");
-
-#if 1
-	char buffer[1024];
-	ssize_t nBytes;
-	for(;;){
+	for(size_t burner=0; ; ){
+		char buffer[1024];
+		ssize_t nBytes;
 		nBytes=read(fdRead,buffer,sizeof(buffer));
 		if (nBytes==0) continue; // no process is writing this fifo
 		if (nBytes<0)
@@ -223,23 +338,53 @@ int main(int argc, char *argv[]){
 
 		std::string action;
 		iss >> action;
-		if (action=="REQUEST_WRITE_VOLUME"){
+		if (action=="REQUEST_WRITE"){
 			size_t requestedSize;
 			iss >> requestedSize;
 			struct statvfs buf;
 			if (statvfs(mountPath.c_str(),&buf)!=0)
 				throw std::runtime_error("bdr_writer: could not statvfs");
 			if (requestedSize>buf.f_bavail*buf.f_bsize){
-				if (umount(mountPath.c_str())!=0)
-					throw std::runtime_error("bdr_writer: could not unmount");
-			}
-			Process cdrecord("/usr/local/bin/cdrecord",{"cdrecord"});
+				BurnImage(
+					serialToScsi[orderedSerialNumbers[burner]],
+					loopDevice,
+					mountPath
+				);
 
+				if (++burner==orderedSerialNumbers.size()){
+					for(size_t i=0; i<burner; ++i){
+						System("/usr/local/bin/cdrecord dev="+std::to_string(serialToScsi[orderedSerialNumbers[i]].host_)+",0,0 -eject");
+					}
+					burner=0;
+				}
+
+				AttachFormatAndMount(loopDevice,mountPath);
+			}
+
+			nBytes=write(fdWrite,"CONTINUE",8);
+			if (nBytes<0)
+				throw std::runtime_error("bdr_writer: cannot write fifo");
+			if (nBytes!=8)
+				throw std::runtime_error("bdr_writer: partial write fifo");
+			continue;
 		}
-		else if (action=="FINISHED")
-			;
+		else if (action=="FINISHED"){
+			BurnImage(
+				serialToScsi[orderedSerialNumbers[burner]],
+				loopDevice,
+				mountPath
+			);
+
+			if (++burner==orderedSerialNumbers.size()){
+				for(size_t i=0; i<burner; ++i){
+					System("/usr/local/bin/cdrecord dev="+std::to_string(serialToScsi[orderedSerialNumbers[i]].host_)+",0,0 -eject");
+				}
+				burner=0;
+			}
+
+			break;
+		}
 	}
-#endif
 /*
 
 	/usr/bin/dd if=/dev/zero of=/backup/bluray.udf count=25025314816 iflag=count_bytes

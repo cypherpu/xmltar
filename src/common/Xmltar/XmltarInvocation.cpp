@@ -148,15 +148,41 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 	if (globals_.options_.operation_ && globals_.options_.operation_==XmltarOptions::CREATE){
 		if (globals_.options_.multi_volume_){
 			if (!globals_.options_.starting_volume_)
-				throw std::logic_error("XmltarRun::XmltarRun: must specify starting volume number to create multivolume archive");
+				throw std::logic_error("XmltarInvocation::XmltarInvocation: must specify starting volume number to create multivolume archive");
 
-            globals_.current_volume_=globals_.options_.starting_volume_.get();
+			int readFifoFd;
+			int writeFifoFd;
+			if (globals.options_.writeFifo_){
+				if (!globals.options_.readFifo_)
+					throw std::logic_error("XmltarInvocation::XmltarInvocation: must specify both --write-fifo and --read-fifo together");
+
+				if ((readFifoFd=open(globals.options_.readFifo_.value().c_str(),O_RDWR))==-1)
+					throw std::runtime_error("bdr_writer: cannot open fifo "+globals.options_.readFifo_.value().string());
+				if ((writeFifoFd=open(globals.options_.writeFifo_.value().c_str(),O_RDWR))==-1)
+					throw std::runtime_error("bdr_writer: cannot open fifo "+globals.options_.writeFifo_.value().string());
+			}
+			else
+				if (globals.options_.readFifo_)
+					throw std::logic_error("XmltarInvocation::XmltarInvocation: must specify both --write-fifo and --read-fifo together");
+
+			globals_.current_volume_=globals_.options_.starting_volume_.get();
             globals_.NextMember();
 
             for(unsigned int i=0; i<globals_.options_.stop_after_.get(); ++i, ++globals_.current_volume_){
                 boost::format fmt(globals_.options_.base_xmltar_file_name_.get());
                 fmt % globals_.current_volume_;
                 std::string filename=str(fmt);
+
+                if (globals_.options_.readFifo_ && globals_.options_.writeFifo_){
+					std::string message="REQUEST_WRITE "+std::to_string(globals_.options_.tape_length_.value());
+					if (write(writeFifoFd,message.c_str(),message.size())!=message.size())
+						throw std::runtime_error("XmltarInvocation::XmltarInvocation: bad write");
+					char buffer[1024];
+					if (read(readFifoFd,buffer,1024)!=8)
+						throw std::runtime_error("XmltarInvocation::XmltarInvocation: bad read");
+					if (std::string(buffer,8)!="CONTINUE")
+						throw std::runtime_error("XmltarInvocation::XmltarInvocation: bad message");
+                }
 
                 std::cerr << "*********" << globals_.current_volume_ << "******** " << (globals_.nextMember_ && globals_.nextMember_->Ifs()?(std::streamoff)(globals_.nextMember_->Ifs()->tellg()):(std::streamoff)0) << std::endl;
                 XmltarArchiveCreateMultiVolume xmltarArchiveCreateMultiVolume(globals_,filename);

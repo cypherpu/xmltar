@@ -87,6 +87,8 @@ public:
 	boost::optional<unsigned int> starting_volume_;
 	std::vector<std::string> sourceFileGlobs_;
 	bool sha3_512_;
+	std::optional<std::filesystem::path> readFifo_;
+	std::optional<std::filesystem::path> writeFifo_;
 
     XmltarOptions(void)
         : operation_(), verbosity_(), multi_volume_(),
@@ -112,7 +114,8 @@ public:
 		  dump_level_(),
 		  files_from_(), excludeFileGlobs_(),
 		  archiveMemberTag_(),tabs_(), newlines_(),
-		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(), sha3_512_(false){ }
+		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(), sha3_512_(false),
+		  readFifo_(), writeFifo_() { }
 
     void ProcessOptions(int argc, char const *argv[]);
 

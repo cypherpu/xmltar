@@ -111,14 +111,14 @@ public:
     			"\x3d\xf7\x46\xa1\x1c\x7b\x3d\xf7\x4f\xba\xc0\x0c\x94\xf7\xad\xec"
     			"\xff\x0f\xd9\xaa\x0e\x8e\x5b\x55\xd7\xe2\x97\xc0\x39\x69\xa8\x5a"
     			"\xb5\x08x\b7\xdb\x1a\xbb\xe8\x8b\x41\xf2\xe7\xac\x47\x20\xba\x36";
-    	std::string key(64,' ');
+    	std::string key(32,' ');
 
 		if (PKCS5_PBKDF2_HMAC(
 				passphrase.data(), passphrase.size(),
 				reinterpret_cast<unsigned const char *>(salt.data()), salt.size(),
 				1000, EVP_sha3_512(), key.size(), reinterpret_cast<unsigned char *>(key.data())
 			)!=1)
-    		throw std::runtime_error("XmltarGlobals::InitializationVector: unable to getrandom");
+    		throw std::runtime_error("XmltarGlobals::KeyFromPassphrase: unable to getrandom");
 
 		return key;
     }

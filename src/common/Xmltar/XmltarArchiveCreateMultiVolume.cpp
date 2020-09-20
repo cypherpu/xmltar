@@ -205,7 +205,12 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 
 	if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.preencryptedTapeLength_.get()){
-		std::string tmp=CompressedArchiveTrailer(globals_.options_.preencryptedTapeLength_.get()-committedBytes);
+		std::string tmp;
+		if (globals.nextMember_)
+			tmp=CompressedArchiveTrailer(globals_.options_.preencryptedTapeLength_.get()-committedBytes);
+		else
+			tmp=CompressedArchiveTrailer();
+
 		std::cerr << dbg << ": tmp=" << tmp.size() << std::endl;
 		ofs << globals_.options_.archiveEncryption_->Encrypt(
 					tmp
