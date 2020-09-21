@@ -23,5 +23,19 @@ along with Assess.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
+#include <json.hpp>
 
+#include "Utilities/Crypto/DecryptXChaCha20Poly1305.hpp"
+#include "Utilities/FromHex.hpp"
 
+int main(int argc, char *argv[]){
+	std::ifstream ifs("/home/dbetz/git/Private/xmltar.json");
+	auto j=nlohmann::json::parse(ifs);
+	std::string passphrase_=j["passphrase"];
+	std::string salt_=FromEscapedHex(j["salt"]);
+
+	std::shared_ptr<DecryptorInterface> archiveDecryption_;
+	static const size_t xChaCha20Poly1305MessageLength=1<<15;
+	archiveDecryption_.reset(new DecryptXChaCha20Poly1305Decorator(xChaCha20Poly1305MessageLength));
+
+}
