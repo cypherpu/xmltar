@@ -375,10 +375,7 @@ int main(int argc, char *argv[]){
 				mountPath
 			);
 
-			if (++burner==orderedSerialNumbers.size()){
-				burner=0;
-			}
-			for(size_t i=0; i<burner; ++i){
+			for(size_t i=0; i<=burner; ++i){
 				System("/usr/local/bin/cdrecord dev="+std::to_string(serialToScsi[orderedSerialNumbers[i]].host_)+",0,0 -eject");
 			}
 
