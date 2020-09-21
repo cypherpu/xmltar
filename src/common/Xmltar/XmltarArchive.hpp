@@ -72,7 +72,7 @@ public:
 	PartialFileRead append(unsigned int volumeNumber);
 
 	std::string ArchiveHeader(std::string filename, int archive_sequence_number);
-	std::string ArchiveTrailerBegin();
+	std::string ArchiveTrailerBegin(bool lastMember);
 	std::string ArchiveTrailerMiddle(unsigned int padding);
 	std::string ArchiveTrailerEnd();
 

@@ -44,6 +44,11 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarMemberCreate.hpp"
 #include "Xmltar/XmltarGlobals.hpp"
 
+/*
+
+/home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /backup/bluray_mnt/backup_2020_09_20.%03d.xmltar --multi-volume --tape-length 1000000000 --starting-volume 1 --file-zstd --zstd --encrypt --read-fifo /backup/xmltar_read --write-fifo /backup/xmltar_write /home/dbetz/Music/FLAC/
+
+ */
 int main(int argc, char const *argv[])
 {
 	spdlog::set_level(spdlog::level::info);

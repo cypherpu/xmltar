@@ -342,10 +342,14 @@ std::string XmltarArchive::CompressedArchiveHeader(std::string filename, int arc
 					);
 }
 
-std::string XmltarArchive::ArchiveTrailerBegin(){
+std::string XmltarArchive::ArchiveTrailerBegin(bool lastMember){
+	std::string lastMemberString;
+	if (lastMember) lastMemberString="yea";
+	else lastMemberString="nay";
+
     std::string s
 		=globals_.options_.Tabs("\t")+"</members>"+globals_.options_.Newline()
-		+globals_.options_.Tabs("\t")+"<padding>";
+		+globals_.options_.Tabs("\t")+"<padding last-member=\""+lastMemberString+"\">";
 
     return s;
 }
@@ -366,7 +370,7 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 
 	std::string compressedArchiveTrailer
 			=globals_.options_.archiveRawCompression_.get()->OpenForceWriteAndClose(
-								ArchiveTrailerBegin()+ArchiveTrailerEnd()
+								ArchiveTrailerBegin(true)+ArchiveTrailerEnd()
 			);
 
 	return compressedArchiveTrailer;
@@ -380,10 +384,10 @@ std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
 		=globals_.options_.archiveRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredLength);
 	std::cerr << dbg << ": desiredMemberLength=" << desiredMemberLength << std::endl;
 
-	size_t paddingLength=desiredMemberLength-ArchiveTrailerBegin().size()-ArchiveTrailerEnd().size();
+	size_t paddingLength=desiredMemberLength-ArchiveTrailerBegin(false).size()-ArchiveTrailerEnd().size();
 	std::cerr << dbg << ": paddingLength=" << paddingLength << std::endl;
 
-	std::string data=ArchiveTrailerBegin()+std::string(paddingLength,' ')+ArchiveTrailerEnd();
+	std::string data=ArchiveTrailerBegin(false)+std::string(paddingLength,' ')+ArchiveTrailerEnd();
 	std::cerr << dbg << ": data.size()=" << data.size() << std::endl;
 
 	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, data);
