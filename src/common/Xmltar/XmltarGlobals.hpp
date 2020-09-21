@@ -50,6 +50,7 @@ public:
 	size_t current_volume_;
 	std::unique_ptr<Snapshot> snapshot_;	// FIXME - make sure snapshot_ is destructed before options
 	time_t invocationTime_;
+	std::string salt_;
 
 	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeIncluded_;
 	std::priority_queue<ExtendedPath,std::vector<ExtendedPath>,std::greater<ExtendedPath>> filesToBeExcluded_;
@@ -106,16 +107,11 @@ public:
     }
 
     std::string KeyFromPassphrase(std::string const & passphrase){
-    	std::string salt=
-    			"\xff\x29\x2c\x48\x44\x4d\xb2\x7b\x4b\xfc\x24\x69\xd9\x92\xc0\x10"
-    			"\x3d\xf7\x46\xa1\x1c\x7b\x3d\xf7\x4f\xba\xc0\x0c\x94\xf7\xad\xec"
-    			"\xff\x0f\xd9\xaa\x0e\x8e\x5b\x55\xd7\xe2\x97\xc0\x39\x69\xa8\x5a"
-    			"\xb5\x08x\b7\xdb\x1a\xbb\xe8\x8b\x41\xf2\xe7\xac\x47\x20\xba\x36";
     	std::string key(32,' ');
 
 		if (PKCS5_PBKDF2_HMAC(
 				passphrase.data(), passphrase.size(),
-				reinterpret_cast<unsigned const char *>(salt.data()), salt.size(),
+				reinterpret_cast<unsigned const char *>(salt_.data()), salt_.size(),
 				1000, EVP_sha3_512(), key.size(), reinterpret_cast<unsigned char *>(key.data())
 			)!=1)
     		throw std::runtime_error("XmltarGlobals::KeyFromPassphrase: unable to getrandom");
