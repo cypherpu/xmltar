@@ -87,3 +87,31 @@ cc_binary(
 				"-lsodium",
 				]
 )
+
+cc_binary(
+	name = "decrypt",
+	srcs = ["src/decrypt.cpp"]
+			+glob(["src/common/**/*.cpp"] )
+			+glob(["src/common/**/*.hpp"])
+			,
+	includes = [],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	linkopts = [
+				"-pg",
+				"-lgtest",
+				"-lzstd",
+				"-lz",
+				"-lxxhash",
+#				"-lboost_filesystem",
+				"-lboost_system",
+				"-lxerces-c",
+				"-lexpat",
+				"-lboost_date_time",
+				"-lcryptopp",
+				"-lpthread",
+				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
+				"-lstdc++fs",
+				"-lcrypto",
+				"-lsodium",
+				]
+)

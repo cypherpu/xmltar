@@ -23,19 +23,41 @@ along with Assess.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
+#include <fstream>
+
 #include <json.hpp>
+
+#include "Xmltar/XmltarGlobals.hpp"
 
 #include "Utilities/Crypto/DecryptXChaCha20Poly1305.hpp"
 #include "Utilities/FromHex.hpp"
 
 int main(int argc, char *argv[]){
-	std::ifstream ifs("/home/dbetz/git/Private/xmltar.json");
-	auto j=nlohmann::json::parse(ifs);
-	std::string passphrase_=j["passphrase"];
-	std::string salt_=FromEscapedHex(j["salt"]);
+	if (argc!=2)
+		std::runtime_error("Usage: decrypt filename");
 
-	std::shared_ptr<DecryptorInterface> archiveDecryption_;
+	std::string passphrase;
+	std::string salt;
+	{
+		std::ifstream ifs("/home/dbetz/git/Private/xmltar.json");
+		auto j=nlohmann::json::parse(ifs);
+		passphrase=j["passphrase"];
+		salt=FromEscapedHex(j["salt"]);
+	}
+
+	std::ifstream ifs(argv[1]);
+	std::shared_ptr<DecryptorInterface> archiveDecryption;
 	static const size_t xChaCha20Poly1305MessageLength=1<<15;
-	archiveDecryption_.reset(new DecryptXChaCha20Poly1305Decorator(xChaCha20Poly1305MessageLength));
+	archiveDecryption.reset(new DecryptXChaCha20Poly1305Decorator(xChaCha20Poly1305MessageLength));
+	std::cout << archiveDecryption->Open(KeyFromPassphrase(passphrase,salt));
+	char buffer[1024];
+	while(ifs){
+		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
 
+		std::cout << archiveDecryption->Decrypt(std::string(buffer,ifs.gcount()));
+	}
+
+	std::cout << archiveDecryption->Close();
+
+	ifs.close();
 }
