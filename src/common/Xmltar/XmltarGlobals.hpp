@@ -41,6 +41,8 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 class XmltarMemberCreate;
 
+std::string KeyFromPassphrase(std::string const & passphrase, std::string const & salt);
+
 class XmltarGlobals {
 public:
 	static const size_t xChaCha20Poly1305MessageLength=1<<15;
@@ -107,16 +109,7 @@ public:
     }
 
     std::string KeyFromPassphrase(std::string const & passphrase){
-    	std::string key(32,' ');
-
-		if (PKCS5_PBKDF2_HMAC(
-				passphrase.data(), passphrase.size(),
-				reinterpret_cast<unsigned const char *>(salt_.data()), salt_.size(),
-				1000, EVP_sha3_512(), key.size(), reinterpret_cast<unsigned char *>(key.data())
-			)!=1)
-    		throw std::runtime_error("XmltarGlobals::KeyFromPassphrase: unable to getrandom");
-
-		return key;
+    	return ::KeyFromPassphrase(passphrase, salt_);
     }
 };
 

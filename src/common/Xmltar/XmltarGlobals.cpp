@@ -31,6 +31,19 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 const size_t XmltarGlobals::xChaCha20Poly1305MessageLength;
 
+std::string KeyFromPassphrase(std::string const & passphrase, std::string const & salt){
+	std::string key(32,' ');
+
+	if (PKCS5_PBKDF2_HMAC(
+			passphrase.data(), passphrase.size(),
+			reinterpret_cast<unsigned const char *>(salt.data()), salt.size(),
+			1000, EVP_sha3_512(), key.size(), reinterpret_cast<unsigned char *>(key.data())
+		)!=1)
+		throw std::runtime_error("XmltarGlobals::KeyFromPassphrase: unable to getrandom");
+
+	return key;
+}
+
 XmltarGlobals::XmltarGlobals()
 	: current_xmltar_file_name_(), current_volume_(),
 	  invocationTime_(time(nullptr)), key_(), resultCode_(0), errorMessages_() {
@@ -75,12 +88,12 @@ size_t  XmltarGlobals::ArchiveDirectorySize(){
 
 void XmltarGlobals::NextMember(){
 	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
-
+#if 0
 	while(ArchiveDirectorySize()>options_.wait_for_space_.value()){
 		std::cerr << "Waiting for archive directory to empty" << std::endl;
 		sleep(10);
 	}
-
+#endif
 	std::string sha3_512;
 
 	if (nextMember_){
