@@ -1,0 +1,166 @@
+Cdrecord-ProDVD-ProBD-Clone 3.01 (x86_64-unknown-linux-gnu) Copyright (C) 1995-2015 Joerg Schilling
+TOC Type: 1 = CD-ROM
+Using libscg version 'schily-0.9'.
+atapi: 1
+Device type    : Removable CD-ROM
+Version        : 0
+Response Format: 2
+Capabilities   : 
+Vendor_info    : 'HL-DT-ST'
+Identifikation : 'BD-RE  WH14NS40 '
+Revision       : '1.03'
+Device seems to be: Generic mmc2 DVD-R/DVD-RW/DVD-RAM.
+Current: BD-R sequential recording
+Profile: BD-RE 
+Profile: BD-R random recording 
+Profile: BD-R sequential recording (current)
+Profile: BD-ROM 
+Profile: DVD+R/DL 
+Profile: DVD+R 
+Profile: DVD+RW 
+Profile: DVD-R/DL layer jump recording 
+Profile: DVD-R/DL sequential recording 
+Profile: DVD-RW sequential recording 
+Profile: DVD-RW restricted overwrite 
+Profile: DVD-RAM 
+Profile: DVD-R sequential recording 
+Profile: DVD-ROM 
+Profile: CD-RW 
+Profile: CD-R 
+Profile: CD-ROM 
+Profile: Removable Disk 
+Feature: 'Profile List' (current) (persistent)
+Feature: 'Core' (current) (persistent)
+Feature: 'Morphing' (current) (persistent)
+Feature: 'Removable Medium' (current) (persistent)
+Feature: 'Write Protect'  
+Feature: 'Random Readable'  
+Feature: 'Multi Read'  
+Feature: 'CD Read'  
+Feature: 'DVD Read'  
+Feature: 'Random Writable'  
+Feature: 'Incremental Streaming Writable' (current) 
+Feature: 'Formattable' (current) 
+Feature: 'Defect Management'  
+Feature: 'Restricted Overwrite'  
+Feature: 'CD-RW CAV Write'  
+Feature: 'DVD+RW'  
+Feature: 'DVD+R'  
+Feature: 'Rigid Restricted Overwrite'  
+Feature: 'CD Track at Once'  
+Feature: 'CD Mastering'  
+Feature: 'DVD-R/-RW Write'  
+Feature: 'Layer Jump Recording'  
+Feature: 'CD-RW Write'  
+Feature: 'BD-R Pseudo-Overwrite (POW)'  
+Feature: 'DVD+R/DL Read'  
+Feature: 'BD Read'  
+Feature: 'BD Write' (current) 
+Feature: 'Hybrid Disk Read'  
+Feature: 'Power Management' (current) (persistent)
+Feature: 'S.M.A.R.T.'  
+Feature: 'CD Audio analog play'  
+Feature: 'Microcode Upgrade'  
+Feature: 'Time-out' (current) (persistent)
+Feature: 'DVD-CSS'  
+Feature: 'Real Time Streaming' (current) 
+Feature: 'Logical Unit Serial Number' (current) (persistent)	Serial: 'M6BIB9H4809 '
+Feature: 'Media Serial Number'  
+Feature: 'Disk Control Blocks'  
+Feature: 'Microcode Information' (current) (persistent)
+Feature: 'AACS' (current) 
+Drive current speed: 12
+Drive default speed: 12
+Drive max speed    : 12
+Selected speed     : 12
+Using generic SCSI-3/mmc-3 BD-R driver (mmc_bdr).
+Driver flags   : NO-CD BD MMC-3 BURNFREE 
+Supported modes: PACKET SAO LAYER_JUMP
+Drive buf size : 1900544 = 1856 KB
+Track 1 start 0
+Current Secsize: 2048
+Supported BD (readable) structures: 00 01 03 09 85 C0 FF
+Page 00 read        (40) len 4098
+Page 01 read        (40) len 0
+Page 03 read        (40) len 0
+Page 08 read        (40) len 100
+Page 09 read        (40) len 8
+Page 0A read        (40) len 16
+Page 12 read        (40) len 2
+Page 30 read/write  (C0) len 2
+Page 80 read        (40) len 0
+Page 81 read        (40) len 0
+Page 82 read        (40) len 0
+Page 83 read        (40) len 0
+Page 84 read/write  (C0) len 0
+Page 85 read/write  (C0) len 0
+Page C0 read        (40) len 8
+Disk type:          'BDR' (BD-R)
+Disk class:         01
+Manufacturer:       'RITEK'
+Media type:         'BR3'
+Disk:               is not in cartridge
+Media cartrige:     write protect is off
+rzone size:         40
+rzone number:       1
+border number:      1
+ljrs:               0
+track mode:         4 copy: 0
+damage:             0
+reserved track:     0 blank: 1 incremental: 1 fp: 0
+data mode:          1
+lra valid:          0
+nwa valid:          1
+rzone start:        0
+next wr addr:       0
+free blocks:        12219392
+blocking factor:    32
+rzone size:         12219392
+last recorded addr: 0
+read compat lba:    0
+
+    Capacity  Blklen/Sparesz.  Format-type  Type
+    12219392           200704         0x00  Unformated or Blank Media
+    11826176            12288         0x00  Reserved (0)
+    11826176                0         0x32  Reserved (0)
+     5796864                0         0x32  Reserved (0)
+    12088320                0         0x32  Reserved (0)
+WARNING: Phys disk size 4452354 differs from rzone size 12219392! Prerecorded disk?
+WARNING: Phys start: 25088 Phys end 4477441
+Mounted media class:      BD
+Mounted media type:       BD-R sequential recording
+Disk Is not erasable
+data type:                standard
+disk status:              empty
+session status:           empty
+BG format status:         none
+first track:              1
+number of sessions:       1
+first track in last sess: 1
+last track in last sess:  1
+Disk Is unrestricted
+Disk type: DVD, HD-DVD or BD
+
+Track  Sess Type   Start Addr End Addr   Size
+==============================================
+rzone size:         40
+rzone number:       1
+border number:      1
+ljrs:               0
+track mode:         4 copy: 0
+damage:             0
+reserved track:     0 blank: 1 incremental: 1 fp: 0
+data mode:          1
+lra valid:          0
+nwa valid:          1
+rzone start:        0
+next wr addr:       0
+free blocks:        12219392
+blocking factor:    32
+rzone size:         12219392
+last recorded addr: 0
+read compat lba:    0
+    1     1 Blank  0          12219391   12219392         -1
+
+Next writable address:              0
+Remaining writable size:            12219392

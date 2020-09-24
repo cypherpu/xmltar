@@ -17,7 +17,6 @@ cc_binary(
 				"-lzstd",
 				"-lz",
 				"-lxxhash",
-#				"-lboost_filesystem",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
@@ -45,7 +44,6 @@ cc_binary(
 				"-lzstd",
 				"-lz",
 				"-lxxhash",
-#				"-lboost_filesystem",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
@@ -74,7 +72,33 @@ cc_binary(
 				"-lzstd",
 				"-lz",
 				"-lxxhash",
-#				"-lboost_filesystem",
+				"-lboost_system",
+				"-lxerces-c",
+				"-lexpat",
+				"-lboost_date_time",
+				"-lcryptopp",
+				"-lpthread",
+				"-L/usr/lib/gcc/x86_64-redhat-linux/8/",
+				"-lstdc++fs",
+				"-lcrypto",
+				"-lsodium",
+				]
+)
+
+cc_binary(
+	name = "bdr_reader",
+	srcs = ["src/bdr_reader.cpp"]
+			+glob(["src/common/**/*.cpp"] )
+			+glob(["src/common/**/*.hpp"])
+			,
+	includes = [],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	linkopts = [
+				"-pg",
+				"-lgtest",
+				"-lzstd",
+				"-lz",
+				"-lxxhash",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
@@ -102,7 +126,6 @@ cc_binary(
 				"-lzstd",
 				"-lz",
 				"-lxxhash",
-#				"-lboost_filesystem",
 				"-lboost_system",
 				"-lxerces-c",
 				"-lexpat",
