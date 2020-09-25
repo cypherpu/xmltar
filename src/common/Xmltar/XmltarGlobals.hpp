@@ -35,6 +35,8 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/random.h>
 #include <openssl/evp.h>
 
+#include <spdlog/spdlog.h>
+
 #include "Utilities/ExtendedPath.hpp"
 #include "Snapshot/Snapshot.hpp"
 #include "Xmltar/XmltarOptions.hpp"
@@ -70,47 +72,12 @@ public:
     XmltarGlobals();
     size_t ArchiveDirectorySize();
     void NextMember();
-    bool MatchesGlobs(std::filesystem::path p, std::vector<std::string> globs){
-    	for(auto & s : globs){
-    		int result=fnmatch(p.string().c_str(),s.c_str(),FNM_PATHNAME|FNM_PERIOD);
-    		if (result==0) return true;
-    		else if (result!=FNM_NOMATCH)
-    			throw std::runtime_error("XmltarGlobals::MatchesGlobs: unknown error");
-    	}
-
-    	return false;
-    }
-
-    bool IncludedFile(ExtendedPath p){
-    	return MatchesGlobs(p.path(),options_.sourceFileGlobs_);
-    }
-
-    bool ExcludedFile(ExtendedPath p){
-    	return MatchesGlobs(p.path(),options_.excludeFileGlobs_);
-    }
-
-    void AddSubdirectories(std::filesystem::path const & p){
-		std::filesystem::file_status f_stat=std::filesystem::symlink_status(p);
-
-		if (std::filesystem::is_directory(f_stat)){
-			for(auto & i : std::filesystem::directory_iterator(p) ){
-				filesToBeIncluded_.push(ExtendedPath(i));
-			}
-		}
-    }
-
-    std::string InitializationVector(int nBytes){
-    	std::string result(nBytes,' ');
-
-    	if (getrandom(result.data(),nBytes,GRND_RANDOM)!=nBytes)
-    		throw std::runtime_error("XmltarGlobals::InitializationVector: unable to getrandom");
-
-    	return result;
-    }
-
-    std::string KeyFromPassphrase(std::string const & passphrase){
-    	return ::KeyFromPassphrase(passphrase, salt_);
-    }
+    bool MatchesGlobs(std::filesystem::path p, std::vector<std::string> globs);
+    bool IncludedFile(ExtendedPath p);
+    bool ExcludedFile(ExtendedPath p);
+    void AddSubdirectories(std::filesystem::path const & p);
+    std::string InitializationVector(int nBytes);
+    std::string KeyFromPassphrase(std::string const & passphrase);
 };
 
 

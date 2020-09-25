@@ -29,6 +29,12 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include "Generated/Utilities/IsPrefixPath.hpp"
 #include "Utilities/Sha3.hpp"
 
+#if DEBUG
+#define THROW(x,y)	do { std::cerr << __FILE__ << ":" << __func__ << ":" << __LINE__ << ":" << y << std::endl; } while(0)
+#else
+#define THROW(x,y)	throw x(y)
+#endif
+
 const size_t XmltarGlobals::xChaCha20Poly1305MessageLength;
 
 std::string KeyFromPassphrase(std::string const & passphrase, std::string const & salt){
@@ -238,3 +244,46 @@ void XmltarGlobals::NextMember(){
 		}
 	}
 }
+
+bool XmltarGlobals::MatchesGlobs(std::filesystem::path p, std::vector<std::string> globs){
+	for(auto & s : globs){
+		int result=fnmatch(p.string().c_str(),s.c_str(),FNM_PATHNAME|FNM_PERIOD);
+		if (result==0) return true;
+		else if (result!=FNM_NOMATCH)
+			throw std::runtime_error("XmltarGlobals::MatchesGlobs: unknown error");
+	}
+
+	return false;
+}
+
+bool XmltarGlobals::IncludedFile(ExtendedPath p){
+	return MatchesGlobs(p.path(),options_.sourceFileGlobs_);
+}
+
+bool XmltarGlobals::ExcludedFile(ExtendedPath p){
+	return MatchesGlobs(p.path(),options_.excludeFileGlobs_);
+}
+
+void XmltarGlobals::AddSubdirectories(std::filesystem::path const & p){
+	std::filesystem::file_status f_stat=std::filesystem::symlink_status(p);
+
+	if (std::filesystem::is_directory(f_stat)){
+		for(auto & i : std::filesystem::directory_iterator(p) ){
+			filesToBeIncluded_.push(ExtendedPath(i));
+		}
+	}
+}
+
+std::string XmltarGlobals::InitializationVector(int nBytes){
+	std::string result(nBytes,' ');
+
+	if (getrandom(result.data(),nBytes,GRND_RANDOM)!=nBytes)
+		throw std::runtime_error("XmltarGlobals::InitializationVector: unable to getrandom");
+
+	return result;
+}
+
+std::string XmltarGlobals::KeyFromPassphrase(std::string const & passphrase){
+	return ::KeyFromPassphrase(passphrase, salt_);
+}
+
