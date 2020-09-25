@@ -193,7 +193,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 
             	if (!globals_.nextMember_ && globals_.filesToBeIncluded_.top().pathType()==ExtendedPath::PathType::MAX) break;
             }
-			std::string message="FINISHED";				;
+			std::string message="FINISHED";
 			if (write(writeFifoFd,message.c_str(),message.size())!=message.size())
 				throw std::runtime_error("XmltarInvocation::XmltarInvocation: bad write");
 			if (close(writeFifoFd) || close(readFifoFd))
