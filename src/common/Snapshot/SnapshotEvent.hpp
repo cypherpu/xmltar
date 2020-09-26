@@ -37,7 +37,7 @@ public:
 	std::string action_;
 	std::string startingVolumeName_;
 	time_t modificationTime_;
-	size_t size_;
+	__off_t size_;
 	std::string sha3_512_;
 
 	SnapshotEvent(time_t backupTime, size_t dumpLevel, std::string action, std::string startingVolumeName, time_t modificationTime, size_t size, std::string sha3_512)
@@ -49,7 +49,7 @@ public:
 		action_=action;
 		startingVolumeName_=startingVolumeName;
 		modificationTime_=boost::lexical_cast<time_t>(modificationTime);
-		size_=boost::lexical_cast<size_t>(size);
+		size_=boost::lexical_cast<__off_t>(size);
 		sha3_512_=sha3_512;
 	}
 

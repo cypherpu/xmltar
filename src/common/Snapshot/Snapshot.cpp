@@ -38,8 +38,8 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 Snapshot::Snapshot(XmltarGlobals & globals)
 	: globals_(globals), snapshotXmlParser_(fileEntries_), finishedParsing_(false) {
 
-	if (std::filesystem::exists(globals_.options_.listed_incremental_file_.get())){
-		oldSnapshotFileIfs_.open(globals_.options_.listed_incremental_file_.get());
+	if (std::filesystem::exists(globals_.options_.listed_incremental_file_.value())){
+		oldSnapshotFileIfs_.open(globals_.options_.listed_incremental_file_.value());
 	}
 
 	newSnapshotFileDirPath_=TemporaryDir(std::filesystem::temp_directory_path() / "xmltar_XXXXXX");
@@ -75,7 +75,7 @@ Snapshot::~Snapshot(){
 	newSnapshotFileOfs_.close();
 	oldSnapshotFileIfs_.close();
 
-	std::filesystem::copy(newSnapshotFilePath_,globals_.options_.listed_incremental_file_.get());
+	std::filesystem::copy(newSnapshotFilePath_,globals_.options_.listed_incremental_file_.value());
 }
 
 void Snapshot::ReplenishFileEntries(){

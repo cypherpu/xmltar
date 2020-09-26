@@ -49,9 +49,9 @@ public:
 	enum Operation { NOOP, APPEND, CREATE, LIST, EXTRACT };
 	enum Encoding { BASE16, BASE64 };
 
-	boost::optional<Operation> operation_;
-	boost::optional<int> verbosity_;
-	boost::optional<bool> multi_volume_;
+	std::optional<Operation> operation_;
+	std::optional<int> verbosity_;
+	std::optional<bool> multi_volume_;
 
 	std::shared_ptr<CompressorGeneralInterface> fileCompression_;
 	std::shared_ptr<CompressorRawInterface> fileRawCompression_;
@@ -70,21 +70,21 @@ public:
 	std::shared_ptr<DecryptorInterface> snapshotDecryption_;
 	bool encrypted_;
 
-	boost::optional<size_t> tape_length_;
-	boost::optional<size_t> preencryptedTapeLength_;
-	boost::optional<size_t> stop_after_;
-	boost::optional<size_t> wait_for_space_;
-	boost::optional<std::filesystem::path> listed_incremental_file_;
+	std::optional<size_t> tape_length_;
+	std::optional<size_t> preencryptedTapeLength_;
+	std::optional<size_t> stop_after_;
+	std::optional<size_t> wait_for_space_;
+	std::optional<std::filesystem::path> listed_incremental_file_;
 	std::shared_ptr<CompressorGeneralInterface> incrementalFileCompression_;
 	std::shared_ptr<CompressorGeneralInterface> incrementalFileDecompression_;
-	boost::optional<unsigned int> dump_level_;
-	boost::optional<std::filesystem::path> files_from_;
+	std::optional<unsigned int> dump_level_;
+	std::optional<std::filesystem::path> files_from_;
 	std::vector<std::string> excludeFileGlobs_;
-	boost::optional<std::string> archiveMemberTag_;
-	boost::optional<bool> tabs_;
-	boost::optional<bool> newlines_;
-	boost::optional<std::string> base_xmltar_file_name_;
-	boost::optional<unsigned int> starting_volume_;
+	std::optional<std::string> archiveMemberTag_;
+	std::optional<bool> tabs_;
+	std::optional<bool> newlines_;
+	std::optional<std::string> base_xmltar_file_name_;
+	std::optional<unsigned int> starting_volume_;
 	std::vector<std::string> sourceFileGlobs_;
 	bool sha3_512_;
 	std::optional<std::filesystem::path> readFifo_;
@@ -121,13 +121,13 @@ public:
 
 	std::string Tabs(char const *tabStr) const {
 		if (tabs_)
-			return tabs_.get()?std::string(tabStr):std::string("");
+			return tabs_.value()?std::string(tabStr):std::string("");
 		else return std::string(tabStr);
 	}
 
 	std::string Newline() const {
 		if (newlines_)
-			return newlines_.get()?std::string("\n"):std::string("");
+			return newlines_.value()?std::string("\n"):std::string("");
 		else return std::string("\n");
 	}
 

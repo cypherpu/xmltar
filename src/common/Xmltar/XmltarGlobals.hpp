@@ -77,7 +77,6 @@ public:
     bool ExcludedFile(ExtendedPath p);
     void AddSubdirectories(std::filesystem::path const & p);
     std::string InitializationVector(int nBytes);
-    std::string KeyFromPassphrase(std::string const & passphrase);
 };
 
 

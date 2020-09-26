@@ -83,7 +83,7 @@ XmltarArchive::XmltarArchive(
 XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
 : globals_(globals), filename_(filename), volumeNumber_(0)
 {
-	if (globals_.options_.operation_.get()==XmltarOptions::Operation::EXTRACT){
+	if (globals_.options_.operation_.value()==XmltarOptions::Operation::EXTRACT){
 		if (globals_.options_.multi_volume_){
 			std:: ifstream ifs(filename);
 
@@ -277,6 +277,7 @@ PartialFileRead XmltarArchive::append(unsigned int volumeNumber)
 		// we have found the trailer and the stream is positioned to overwrite the old trailer
 	}
 #endif
+	return PartialFileRead();
 }
 
 bool XmltarArchive::IsPaddingTrailer(std::string s){

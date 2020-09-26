@@ -37,25 +37,12 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 const size_t XmltarGlobals::xChaCha20Poly1305MessageLength;
 
-std::string KeyFromPassphrase(std::string const & passphrase, std::string const & salt){
-	std::string key(32,' ');
-
-	if (PKCS5_PBKDF2_HMAC(
-			passphrase.data(), passphrase.size(),
-			reinterpret_cast<unsigned const char *>(salt.data()), salt.size(),
-			1000, EVP_sha3_512(), key.size(), reinterpret_cast<unsigned char *>(key.data())
-		)!=1)
-		throw std::runtime_error("XmltarGlobals::KeyFromPassphrase: unable to getrandom");
-
-	return key;
-}
-
 XmltarGlobals::XmltarGlobals()
 	: current_xmltar_file_name_(), current_volume_(),
 	  invocationTime_(time(nullptr)), key_(), resultCode_(0), errorMessages_() {
 
 	if (options_.starting_volume_)
-		current_volume_=options_.starting_volume_.get();
+		current_volume_=options_.starting_volume_.value();
 }
 
 std::string XmltarGlobals::Sha3(std::filesystem::path filepath){
@@ -110,7 +97,7 @@ void XmltarGlobals::NextMember(){
 			snapshot_->fileEntries_.front().snapshotEvents_.push_back(
 				SnapshotEvent(
 					invocationTime_,
-					options_.dump_level_.get(),
+					options_.dump_level_.value(),
 					nextAction_,
 					nextMember_->startingVolumeName_,
 					nextMember_->stat_buf_.st_mtim.tv_sec,
@@ -141,11 +128,11 @@ void XmltarGlobals::NextMember(){
 			if (snapshot_->fileEntries_.front().pathname_<filesToBeIncluded_.top()){
 				if (IncludedFile(snapshot_->fileEntries_.front().pathname_)
 					&& !ExcludedFile(snapshot_->fileEntries_.front().pathname_))
-					if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_!="deleted")
+					if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).action_!="deleted")
 						snapshot_->fileEntries_.front().snapshotEvents_.push_back(
 							SnapshotEvent(
 								invocationTime_,
-								options_.dump_level_.get(),
+								options_.dump_level_.value(),
 								"deleted",
 								"",
 								0,
@@ -177,33 +164,33 @@ void XmltarGlobals::NextMember(){
 					filesToBeIncluded_.pop();
 				}
 				else {
-					if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="deleted"){
+					if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).action_=="deleted"){
 						nextAction_="created";
 						nextMember_.reset(new XmltarMemberCreate(*this,filesToBeIncluded_.top().path()));
 						filesToBeIncluded_.pop();
 						snapshot_->fileEntries_.pop_front();
 						return;
 					}
-					else if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="modified"
-							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).action_=="created"){
+					else if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).action_=="modified"
+							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).action_=="created"){
 						nextAction_="modified";
 						nextMember_.reset(new XmltarMemberCreate(*this,filesToBeIncluded_.top().path()));
 
 						std::cerr
-							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).modificationTime_ << " "
+							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).modificationTime_ << " "
 							<< nextMember_->stat_buf_.st_mtim.tv_sec << " "
-							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).size_ << " "
+							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).size_ << " "
 							<< nextMember_->stat_buf_.st_size
 							<< std::endl;
 
 
 
-						if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).modificationTime_
+						if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).modificationTime_
 								!=nextMember_->stat_buf_.st_mtim.tv_sec
-							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).size_
+							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).size_
 								!=nextMember_->stat_buf_.st_size
 							|| (options_.sha3_512_
-								&& snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.get()).sha3_512_
+								&& snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).sha3_512_
 									!=Sha3(filesToBeIncluded_.top().path()))){
 							filesToBeIncluded_.pop();
 							return;
@@ -282,8 +269,3 @@ std::string XmltarGlobals::InitializationVector(int nBytes){
 
 	return result;
 }
-
-std::string XmltarGlobals::KeyFromPassphrase(std::string const & passphrase){
-	return ::KeyFromPassphrase(passphrase, salt_);
-}
-

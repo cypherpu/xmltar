@@ -165,7 +165,7 @@ std::string XmltarOptions::toXMLString(){
 		oss << "</option>" << std::endl;
 	}
 	if (verbosity_)
-		for(int i=0; i<verbosity_.get(); ++i)
+		for(int i=0; i<verbosity_.value(); ++i)
 			oss << Tabs("\t\t\t") << "<option>--verbosity</option>" << std::endl;
 
 	if(multi_volume_)
@@ -176,38 +176,38 @@ std::string XmltarOptions::toXMLString(){
 	oss << Tabs("\t\t\t") << "<option>--" << archiveCompression_.get()->CompressorName() << "</option>" << std::endl;
 
 	if (tape_length_)
-		oss << Tabs("\t\t\t") << "<option>--tape-length=" << tape_length_.get() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--tape-length=" << tape_length_.value() << "</option>" << std::endl;
 
 	if (stop_after_)
-		oss << Tabs("\t\t\t") << "<option>--stop-after=" << stop_after_.get() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--stop-after=" << stop_after_.value() << "</option>" << std::endl;
 
 	if (listed_incremental_file_)
-		oss << Tabs("\t\t\t") << "<option>--listed-incremental=" << listed_incremental_file_.get().string() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--listed-incremental=" << listed_incremental_file_.value().string() << "</option>" << std::endl;
 
 	if (incrementalFileCompression_->CompressorName()!=std::string("identity"))
 		oss << Tabs("\t\t\t") << "<option>--compress-listed-incremental</option>" << std::endl;
 
 	if (files_from_)
-		oss << Tabs("\t\t\t") << "<option>--files-from=" << files_from_.get().string() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--files-from=" << files_from_.value().string() << "</option>" << std::endl;
 
 	if (excludeFileGlobs_.size())
 		for(auto & i : excludeFileGlobs_)
 			oss << Tabs("\t\t\t") << "<option>--exclude-files=" << i << "</option>" << std::endl;
 
 	if (archiveMemberTag_)
-		oss << Tabs("\t\t\t") << "<option>--archive-member-tag=" << archiveMemberTag_.get() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--archive-member-tag=" << archiveMemberTag_.value() << "</option>" << std::endl;
 
-	if (tabs_ && tabs_.get()==false)
+	if (tabs_ && tabs_.value()==false)
 		oss << Tabs("\t\t\t") << "<option>--no-tabs</option>" << std::endl;
 
-	if (newlines_ && newlines_.get()==false)
+	if (newlines_ && newlines_.value()==false)
 		oss << Tabs("\t\t\t") << "<option>--no-newlines</option>" << std::endl;
 
 	if (base_xmltar_file_name_)
-		oss << Tabs("\t\t\t") << "<option>--file=" << base_xmltar_file_name_.get() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--file=" << base_xmltar_file_name_.value() << "</option>" << std::endl;
 
 	if (starting_volume_)
-		oss << Tabs("\t\t\t") << "<option>--starting-volume=" << starting_volume_.get() << "</option>" << std::endl;
+		oss << Tabs("\t\t\t") << "<option>--starting-volume=" << starting_volume_.value() << "</option>" << std::endl;
 
 	if (sourceFileGlobs_.size())
 		for(auto & i : sourceFileGlobs_)

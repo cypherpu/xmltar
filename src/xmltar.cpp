@@ -45,6 +45,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarGlobals.hpp"
 
 #include "Utilities/FromHex.hpp"
+#include "Utilities/Crypto/GenerateKey.hpp"
 
 /*
 
@@ -67,7 +68,7 @@ int main(int argc, char const *argv[])
 
 		std::cerr << "passphrase=\"" << globals.passphrase_ << "\"" << std::endl;
 
-	    globals.key_=globals.KeyFromPassphrase(globals.passphrase_);
+	    globals.key_=GenerateKey(globals.passphrase_,globals.salt_);
 
 	    spdlog::debug("Before XmltarOptions");
 		globals.options_.ProcessOptions(argc, argv);

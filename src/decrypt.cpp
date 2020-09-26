@@ -30,6 +30,7 @@ along with Assess.  If not, see <https://www.gnu.org/licenses/>.
 #include "Xmltar/XmltarGlobals.hpp"
 
 #include "Utilities/Crypto/DecryptXChaCha20Poly1305.hpp"
+#include "Utilities/Crypto/GenerateKey.hpp"
 #include "Utilities/FromHex.hpp"
 
 int main(int argc, char *argv[]){
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]){
 	std::shared_ptr<DecryptorInterface> archiveDecryption;
 	static const size_t xChaCha20Poly1305MessageLength=1<<15;
 	archiveDecryption.reset(new DecryptXChaCha20Poly1305Decorator(xChaCha20Poly1305MessageLength));
-	std::cout << archiveDecryption->Open(KeyFromPassphrase(passphrase,salt));
+	std::cout << archiveDecryption->Open(GenerateKey(passphrase,salt));
 	char buffer[1024];
 	while(ifs){
 		ifs.read(buffer,sizeof(buffer)/sizeof(*buffer));
