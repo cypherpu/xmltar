@@ -352,6 +352,10 @@ int main(int argc, char *argv[]){
 				);
 
 				if (++burner==orderedSerialNumbers.size()){
+					std::cerr << "****** Press <enter> to eject discs" << std::endl;
+					std::string response;
+					std::getline(std::cin,response);
+
 					for(size_t i=0; i<burner; ++i){
 						System("/usr/local/bin/cdrecord dev="+std::to_string(serialToScsi[orderedSerialNumbers[i]].host_)+",0,0 -eject");
 					}
@@ -374,6 +378,10 @@ int main(int argc, char *argv[]){
 				loopDevice,
 				mountPath
 			);
+
+			std::cerr << "****** Press <enter> to eject final discs" << std::endl;
+			std::string response;
+			std::getline(std::cin,response);
 
 			for(size_t i=0; i<=burner; ++i){
 				System("/usr/local/bin/cdrecord dev="+std::to_string(serialToScsi[orderedSerialNumbers[i]].host_)+",0,0 -eject");
