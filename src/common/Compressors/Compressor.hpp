@@ -130,33 +130,18 @@ public:
 #endif
 	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){	//FIXME - duplicated in Transform.cpp
 		betz::Debug2 dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
-		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
 		std::streamoff 	plaintextSizeLB=0,
 						plaintextSizeUB=compressedtextSize;
 
 		if (compressedtextSize<MaximumCompressedtextSizeGivenPlaintextSize(0)){
 			return 0;
-
-			std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
-			std::cerr << dbg << ": MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
-			throw std::invalid_argument("Transform::MinimumPlaintextSizeGivenCompressedtextSize: compressedtextSize too small");
 		}
 
-		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << " < MaximumCompressedtextSizeGivenPlaintextSize(0)=" << MaximumCompressedtextSizeGivenPlaintextSize(0) << std::endl;
-		std::cerr << dbg << ": plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
-
-		std::cerr << dbg << ": 1" << std::endl;
-
 		while(MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)<compressedtextSize){
-			std::cerr << dbg << ":1: plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
 			plaintextSizeUB+=compressedtextSize;
 		}
 
-		//std::cerr << dbg << ": 2" << std::endl;
-
 		while(plaintextSizeUB-plaintextSizeLB>1){
-			std::cerr << dbg << ":2: plaintextSizeLB=" << plaintextSizeLB << " plaintextSizeUB=" << plaintextSizeUB << std::endl;
-
 			// mid is always strictly less than plaintextSizeUB
 
 			size_t mid=(plaintextSizeLB+plaintextSizeUB)/2;
@@ -171,10 +156,6 @@ public:
 			else // if (MaximumCompressedtextSizeGivenPlaintextSize(mid)<compressedtextSize)
 				plaintextSizeLB=mid;
 		}
-
-		std::cerr << dbg << ": compressedtextSize=" << compressedtextSize << std::endl;
-		std::cerr << dbg << ": plaintextSizeUB=" << plaintextSizeUB << std::endl;
-		std::cerr << dbg << ": MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB)=" << MaximumCompressedtextSizeGivenPlaintextSize(plaintextSizeUB) << std::endl;
 
 		std::streamoff result;
 
