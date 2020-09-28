@@ -37,7 +37,6 @@ void SnapshotXmlParser::startElement(const XML_Char *name, const XML_Char **atts
 
 		std::filesystem::path filePath(DecodeXMLSafeStringToString(elements_.end()[-1].attributes_["name"]));
 		tmp_=SnapshotFileEntry(ExtendedPath(filePath));
-		std::cerr << "file name=" << filePath << " ";
 	}
 	else if (elements_.back().name_=="event"){
 		if (elements_.size()!=3) throw std::domain_error("SnapshotXmlParser::startElement: \"event\" wrong nesting level");
@@ -57,12 +56,9 @@ void SnapshotXmlParser::startElement(const XML_Char *name, const XML_Char **atts
 		);
 	}
 	else throw std::runtime_error("SnapshotXmlParser::startElement: unrecognized event");
-	std::cerr << std::string(elements_.size(),'\t') << "<" << name << ">" << std::endl;
 }
 
 void SnapshotXmlParser::endElement(const XML_Char *name){
-	std::cerr << std::string(elements_.size(),'\t') << "</" << name << ">" << std::endl;
-
 	if (elements_.back().name_=="snapshot"){
 		if (elements_.size()!=1) throw std::domain_error("SnapshotXmlParser::endElement: \"snapshot\" wrong nesting level");
 	}
@@ -79,5 +75,4 @@ void SnapshotXmlParser::endElement(const XML_Char *name){
 }
 
 void SnapshotXmlParser::characterData(XML_Char const *s, int len){
-	std::cerr << "SnapshotXmlParser::characterData: \"" << std::string(s,len) << "\"" << std::endl;
 }

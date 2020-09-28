@@ -49,9 +49,6 @@ extern "C" {
 
 XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem::path const & filepath)
 	: globals_(globals), filepath_(filepath), metadataWritten_(false) {
-	std::cerr << "XmltarMemberCreate::XmltarMemberCreate: constructor" << std::endl;
-	// betz::Debug dbg("XmltarMember::XmltarMember");
-
     f_stat_=std::filesystem::symlink_status(filepath_);
 
     if (!std::filesystem::exists(f_stat_))
@@ -60,7 +57,6 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
     f_type_=f_stat_.type();
 
     if (std::filesystem::is_regular_file(f_stat_)){
-    	std::cerr << "########### is regular file" << std::endl;
         file_size_=std::filesystem::file_size(filepath_);
         ifs_.reset(new std::ifstream(filepath_.string()));
         sha3sum512_.Open();
@@ -81,19 +77,9 @@ XmltarMemberCreate::XmltarMemberCreate(XmltarGlobals & globals, std::filesystem:
 }
 
 XmltarMemberCreate::~XmltarMemberCreate(){
-	std::cerr << "XmltarMemberCreate::~XmltarMemberCreate: destructor" << std::endl;
 }
 
 void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::ostream & ofs){
-		betz::Debug2 dbg("XmltarMember::write");
-		std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
-		// std::ifstream ifs(filepath_.string());
-		// ifs.seekg(nextByte_);
-
-		// std::shared_ptr<CompressorInterface> precompression(globals_.options_.fileCompression_->clone());
-		// std::shared_ptr<CompressorInterface> memberCompression(globals_.options_.archiveMemberCompression_->clone());
-		// std::shared_ptr<CompressorInterface> encoding(globals_.options_.encoding_->clone());
-
 		size_t numberOfBytesToArchive=std::min(file_size_-ifs_->tellg(),(off_t)numberOfFileBytesThatCanBeArchived);
 
 		ofs <<	globals_.options_.archiveEncryption_->Encrypt(
@@ -106,13 +92,11 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 
 		char buf[1024];
 
-		std::cerr << dbg << ": memberHeader_=" << memberHeader_.size() << std::endl;
 		ofs << globals_.options_.archiveEncryption_->Encrypt(
 					globals_.options_.archiveCompression_->ForceWrite(memberHeader_))
 				;
 		metadataWritten_=true;
 	    memberHeader_=MemberHeader();
-		std::cerr << dbg << ": after memberCompression-ForceWrite" << std::endl;
 
 		for( size_t i=numberOfBytesToArchive; *ifs_ && i>0; i-=ifs_->gcount()){
 			ifs_->read(buf,std::min((size_t)i,sizeof(buf)));
@@ -127,32 +111,13 @@ void XmltarMemberCreate::write(size_t numberOfFileBytesThatCanBeArchived, std::o
 				);
 		}
 
-		std::cerr << dbg << ": after read" << std::endl;
-
 		std::string tmpPreCompression=globals_.options_.fileCompression_->ForceWriteAndClose("");
-		std::cerr << dbg << ": after tmpPreCompression" << std::endl;
-
-		std::cerr << "tmpPreCompression.size()=" << tmpPreCompression.size() << std::endl;
 		std::string tmpEncoding=globals_.options_.encoding_->ForceWriteAndClose(tmpPreCompression);
-		std::cerr << dbg << ": after tmpEncoding" << std::endl;
 
 		ofs <<
 				globals_.options_.archiveEncryption_->Encrypt(
 					globals_.options_.archiveCompression_->ForceWrite(tmpEncoding+memberTrailer_)
 				);
-
-#if 0
-		ofs <<
-			archiveCompression->ForceWrite(
-				memberCompression->ForceWriteAndClose(
-					encoding->ForceWriteAndClose(
-						precompression->ForceWriteAndClose(""))));
-
-#endif
-		std::cerr << dbg << ": precompression->ReadCount=" << globals_.options_.fileCompression_->ReadCount() << std::endl;
-		std::cerr << dbg << ": precompression->WriteCount=" << globals_.options_.fileCompression_->WriteCount() << std::endl;
-		std::cerr << dbg << ": encoding->ReadCount=" << globals_.options_.encoding_->ReadCount() << std::endl;
-		std::cerr << dbg << ": encoding->WriteCount=" << globals_.options_.encoding_->WriteCount() << std::endl;
 }
 
 size_t XmltarMemberCreate::MaximumSize(size_t n){
@@ -306,7 +271,6 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 		return 0;
 
 	size_t archiveBytes=globals_.options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes;
-	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
 	size_t uncompressedArchiveBytes=globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveBytes);
 	size_t encodedMemberBytes;
 	if ((memberHeader_.size()+memberTrailer_.size())>uncompressedArchiveBytes)
@@ -314,13 +278,6 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 	else
 		encodedMemberBytes=globals_.options_.encoding_->MinimumPlaintextSizeGivenCompressedtextSize(uncompressedArchiveBytes-memberHeader_.size()-memberTrailer_.size());
 	size_t precompressedBytes=globals_.options_.fileCompression_->MinimumPlaintextSizeGivenCompressedtextSize(encodedMemberBytes);
-
-	std::cerr << dbg << ": archiveBytes=" << archiveBytes << std::endl;
-	std::cerr << dbg << ": uncompressedArchiveBytes= " << std::right << std::setw(6) << uncompressedArchiveBytes << std::endl;
-	std::cerr << dbg << ": encodedMemberBytes=       " << std::right << std::setw(6) << encodedMemberBytes << std::endl;
-	std::cerr << dbg << ":     memberHeader_.size()=     " << std::right << std::setw(6) << memberHeader_.size() << std::endl;
-	std::cerr << dbg << ":     memberTrailer_.size()=    " << std::right << std::setw(6) << memberTrailer_.size() << std::endl;
-	std::cerr << dbg << ": precompressedBytes=       " << std::right << std::setw(6) << precompressedBytes << std::endl;
 
 	return precompressedBytes;
 #if 0
@@ -338,28 +295,10 @@ size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBy
 bool XmltarMemberCreate::CanArchiveDirectory(size_t committedBytes, size_t pendingBytes){
 	if (globals_.options_.preencryptedTapeLength_.value()<committedBytes+pendingBytes+memberHeader_.size()+memberTrailer_.size()) return false;
 
-	std::cerr << "XmltarMember::CanArchiveDirectory:"
-			<< " globals_.options_.preencryptedTapeLength_.value()=" << globals_.options_.preencryptedTapeLength_.value()
-			<< " committedBytes=" << committedBytes
-			<< " pendingBytes=" << pendingBytes
-			<< " memberHeader_.size()=" << memberHeader_.size()
-			<< " memberTrailer_.size()=" << memberTrailer_.size()
-			<< std::endl;
-
 	size_t numberOfFileBytesThatCanBeArchived
 		=
 			globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
 					globals_.options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size());
-
-	std::cerr << "numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
-	std::cerr << "archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())="
-			<< globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(globals_.options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
-			<< std::endl;
-	std::cerr << "options_.archiveMemberCompression_->MinimumPlaintextSizeGivenCompressedtextSize(archiveCompression->MinimumPlaintextSizeGivenCompressedtextSize(options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size()))"
-			<<
-					globals_.options_.archiveCompression_->MinimumPlaintextSizeGivenCompressedtextSize(
-							globals_.options_.preencryptedTapeLength_.value()-committedBytes-pendingBytes-memberHeader_.size()-memberTrailer_.size())
-			<< std::endl;
 
 	return numberOfFileBytesThatCanBeArchived;
 }

@@ -40,7 +40,6 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		if (elements_.size()!=2) throw std::domain_error("XmltarArchiveHandler::startElement: \"members\" wrong nesting level");
 	}
 	else if (elements_.back().name_=="file"){
-		std::cerr << "Member file=" << elements_.back().attributes_.at("name") << std::endl;
 		if (elements_.size()!=3) throw std::domain_error("XmltarArchiveHandler::startElement: \"file\" wrong nesting level");
 		else if (elements_.end()[-2].name_!="members") throw std::domain_error("XmltarArchiveHandler::startElement \"members\" not parent of \"file\"");
 	}
@@ -70,7 +69,6 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 			xmltarArchiveExtractMultiVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::fstream::out|std::fstream::trunc);
 		else
 			xmltarArchiveExtractMultiVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::ios::in|std::ios::out);
-		std::cerr << std::string(elements_.size(),'\t') << "boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at(\"this-extent-start\"))=" << boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")) << std::endl;
 		xmltarArchiveExtractMultiVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
 		// xmltarArchiveExtractMultiVolume_.decoder_.reset(xmltarArchiveExtractMultiVolume_.globals_.options_.encoding_->clone());
@@ -81,13 +79,9 @@ void XmltarMultiVolumeXmlHandler::startElement(const XML_Char *name, const XML_C
 		firstDecodedLine_=true;
 		encounteredTrailingTabs_=false;
 	}
-
-	std::cerr << std::string(elements_.size(),'\t') << "<" << name << ">" << std::endl;
 }
 
 void XmltarMultiVolumeXmlHandler::endElement(const XML_Char *name){
-	std::cerr << std::string(elements_.size(),'\t') << "</" << name << ">" << std::endl;
-
 	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
 		xmltarArchiveExtractMultiVolume_.fs_ << xmltarArchiveExtractMultiVolume_.globals_.options_.fileDecompression_->ForceWriteAndClose(
 			xmltarArchiveExtractMultiVolume_.globals_.options_.decoding_->ForceWriteAndClose("")
@@ -122,17 +116,11 @@ void XmltarMultiVolumeXmlHandler::characterData(XML_Char const *s, int len){
 XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals & globals, std::string filename)
 	: ::XmltarArchive(globals,filename)
 {
-	std::cerr << "XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume: entering: filename=" << filename << std::endl;
-
-
 	XmltarMultiVolumeXmlHandler xmltarMultiVolumeHandler(*this);
 
 	std::ifstream ifs(filename);
 
 	XML_Char buffer[1024];
-
-	// std::shared_ptr<CompressorInterface> archiveDecompression(globals_.options_.archiveCompression_->clone());
-	// std::shared_ptr<CompressorInterface> memberDecompression(globals_.options_.archiveMemberCompression_->clone());
 
 	globals_.options_.archiveDecompression_->Open();
 
@@ -150,9 +138,7 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 						std::string(buffer,ifs.gcount())
 				)
 			);
-		//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 		if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
-			std::cerr << "filename=" << filename << std::endl;
 			exit(-1);
 		}
 
@@ -162,9 +148,7 @@ XmltarArchiveExtractMultiVolume::XmltarArchiveExtractMultiVolume(XmltarGlobals &
 	tmp=globals_.options_.archiveDecompression_->ForceWriteAndClose(
 			globals_.options_.archiveDecryption_->Close()
 		);
-	//std::cerr << "ifs.gcount()=" << ifs.gcount() << std::endl;
 	if (!xmltarMultiVolumeHandler.Parse(tmp,false)){
-		std::cerr << "filename=" << filename << std::endl;
 		exit(-1);
 	}
 

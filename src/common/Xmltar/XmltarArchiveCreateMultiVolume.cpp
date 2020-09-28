@@ -57,26 +57,15 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 	size_t committedBytes=compressedArchiveHeader.size();
 	size_t pendingBytes=compressedArchiveTrailer.size();
 
-	std::cerr << dbg << "::compressedArchiveHeader.size()= " << compressedArchiveHeader.size() << std::endl;
-	std::cerr << dbg << "::compressedArchiveTrailer.size()=" << compressedArchiveTrailer.size() << std::endl;
-
 	ofs << globals_.options_.archiveEncryption_->Encrypt(
 				globals_.options_.archiveCompression_->Open()
 			);
 
-	std::cerr << "filesToBeIncluded_.size()=" << globals_.filesToBeIncluded_.size() << std::endl;
 	if (globals_.filesToBeIncluded_.top().pathType()!=ExtendedPath::PathType::MAX && !globals_.nextMember_)
 		globals_.NextMember();
 
 	for(bool firstPass=true; globals_.nextMember_; firstPass=false){
-		std::cerr << dbg << ": ##########" << std::endl;
-		std::cerr << dbg << ": committedBytes=" << std::right << std::setw(8) << committedBytes << std::endl;
-		std::cerr << dbg << ": pendingBytes  =" << std::right << std::setw(8) << pendingBytes << std::endl;
-		std::cerr << dbg << ": sum           =" << std::right << std::setw(8) << committedBytes+pendingBytes << std::endl;
-		std::cerr << dbg << ": file=" << globals_.nextMember_->filepath() << std::endl;
-
 		if (globals_.nextMember_->isDirectory()){
-			std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: isDirectory" << std::endl;
 			if (globals_.nextMember_->CanArchiveDirectory(committedBytes, pendingBytes)){
 				std::string tmp=globals_.nextMember_->MemberHeader()+globals_.nextMember_->MemberTrailer();
 				ofs << globals_.options_.archiveEncryption_->Encrypt(
@@ -84,10 +73,8 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 						);
 				globals_.NextMember();
 				pendingBytes=globals_.options_.archiveCompression_->MaximumCompressedtextSizeGivenPlaintextSize(globals_.options_.archiveCompression_->WriteCount())+compressedArchiveTrailer.size();
-				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 			}
 			else if (firstPass){
-				std::cerr << "XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: failure first pass" << std::endl;
 				throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold directory archive member");
 			}
 			else {
@@ -102,7 +89,6 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				}
 				else {
 					std::string tmp=CompressedArchiveTrailer(globals_.options_.preencryptedTapeLength_.value()-committedBytes);
-					std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
 					ofs << globals_.options_.archiveEncryption_->Encrypt(tmp);
 					ofs.flush();
 
@@ -120,7 +106,6 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 						);
 				globals_.NextMember();
 				pendingBytes=globals_.options_.archiveCompression_->MaximumCompressedtextSizeGivenPlaintextSize(globals_.options_.archiveCompression_->WriteCount())+compressedArchiveTrailer.size();
-				std::cerr << dbg << ": dir: bytes written=" << tmp.size() << " " << std::endl;
 			}
 			else if (firstPass)
 				throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold directory archive member");
@@ -139,7 +124,6 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 				}
 				else {
 					std::string tmp=CompressedArchiveTrailer(globals_.options_.preencryptedTapeLength_.value()-committedBytes);
-					std::cerr << dbg << ": directory tmp.size()=" << tmp.size() << std::endl;
 					ofs << globals_.options_.archiveEncryption_->Encrypt(tmp);
 					ofs.flush();
 
@@ -150,9 +134,7 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			}
 		}
 		else if (globals_.nextMember_->isRegularFile()){
-			std::cerr << "********** isRegularFile" << std::endl;
 			size_t numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes);
-			std::cerr << dbg << ": archiving " << numberOfFileBytesThatCanBeArchived << " of " << globals_.nextMember_->filepath().string() << std::endl;
 			if (numberOfFileBytesThatCanBeArchived==0){
 				if (firstPass)
 					throw std::logic_error("XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume: archive too small to hold even 1 char of archive member");
@@ -163,13 +145,9 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 					committedBytes+=globals_.options_.archiveCompression_->ReadCount();
 					pendingBytes=compressedArchiveTrailer.size();
 					numberOfFileBytesThatCanBeArchived=globals_.nextMember_->NumberOfFileBytesThatCanBeArchived(committedBytes,pendingBytes);
-					std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
-					std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
-					std::cerr << dbg << ": numberOfFileBytesThatCanBeArchived=" << numberOfFileBytesThatCanBeArchived << std::endl;
 					if (numberOfFileBytesThatCanBeArchived==0){
 						if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.preencryptedTapeLength_.value()){
 							std::string tmp=CompressedArchiveTrailer(globals_.options_.preencryptedTapeLength_.value()-committedBytes);
-							std::cerr << dbg << ": tmp.size()=" << tmp.size() << std::endl;
 							ofs << globals_.options_.archiveEncryption_->Encrypt(tmp);
 							ofs.flush();
 
@@ -201,8 +179,6 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 			);
 	committedBytes+=globals_.options_.archiveCompression_->ReadCount();
 	pendingBytes=compressedArchiveTrailer.size();
-	std::cerr << dbg << ": committedBytes=" << committedBytes << std::endl;
-	std::cerr << dbg << ": pendingBytes=" << pendingBytes << std::endl;
 
 	if (committedBytes+compressedArchiveTrailer.size()<=globals_.options_.preencryptedTapeLength_.value()){
 		std::string tmp;
@@ -211,7 +187,6 @@ XmltarArchiveCreateMultiVolume::XmltarArchiveCreateMultiVolume(
 		else
 			tmp=CompressedArchiveTrailer();
 
-		std::cerr << dbg << ": tmp=" << tmp.size() << std::endl;
 		ofs << globals_.options_.archiveEncryption_->Encrypt(
 					tmp
 				);

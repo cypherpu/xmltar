@@ -66,15 +66,10 @@ int main(int argc, char const *argv[])
 		globals.passphrase_=j["passphrase"];
 		globals.salt_=FromEscapedHex(j["salt"]);
 
-		std::cerr << "passphrase=\"" << globals.passphrase_ << "\"" << std::endl;
-
 	    globals.key_=GenerateKey(globals.passphrase_,globals.salt_);
 
-	    spdlog::debug("Before XmltarOptions");
 		globals.options_.ProcessOptions(argc, argv);
-	    spdlog::debug("Before XmltarInvocation");
 		XmltarInvocation xmltarInvocation(globals);
-	    spdlog::debug("After XmltarInvocation");
 	}
 	catch (char const *msg){
 		std::cerr << msg << std::endl;

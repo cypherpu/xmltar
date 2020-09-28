@@ -66,8 +66,10 @@ public:
 
 	std::shared_ptr<EncryptorInterface> archiveEncryption_;
 	std::shared_ptr<DecryptorInterface> archiveDecryption_;
+
 	std::shared_ptr<EncryptorInterface> snapshotEncryption_;
 	std::shared_ptr<DecryptorInterface> snapshotDecryption_;
+
 	bool encrypted_;
 
 	std::optional<size_t> tape_length_;
@@ -116,6 +118,10 @@ public:
 		  archiveMemberTag_(),tabs_(), newlines_(),
 		  base_xmltar_file_name_(), starting_volume_(), sourceFileGlobs_(), sha3_512_(false),
 		  readFifo_(), writeFifo_() { }
+
+    ~XmltarOptions(){
+
+    }
 
     void ProcessOptions(int argc, char const *argv[]);
 

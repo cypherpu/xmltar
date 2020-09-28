@@ -71,8 +71,6 @@ public:
 	bool CanArchiveDirectory(size_t committedBytes, size_t pendingBytes);
 	bool CanArchiveSymLink(size_t committedBytes, size_t pendingBytes);
 	bool IsComplete(){
-		std::cerr << "streamoff=" << ((std::streamoff)ifs_->tellg()) << "  size=" << file_size_ << std::endl;
-		std::cerr << "!((bool)*ifs_)=" << !((bool)*ifs_) << std::endl;
 		if (!*ifs_) return true;
 		else return ifs_->tellg()==file_size_;
 	}

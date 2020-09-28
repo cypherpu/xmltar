@@ -80,13 +80,6 @@ size_t  XmltarGlobals::ArchiveDirectorySize(){
 }
 
 void XmltarGlobals::NextMember(){
-	std::cerr << "XmltarArchive::NextMember(): entering" << std::endl;
-#if 0
-	while(ArchiveDirectorySize()>options_.wait_for_space_.value()){
-		std::cerr << "Waiting for archive directory to empty" << std::endl;
-		sleep(10);
-	}
-#endif
 	std::string sha3_512;
 
 	if (nextMember_){
@@ -122,8 +115,6 @@ void XmltarGlobals::NextMember(){
 			while(filesToBeExcluded_.top()<snapshot_->fileEntries_.front().pathname_
 					&& filesToBeExcluded_.top()<filesToBeIncluded_.top())
 				filesToBeExcluded_.pop();
-
-			std::cerr << "NextMember: " << snapshot_->fileEntries_.front().pathname_ << " " << filesToBeIncluded_.top() << std::endl;
 
 			if (snapshot_->fileEntries_.front().pathname_<filesToBeIncluded_.top()){
 				if (IncludedFile(snapshot_->fileEntries_.front().pathname_)
@@ -175,15 +166,6 @@ void XmltarGlobals::NextMember(){
 							|| snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).action_=="created"){
 						nextAction_="modified";
 						nextMember_.reset(new XmltarMemberCreate(*this,filesToBeIncluded_.top().path()));
-
-						std::cerr
-							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).modificationTime_ << " "
-							<< nextMember_->stat_buf_.st_mtim.tv_sec << " "
-							<< snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).size_ << " "
-							<< nextMember_->stat_buf_.st_size
-							<< std::endl;
-
-
 
 						if (snapshot_->fileEntries_.front().LastEvent(options_.dump_level_.value()).modificationTime_
 								!=nextMember_->stat_buf_.st_mtim.tv_sec

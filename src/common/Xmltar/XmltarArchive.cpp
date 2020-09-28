@@ -77,7 +77,6 @@ XmltarArchive::XmltarArchive(
 )
 	: globals_(globals), filename_(filename), volumeNumber_(volumeNumber)
 {
-	betz::Debug2 dbg("XmltarArchive::XmltarArchive");
 }
 
 XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
@@ -142,7 +141,6 @@ XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
 			if (ifs.gcount()!=5)
 				std::runtime_error("XmltarArchive::XmltarArchive: "+filename+" too short");
 			std::string bufString(smallBuf,sizeof(smallBuf));
-			// std::cerr << "bufString=" << bufString << std::endl;
 
 			std::vector<std::shared_ptr<Transform>> transformations;
 			if (bufString==TransformIdentity::StaticHeaderMagicNumber("<?xml"))	// FIXME - C++20 starts_with
@@ -173,8 +171,6 @@ XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
 			else if (readString.substr(5)==TransformLzip::StaticHeaderMagicNumber(""))	// FIXME - C++20 starts_with
 				transformations.push_back(std::make_shared<TransformLzip>("memberCompression"));
 
-			// std::cerr << "readString=" << readString << std::endl;
-
 			XmltarMultiVolumeXmlHandler archiveParser(*this);
 			archiveParser.Parse(readString,false);
 
@@ -185,7 +181,6 @@ XmltarArchive::XmltarArchive(XmltarGlobals & globals, std::string filename)
 			}
 
 			readString=transformations[1]->ForceWriteAndClose(transformations[0]->ForceWriteAndClose(""));
-			// std::cerr << readString;
 			archiveParser.Parse(readString,true);
 #endif
 		}
@@ -356,8 +351,6 @@ std::string XmltarArchive::ArchiveTrailerBegin(bool lastMember){
 }
 
 std::string XmltarArchive::ArchiveTrailerMiddle(unsigned int padding){
-	//std::string s=options_.archiveCompression_.get()->MinimumCompressionString();
-
     return std::string();
 }
 
@@ -368,7 +361,6 @@ std::string XmltarArchive::ArchiveTrailerEnd(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(){
-
 	std::string compressedArchiveTrailer
 			=globals_.options_.archiveRawCompression_.get()->OpenForceWriteAndClose(
 								ArchiveTrailerBegin(true)+ArchiveTrailerEnd()
@@ -378,108 +370,14 @@ std::string XmltarArchive::CompressedArchiveTrailer(){
 }
 
 std::string XmltarArchive::CompressedArchiveTrailer(unsigned int desiredLength){
-	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
-
-	std::cerr << dbg << ": desiredLength=" << desiredLength << std::endl;
 	size_t desiredMemberLength
 		=globals_.options_.archiveRawCompression_->MinimumPlaintextSizeGivenCompressedtextSize(desiredLength);
-	std::cerr << dbg << ": desiredMemberLength=" << desiredMemberLength << std::endl;
 
 	size_t paddingLength=desiredMemberLength-ArchiveTrailerBegin(false).size()-ArchiveTrailerEnd().size();
-	std::cerr << dbg << ": paddingLength=" << paddingLength << std::endl;
 
 	std::string data=ArchiveTrailerBegin(false)+std::string(paddingLength,' ')+ArchiveTrailerEnd();
-	std::cerr << dbg << ": data.size()=" << data.size() << std::endl;
 
 	std::string archiveData=globals_.options_.archiveRawCompression_->GenerateCompressedText(desiredLength, data);
 
-	std::cerr << dbg << ": archiveData.size()=" << archiveData.size() << std::endl;
-
 	return archiveData;
-	#if 0
-	betz::Debug2 dbg("XmltarArchive::CompressedArchiveTrailer");
-
-	std::cerr << dbg << ": archiveCompression=" << globals_.options_.archiveCompression_->Name() << std::endl;
-	std::cerr << dbg << ": archiveMemberCompression=" << globals_.options_.archiveMemberCompression_->Name() << std::endl;
-	std::cerr << dbg << ": desiredLength=" << desiredLength << std::endl;
-
-	std::string compressedArchiveTrailerBegin
-			=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
-					globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-								ArchiveTrailerBegin()
-				)
-			);
-
-	std::string compressedArchiveTrailerEnd
-			=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
-					globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-								ArchiveTrailerEnd()
-				)
-			);
-
-	if (desiredLength<compressedArchiveTrailerBegin.size()+compressedArchiveTrailerEnd.size())
-		throw std::logic_error("XmltarArchive::CompressedArchiveTrailer: desiredLength<compressedArchiveTrailerBegin.size()+compressedArchiveTrailerEnd.size()");
-
-	desiredLength-=compressedArchiveTrailerBegin.size()+compressedArchiveTrailerEnd.size();
-
-	std::cerr << dbg << ": 2 desiredLength=" << desiredLength << std::endl;
-
-	std::string minimumString(
-		random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].begin()->second),
-		std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].begin()->second));
-
-	std::string minimumCompressedString
-		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
-				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-						minimumString
-				)
-			);
-
-	std::string maximumString(
-		random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].rbegin()->second),
-		std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()].rbegin()->second));
-
-	std::string maximumCompressedString
-		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
-				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-						maximumString
-				)
-			);
-
-	if (desiredLength<minimumCompressedString.size())
-		throw std::logic_error("XmltarArchive::CompressedArchiveTrailer: desiredLength<minimumCompressedString.size()");
-
-	std::string compressedArchiveTrailerMiddle;
-
-	std::cerr << dbg << ": 3 desiredLength=" << desiredLength << std::endl;
-	std::cerr << dbg << ": minimumCompressedString.size()=" << minimumCompressedString.size() << std::endl;
-	std::cerr << dbg << ": maximumCompressedString.size()=" << maximumCompressedString.size() << std::endl;
-
-	for( ; desiredLength>maximumCompressedString.size(); desiredLength-=minimumCompressedString.size())
-		compressedArchiveTrailerMiddle
-			+=minimumCompressedString;
-
-	if (desiredLength<minimumCompressedString.size())
-		throw std::logic_error("XmltarArchive::CompressedArchiveTrailer: reduced desiredLength<minimumCompressedString.size()");
-
-
-	std::string uncompressedPadding(
-			random_hex+std::get<0>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()][desiredLength]),
-			std::get<1>(dMap[globals_.options_.archiveCompression_->Name()][globals_.options_.archiveMemberCompression_->Name()][desiredLength]));
-
-	std::string compressedPadding
-		=globals_.options_.archiveCompression_->OpenForceWriteAndClose(
-				globals_.options_.archiveMemberCompression_->OpenForceWriteAndClose(
-				uncompressedPadding
-			)
-		);
-
-	std::cerr << "uncompressedPadding.size()=" << uncompressedPadding.size() << std::endl;
-	std::cerr << "compressedPadding.size()=" << compressedPadding.size() << std::endl;
-
-	compressedArchiveTrailerMiddle
-			+=compressedPadding;
-
-	return compressedArchiveTrailerBegin+compressedArchiveTrailerMiddle+compressedArchiveTrailerEnd;
-#endif
 }
