@@ -157,9 +157,9 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 					throw std::logic_error("XmltarInvocation::XmltarInvocation: must specify both --write-fifo and --read-fifo together");
 
 				if ((readFifoFd=open(globals.options_.readFifo_.value().c_str(),O_RDWR))==-1)
-					throw std::runtime_error("bdr_writer: cannot open fifo "+globals.options_.readFifo_.value().string());
+					throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open fifo "+globals.options_.readFifo_.value().string());
 				if ((writeFifoFd=open(globals.options_.writeFifo_.value().c_str(),O_RDWR))==-1)
-					throw std::runtime_error("bdr_writer: cannot open fifo "+globals.options_.writeFifo_.value().string());
+					throw std::runtime_error("XmltarInvocation::XmltarInvocation: cannot open fifo "+globals.options_.writeFifo_.value().string());
 			}
 			else
 				if (globals.options_.readFifo_)
