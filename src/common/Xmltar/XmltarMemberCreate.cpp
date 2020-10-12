@@ -264,7 +264,7 @@ size_t XmltarMemberCreate::MinimumSize(){
 }
 
 size_t XmltarMemberCreate::NumberOfFileBytesThatCanBeArchived(size_t committedBytes, size_t pendingBytes){
-	betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
+	// betz::Debug2 dbg("XmltarMember::NumberOfFileBytesThatCanBeArchived");
 
 	if (globals_.options_.preencryptedTapeLength_.value()<committedBytes+pendingBytes)
 		// throw std::logic_error("XmltarMember::NumberOfFileBytesThatCanBeArchived: overflow");

@@ -129,7 +129,7 @@ public:
 	}
 #endif
 	std::streamoff MinimumPlaintextSizeGivenCompressedtextSize(std::streamoff compressedtextSize){	//FIXME - duplicated in Transform.cpp
-		betz::Debug2 dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
+		// betz::Debug2 dbg("TransformProcess::MinimumPlaintextSizeGivenCompressedtextSize");
 		std::streamoff 	plaintextSizeLB=0,
 						plaintextSizeUB=compressedtextSize;
 
