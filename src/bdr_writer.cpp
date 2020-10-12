@@ -120,6 +120,7 @@ std::map<std::string,SCSIDevice> IdentifyBDRs(){
 			Chain1(prcap,iss2,oss2);
 
 			std::istringstream inputLines2(oss2.str());
+			bool logicalUnitSerialNumberFound=false;
 			for(std::string line2; std::getline(inputLines2,line2); ){
 				if (line2.find("Feature: 'Logical Unit Serial Number' (current) (persistent)\tSerial: '")!=std::string::npos){
 					std::istringstream iss3(line2);
@@ -132,8 +133,13 @@ std::map<std::string,SCSIDevice> IdentifyBDRs(){
 					std::cerr << logicalUnitSerialNumber << std::endl;
 
 					result[logicalUnitSerialNumber]=SCSIDevice(scsibus,scsibus,target,lun,logicalUnitSerialNumber);
+					logicalUnitSerialNumberFound=true;
+					break;
 				}
 			}
+
+			if (!logicalUnitSerialNumberFound)
+				throw std::runtime_error("IdentifyBDRs: could not find device "+device.str());
 		}
 	}
 
@@ -143,8 +149,11 @@ std::map<std::string,SCSIDevice> IdentifyBDRs(){
 bool trayIsOpen(std::string device){
 	int fd;
 
-	if ((fd=open(device.c_str(),O_NONBLOCK))==-1)
-		throw std::runtime_error(std::string("trayIsOpen: could not open: ")+strerror(errno)+" "+device);
+	if ((fd=open(device.c_str(),O_NONBLOCK))==-1){
+		// throw std::runtime_error(std::string("trayIsOpen: could not open: ")+strerror(errno)+" \""+device+"\"");
+		std::cerr << std::string("trayIsOpen: could not open: ")+strerror(errno)+" \""+device+"\"" << std::endl;
+		std::terminate();
+	}
 
 	int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
 
@@ -270,7 +279,7 @@ void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::file
 int main(int argc, char *argv[]){
 #if 1
 	std::vector<std::string> orderedSerialNumbers {
-		"M66IB9H5249"
+		"M66IB9H5249",
 		"M6BIB9H4809",
 		"M62IB9I0856",
 		"M66IA3A1811",
@@ -294,8 +303,8 @@ int main(int argc, char *argv[]){
 
 	std::filesystem::path readPath("/backup/xmltar_write");
 	std::filesystem::path writePath("/backup/xmltar_read");
-	// std::filesystem::path imagePath("/backup/bluray.udf");
-	std::filesystem::path imagePath("/backup/dvd.udf");
+	std::filesystem::path imagePath("/backup/bluray.udf");
+	// std::filesystem::path imagePath("/backup/dvd.udf");
 	std::filesystem::path mountPath("/backup/bluray_mnt");
 
 	if (!std::filesystem::exists(readPath))
