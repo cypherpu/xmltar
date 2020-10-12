@@ -273,7 +273,7 @@ void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::file
 				sleep(10);
 		}
 	}
-	System("/usr/local/bin/cdrecord dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->string());
+	System("/usr/local/bin/cdrecord -v -v dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->string());
 }
 
 int main(int argc, char *argv[]){
