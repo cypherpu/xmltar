@@ -51,7 +51,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /backup/bluray_mnt/backup_2020_09_20.xmltar --file-zstd --zstd --encrypt /home/dbetz
 /home/dbetz/git/xmltar/bazel-bin/xmltar --create --file /backup/bluray_mnt/backup_2020_09_20.%03d.xmltar --multi-volume --tape-length 1000000000 --starting-volume 1 --file-zstd --zstd --encrypt --read-fifo /backup/xmltar_read --write-fifo /backup/xmltar_write /home/dbetz/Music/FLAC/
-
+/home/dbetz git/xmltar/bazel-bin/xmltar --create --file /backup/bluray_mnt/etc_git_2020_10_11_17_21.%03d.xmltar --multi-volume --tape-length 1000000000 --starting-volume 1 --file-zstd --zstd --encrypt --read-fifo /backup/xmltar_read --write-fifo /backup/xmltar_write /etc /home/dbetz/git
  */
 int main(int argc, char const *argv[])
 {
