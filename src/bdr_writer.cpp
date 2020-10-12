@@ -144,7 +144,7 @@ bool trayIsOpen(std::string device){
 	int fd;
 
 	if ((fd=open(device.c_str(),O_NONBLOCK))==-1)
-		throw std::runtime_error(std::string("isOpen: could not open: ")+strerror(errno));
+		throw std::runtime_error(std::string("trayIsOpen: could not open: ")+strerror(errno)+" "+device);
 
 	int result=ioctl(fd, CDROM_DRIVE_STATUS, CDSL_NONE);
 
@@ -270,8 +270,8 @@ void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::file
 int main(int argc, char *argv[]){
 #if 1
 	std::vector<std::string> orderedSerialNumbers {
-		"M64IB9I0842",
-		"M6IIB9H5304",
+		"M66IB9H5249"
+		"M6BIB9H4809",
 		"M62IB9I0856",
 		"M66IA3A1811",
 		"M66IA395830",
@@ -281,8 +281,8 @@ int main(int argc, char *argv[]){
 	};
 #else
 	std::vector<std::string> orderedSerialNumbers {
-		"M6BIB9H4809",
-		"M66IB9H5249"
+		"M64IB9I0842",
+		"M6IIB9H5304",
 	};
 #endif
 	std::map<std::string,SCSIDevice> serialToScsi=IdentifyBDRs();
