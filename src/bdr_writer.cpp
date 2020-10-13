@@ -230,7 +230,8 @@ public:
 
 	void detach(){
 	    if (ioctl(fdLoopDevice_, LOOP_CLR_FD) == -1)
-	    	throw std::runtime_error("bdr_writer: cannot detach backing file from loop device");
+	    	throw std::runtime_error("bdr_writer: cannot detach backing file from loop device");	// BUG - unattached loop devices may be silently reallocated by loop-control
+	    																							// We cannot rely on fdLoopDevice_ being valid after being detached.
 
 	    if (close(fdBackingFile_.value()))
 	    	throw std::runtime_error("bdr_writer: cannot close backing file ");
