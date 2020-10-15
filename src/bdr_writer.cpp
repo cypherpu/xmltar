@@ -188,57 +188,72 @@ bool mediaAlreadyBurnedOrNoMedia(int host){
 
 class LoopDevice {
 public:
-	std::filesystem::path path_;
-	int fdLoopDevice_;
-	std::optional<std::filesystem::path> backingFile_;
-	std::optional<int> fdBackingFile_;
+	struct FileInfo {
+		int fd_;
+		std::filesystem::path path_;
+	};
+	std::optional<FileInfo> device_;
+	std::optional<FileInfo> backingFile_;
 
-	LoopDevice(){
+	LoopDevice(){}
+
+	void attach(std::filesystem::path const & backingFilePath){
+		if (device_ || backingFile_)
+			throw std::logic_error("LoopDevice::attach: loop device already in use");
+
 		int fdLoopControl;
+
 		do {
-			long availableLoopDeviceNumber;;
+			long availableLoopDeviceNumber;
 
 			if ((fdLoopControl = open("/dev/loop-control", O_RDWR))==-1)
-				throw std::runtime_error("bdr_writer: cannot open /dev/loop-control");
+				throw std::runtime_error("LoopDevice::attach: cannot open /dev/loop-control");
 
 			if ((availableLoopDeviceNumber = ioctl(fdLoopControl, LOOP_CTL_GET_FREE))==-1)
-				throw std::runtime_error("bdr_writer: cannot obtain available loop device number");
+				throw std::runtime_error("LoopDevice::attach: cannot obtain available loop device number");
 
-			path_="/dev/loop"+std::to_string(availableLoopDeviceNumber);
+			std::filesystem::path loopDevicePath="/dev/loop"+std::to_string(availableLoopDeviceNumber);
 
-			fdLoopDevice_ = open(path_.c_str(), O_RDWR);
+			device_ = { open(loopDevicePath.c_str(), O_RDWR), loopDevicePath };
 		}
-		while(fdLoopDevice_==-1);
+		while(device_.value().fd_==-1);
 
 		if (close(fdLoopControl))
-			throw std::runtime_error("LoopDevice::LoopDevice: "+std::string(strerror(errno)));
-	}
+			throw std::runtime_error("LoopDevice::attach: "+std::string(strerror(errno)));
 
-	void setBackingFile(std::filesystem::path backingFile){
-		if (fdBackingFile_) detach();
-		fdBackingFile_.reset();
-		backingFile_=backingFile;
-	}
+		if ((backingFile_ = { open(backingFilePath.c_str(), O_RDWR), backingFilePath }).value().fd_==-1)
+	    	throw std::runtime_error("LoopDevice::attach: cannot open backing file "+backingFilePath.string());
 
-	void attach(){
-	    if ((fdBackingFile_ = open(backingFile_->c_str(), O_RDWR))==-1)
-	    	throw std::runtime_error("bdr_writer: cannot open backing file "+backingFile_->string());
-
-	    if (ioctl(fdLoopDevice_, LOOP_SET_FD, fdBackingFile_.value()) == -1)
-	    	throw std::runtime_error("bdr_writer: cannot attach backing file to loop device");
+	    if (ioctl(device_.value().fd_, LOOP_SET_FD, backingFile_.value().fd_) == -1)
+	    	throw std::runtime_error("LoopDevice::attach: cannot attach backing file to loop device");
 	}
 
 	void detach(){
-	    if (ioctl(fdLoopDevice_, LOOP_CLR_FD) == -1)
-	    	throw std::runtime_error("bdr_writer: cannot detach backing file from loop device");	// BUG - unattached loop devices may be silently reallocated by loop-control
-	    																							// We cannot rely on fdLoopDevice_ being valid after being detached.
+		if (!device_ || !backingFile_)
+			throw std::runtime_error("LoopDevice::detach: loop device not attached");
 
-	    if (close(fdBackingFile_.value()))
-	    	throw std::runtime_error("bdr_writer: cannot close backing file ");
+	    if (ioctl(device_.value().fd_, LOOP_CLR_FD) == -1)
+	    	throw std::runtime_error("LoopDevice::detach: cannot detach backing file from loop device");
 
-	    fdBackingFile_.reset();
+	    device_.reset();
+
+	    if (close(backingFile_.value().fd_))
+	    	throw std::runtime_error("LoopDevice::detach: cannot close backing file ");
+
+	    backingFile_.reset();
 	}
 
+	std::filesystem::path devicePath(){
+#if 0
+		struct loop_info64 loopInfo;
+
+		if (ioctl(fdLoopDevice_.value(),LOOP_GET_STATUS,&loopInfo)==-1)
+			throw std::runtime_error("LoopDevice::filename: could not obtainn loop_info64");
+
+		return loopInfo.lo_file_name;
+#endif
+		return device_.value().path_;
+	}
 };
 
 void System(std::string const command){
@@ -247,12 +262,12 @@ void System(std::string const command){
     	throw std::runtime_error("bdr_writer:System: failed command: \""+command+"\"");
 }
 
-void AttachFormatAndMount(LoopDevice & loopDevice, std::filesystem::path mountPath){
-	loopDevice.attach();
-	System("/usr/sbin/mkudffs "+loopDevice.path_.string());
+void AttachFormatAndMount(LoopDevice & loopDevice, std::filesystem::path const & backingFile, std::filesystem::path mountPath){
+	loopDevice.attach(backingFile);
+	System("/usr/sbin/mkudffs "+loopDevice.devicePath().string());
 
-	if (mount(loopDevice.path_.c_str(),mountPath.c_str(),"udf",0,"")==-1)
-		throw std::runtime_error("bdr_writer: cannot mount loop device");
+	if (mount(loopDevice.devicePath().c_str(),mountPath.c_str(),"udf",0,"")==-1)
+		throw std::runtime_error("bdr_writer: AttachFormatAndMount: cannot mount loop device");
 }
 
 void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::filesystem::path mountPath){
@@ -274,7 +289,7 @@ void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::file
 				sleep(10);
 		}
 	}
-	System("/usr/local/bin/cdrecord -v -v dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->string());
+	System("/usr/local/bin/cdrecord -v -v dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->path_.string());
 }
 
 int main(int argc, char *argv[]){
@@ -304,7 +319,7 @@ int main(int argc, char *argv[]){
 
 	std::filesystem::path readPath("/backup/xmltar_write");
 	std::filesystem::path writePath("/backup/xmltar_read");
-	std::filesystem::path imagePath("/backup/bluray.udf");
+	std::filesystem::path backingFilePath("/backup/bluray.udf");
 	// std::filesystem::path imagePath("/backup/dvd.udf");
 	std::filesystem::path mountPath("/backup/bluray_mnt");
 
@@ -312,17 +327,17 @@ int main(int argc, char *argv[]){
 		throw std::runtime_error("bdr_writer: "+readPath.string()+" does not exist");
 	if (!std::filesystem::exists(writePath))
 		throw std::runtime_error("bdr_writer: "+writePath.string()+" does not exist");
-	if (!std::filesystem::exists(imagePath))
-		throw std::runtime_error("bdr_writer: "+imagePath.string()+" does not exist");
+	if (!std::filesystem::exists(backingFilePath))
+		throw std::runtime_error("bdr_writer: "+backingFilePath.string()+" does not exist");
 
 	if (!std::filesystem::is_fifo(std::filesystem::symlink_status(readPath)))
 		throw std::runtime_error("bdr_writer: "+readPath.string()+" is not a fifo");
 	if (!std::filesystem::is_fifo(std::filesystem::symlink_status(writePath)))
 		throw std::runtime_error("bdr_writer: "+writePath.string()+" is not a fifo");
-	if (!std::filesystem::is_regular_file(std::filesystem::symlink_status(imagePath)))
-		throw std::runtime_error("bdr_writer: "+imagePath.string()+" is not a regular file");
-	if (std::filesystem::file_size(imagePath)!=25025314816 && std::filesystem::file_size(imagePath)!=4706074624)
-		throw std::runtime_error("bdr_writer: "+imagePath.string()+" is wrong size");
+	if (!std::filesystem::is_regular_file(std::filesystem::symlink_status(backingFilePath)))
+		throw std::runtime_error("bdr_writer: "+backingFilePath.string()+" is not a regular file");
+	if (std::filesystem::file_size(backingFilePath)!=25025314816 && std::filesystem::file_size(backingFilePath)!=4706074624)
+		throw std::runtime_error("bdr_writer: "+backingFilePath.string()+" is wrong size");
 
 	int fdRead;
 	int fdWrite;
@@ -333,8 +348,7 @@ int main(int argc, char *argv[]){
 		throw std::runtime_error("bdr_writer: cannot open fifo "+writePath.string());
 
 	LoopDevice loopDevice;
-	loopDevice.setBackingFile(imagePath);
-	AttachFormatAndMount(loopDevice, mountPath);
+	AttachFormatAndMount(loopDevice, backingFilePath, mountPath);
 
 	for(size_t burner=0; ; ){
 		char buffer[1024];
@@ -372,7 +386,7 @@ int main(int argc, char *argv[]){
 					burner=0;
 				}
 
-				AttachFormatAndMount(loopDevice,mountPath);
+				AttachFormatAndMount(loopDevice,backingFilePath,mountPath);
 			}
 
 			nBytes=write(fdWrite,"CONTINUE",8);
