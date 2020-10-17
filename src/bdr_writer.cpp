@@ -273,6 +273,7 @@ void AttachFormatAndMount(LoopDevice & loopDevice, std::filesystem::path const &
 void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::filesystem::path mountPath){
 	if (umount(mountPath.c_str())!=0)
 		throw std::runtime_error("bdr_writer: could not unmount");
+	std::filesystem::path backingFilePath=loopDevice.backingFile_->path_;
 	loopDevice.detach();
 
 	for(;;){
@@ -289,7 +290,7 @@ void BurnImage(SCSIDevice const & scsiDevice, LoopDevice & loopDevice, std::file
 				sleep(10);
 		}
 	}
-	System("/usr/local/bin/cdrecord -v -v dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+loopDevice.backingFile_->path_.string());
+	System("/usr/local/bin/cdrecord -v -v dev="+std::to_string(scsiDevice.host_)+",0,0 speed=4 fs=64m "+backingFilePath.string());
 }
 
 int main(int argc, char *argv[]){
