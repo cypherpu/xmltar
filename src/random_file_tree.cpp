@@ -29,12 +29,58 @@ along with Assess.  If not, see <https://www.gnu.org/licenses/>.
 #include <random>
 #include <stdexcept>
 
+#include <unicode/ustring.h>
+
 #include "Utilities/Options-TarStyle.hpp"
 #include "Utilities/Crypto/Encryptor.hpp"
 #include "Utilities/Crypto/Decryptor.hpp"
 #include "Utilities/Crypto/EncryptIdentity.hpp"
 #include "Utilities/Crypto/DecryptIdentity.hpp"
 #include "Compressors/Compressor.hpp"
+
+/*
+ * 		u_strFromUTF8
+ *
+ */
+template<typename RNG>
+std::vector<UChar> RandomUTF8Character(RNG & rng){
+	std::uniform_int_distribution<unsigned int> codePoints(0,0x10ffff);
+
+	size_t codePoint=codePoints(rng);
+
+	std::string utf8CodePoint;
+	if (0x00<=codePoint && codePoint<=0x7f){
+		UChar c=codePoint;
+		utf8CodePoint.push_back(c);
+	}
+	else if (codePoint<=0x07ff){
+		UChar c1=0x1f & (codePoint>>6);
+		UChar c2=0x3f & codePoint;
+		utf8CodePoint.push_back(c1);
+		utf8CodePoint.push_back(c2);
+	}
+	else if (codePoint<=0xffff){
+		UChar c1=0x0f & (codePoint>>12);
+		UChar c2=0x3f & (codePoint >> 6);
+		UChar c3=0x3f & codePoint;
+		utf8CodePoint.push_back(c1);
+		utf8CodePoint.push_back(c2);
+		utf8CodePoint.push_back(c3);
+	}
+	else if (codePoint<=0x10ffff){
+		UChar c1=0x03 & (codePoint>>18);
+		UChar c2=0x3f & (codePoint>>12);
+		UChar c3=0x3f & (codePoint>>6);
+		UChar c4=0x3f & codePoint;
+		utf8CodePoint.push_back(c1);
+		utf8CodePoint.push_back(c2);
+		utf8CodePoint.push_back(c3);
+		utf8CodePoint.push_back(c4);
+	}
+	else throw std::logic_error("RandomUTF8Character: invalid code point");
+
+	return utf8CodePoint;
+}
 
 class RandomFileTreeOptions {
 private:
@@ -128,6 +174,24 @@ public:
 	void PopulateDirectory(int depth){
 		unsigned int nDirs=options_.branchingFactor_;
 		unsigned int nFiles=filesInDirectory_(mt_);
+
+		std::vector<std::filesystem::file_type> fileTypes;
+		fileTypes.reserve(nFiles);
+		for(size_t i=0; i<nDirs; ++i)
+			fileTypes.push_back(std::filesystem::file_type::directory);
+		for(size_t i=nDirs; i<nFiles; ++i)
+			fileTypes.push_back(std::filesystem::file_type::regular);
+		std::shuffle(fileTypes.begin(),fileTypes.end(),mt_);
+
+		for(auto i : fileTypes){
+			if (*i==std::filesystem::file_type::directory){
+
+			}
+			else if (*i==std::filesystem::file_type::regular){
+
+			}
+		}
+
 		unsigned int nFilenameLength=filenameLength_(mt_);
 		unsigned int nFilesize=std::floor(std::pow(10,log10FileSize_(mt_)));
 
