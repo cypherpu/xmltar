@@ -46,38 +46,48 @@ template<typename RNG>
 std::vector<UChar> RandomUTF8Character(RNG & rng){
 	std::uniform_int_distribution<unsigned int> codePoints(0,0x10ffff);
 
-	size_t codePoint=codePoints(rng);
+	size_t codePoint;
+	std::vector<char> utf8CodePoint;
+	int32_t pDestLength;
+	UErrorCode pErrorCode;
 
-	std::string utf8CodePoint;
-	if (0x00<=codePoint && codePoint<=0x7f){
-		UChar c=codePoint;
-		utf8CodePoint.push_back(c);
-	}
-	else if (codePoint<=0x07ff){
-		UChar c1=0x1f & (codePoint>>6);
-		UChar c2=0x3f & codePoint;
-		utf8CodePoint.push_back(c1);
-		utf8CodePoint.push_back(c2);
-	}
-	else if (codePoint<=0xffff){
-		UChar c1=0x0f & (codePoint>>12);
-		UChar c2=0x3f & (codePoint >> 6);
-		UChar c3=0x3f & codePoint;
-		utf8CodePoint.push_back(c1);
-		utf8CodePoint.push_back(c2);
-		utf8CodePoint.push_back(c3);
-	}
-	else if (codePoint<=0x10ffff){
-		UChar c1=0x03 & (codePoint>>18);
-		UChar c2=0x3f & (codePoint>>12);
-		UChar c3=0x3f & (codePoint>>6);
-		UChar c4=0x3f & codePoint;
-		utf8CodePoint.push_back(c1);
-		utf8CodePoint.push_back(c2);
-		utf8CodePoint.push_back(c3);
-		utf8CodePoint.push_back(c4);
-	}
-	else throw std::logic_error("RandomUTF8Character: invalid code point");
+	do {
+		codePoint=codePoints(rng);
+
+		utf8CodePoint.clear();
+		if (0x00<=codePoint && codePoint<=0x7f){
+			char c=codePoint;
+			utf8CodePoint.push_back(c);
+		}
+		else if (codePoint<=0x07ff){
+			char c1=0x1f & (codePoint>>6);
+			char c2=0x3f & codePoint;
+			utf8CodePoint.push_back(c1);
+			utf8CodePoint.push_back(c2);
+		}
+		else if (codePoint<=0xffff){
+			char c1=0x0f & (codePoint>>12);
+			char c2=0x3f & (codePoint >> 6);
+			char c3=0x3f & codePoint;
+			utf8CodePoint.push_back(c1);
+			utf8CodePoint.push_back(c2);
+			utf8CodePoint.push_back(c3);
+		}
+		else if (codePoint<=0x10ffff){
+			char c1=0x03 & (codePoint>>18);
+			char c2=0x3f & (codePoint>>12);
+			char c3=0x3f & (codePoint>>6);
+			char c4=0x3f & codePoint;
+			utf8CodePoint.push_back(c1);
+			utf8CodePoint.push_back(c2);
+			utf8CodePoint.push_back(c3);
+			utf8CodePoint.push_back(c4);
+		}
+		else throw std::logic_error("RandomUTF8Character: invalid code point");
+
+		pErrorCode=U_ZERO_ERROR;
+		u_strFromUTF8(NULL,0,&pDestLength,utf8CodePoint.data(),utf8CodePoint.size(),&pErrorCode);
+	} while(U_FAILURE(pErrorCode) || pDestLength!=1);
 
 	return utf8CodePoint;
 }
