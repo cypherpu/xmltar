@@ -23,6 +23,10 @@ along with xmltar.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
+// File names are in UTF-8.
+// Example usage:
+// random_file_tree --base_path bletch --max-depth 2 --branching-factor 3 --min-files-per-dir 10 --max-files-per-dir 20 --min-filename-len 1 --max-filename-len 1 --min-file-size -1 --max-file-size 6
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
