@@ -26,11 +26,13 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <fnmatch.h>
 
 #include <boost/lexical_cast.hpp>
 
 #include "Xmltar/XmltarArchiveExtractSingleVolume.hpp"
 #include "Utilities/XMLSafeString.hpp"
+#include "Utilities/IsPrefixPath.hpp"
 
 void XmltarSingleVolumeXmlHandler::startElement(const XML_Char *name, const XML_Char **atts){
 	if (elements_.back().name_=="xmltar"){
@@ -56,32 +58,37 @@ void XmltarSingleVolumeXmlHandler::startElement(const XML_Char *name, const XML_
 		else if (elements_.end()[-2].name_!="content") throw std::domain_error("XmltarArchiveHandler::startElement \"content\" not parent of \"stream\"");
 	}
 
-	if (elements_.back().name_=="content" && elements_.back().attributes_.at("type")=="directory")
+	if (elements_.back().name_=="content" && elements_.back().attributes_.at("type")=="directory" && xmltarArchiveExtractSingleVolume_.Matches(DecodeXMLSafeStringToString(elements_.end()[-2].attributes_.at("name"))))
 			std::filesystem::create_directories(DecodeXMLSafeStringToString(elements_.end()[-2].attributes_.at("name")));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
-		// create directories leading to file
-		std::filesystem::path p=std::filesystem::path(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")));
-		if (p.has_parent_path())
-			std::filesystem::create_directories(p.parent_path());
-		// FIXME - investigate file open flags
-		if (boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start"))==0)
-			xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::fstream::out|std::fstream::trunc);
-		else
-			xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::ios::in|std::ios::out);
-		xmltarArchiveExtractSingleVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
+		if (xmltarArchiveExtractSingleVolume_.Matches(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")))){
+			skipRegularFile_=false;
+		}
+		else skipRegularFile_=true;
 
-		// xmltarArchiveExtractSingleVolume_.decoder_.reset(xmltarArchiveExtractSingleVolume_.globals_.options_.encoding_->clone());
-		xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->Open();
+		if (!skipRegularFile_){
+			// create directories leading to file
+			std::filesystem::path p=std::filesystem::path(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")));
+			if (p.has_parent_path())
+				std::filesystem::create_directories(p.parent_path());
+			// FIXME - investigate file open flags
+			if (boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start"))==0)
+				xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::fstream::out|std::fstream::trunc);
+			else
+				xmltarArchiveExtractSingleVolume_.fs_.open(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")),std::ios::in|std::ios::out);
+			xmltarArchiveExtractSingleVolume_.fs_.seekp(boost::lexical_cast<std::streamoff>(elements_.back().attributes_.at("this-extent-start")),std::ios_base::beg);
 
-		//xmltarArchiveExtractSingleVolume_.fileDecompression_.reset(xmltarArchiveExtractSingleVolume_.globals_.options_.fileCompression_->clone());
-		xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->Open();
-		firstDecodedLine_=true;
-		encounteredTrailingTabs_=false;
+			xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->Open();
+
+			xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->Open();
+			firstDecodedLine_=true;
+			encounteredTrailingTabs_=false;
+		}
 	}
 }
 
 void XmltarSingleVolumeXmlHandler::endElement(const XML_Char *name){
-	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
+	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular" && !skipRegularFile_){
 		xmltarArchiveExtractSingleVolume_.fs_ << xmltarArchiveExtractSingleVolume_.globals_.options_.fileDecompression_->ForceWriteAndClose(xmltarArchiveExtractSingleVolume_.globals_.options_.decoding_->ForceWriteAndClose(""));
 		xmltarArchiveExtractSingleVolume_.fs_.close();
 	}
@@ -89,7 +96,7 @@ void XmltarSingleVolumeXmlHandler::endElement(const XML_Char *name){
 }
 
 void XmltarSingleVolumeXmlHandler::characterData(XML_Char const *s, int len){
-	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
+	if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular" && !skipRegularFile_){
 		if (encounteredTrailingTabs_){
 			while(len>0 && s[len-1]=='\t')
 					--len;
@@ -144,4 +151,36 @@ XmltarArchiveExtractSingleVolume::XmltarArchiveExtractSingleVolume(XmltarGlobals
 	xmltarSingleVolumeHandler.Parse(tmp,false);
 }
 
+bool XmltarArchiveExtractSingleVolume::Matches(std::string const & filename){
+	bool included=false;
+	bool excluded=false;
+
+	if (globals_.options_.sourceFileGlobs_.empty())
+		included=true;
+	else
+		for(auto i : globals_.options_.sourceFileGlobs_){
+			// std::cerr << "i=" << i << " filename=" << filename << " " << !fnmatch(i.c_str(), filename.c_str(),0) << std::endl;
+			if (IsPrefixPath(i,filename)){
+				included=true;
+				break;
+			}
+			else if (!fnmatch(i.c_str(), filename.c_str(),0)){
+				included=true;
+				break;
+			}
+		}
+
+	for(auto x : globals_.options_.excludeFileGlobs_)
+		if (IsPrefixPath(x,filename)){
+			excluded=true;
+			break;
+		}
+		else if (!fnmatch(x.c_str(), filename.c_str(),0)){
+			included=true;
+			break;
+		}
+
+	if (included && !excluded) return true;
+	else return false;
+}
 

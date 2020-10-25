@@ -109,8 +109,23 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 		}
 	}
 
-	spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
-	{
+	/*
+	 *		The handling of source file globs differs between CREATE and EXTRACT.
+	 *
+	 *		With CREATE, we include files, directories, and their descendants if
+	 *		an existing file matches a source file glob and doesn't match an
+	 *		exclude file glob. We use the library function glob to generate this
+	 *		list before starting archiving.
+	 *
+	 *		With EXTRACT, we include (not yet existing) files, directories, and
+	 *		their descendants if it matches a source file glob at runtime and
+	 *		doesn't match an exclude file glob. We must do this at runtime.
+	 */
+
+
+	if (globals_.options_.operation_==XmltarOptions::CREATE || globals_.options_.operation_==XmltarOptions::APPEND){
+		spdlog::debug("Before if (options_.sourceFileGlobs_.size())");
+
 		 if (globals_.options_.files_from_){
 			std::ifstream ifs(globals_.options_.files_from_.value().string());
 
@@ -124,15 +139,13 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 		}
 
 		if (globals_.options_.sourceFileGlobs_.size()==0)
-			if (globals_.options_.operation_==XmltarOptions::CREATE || globals_.options_.operation_==XmltarOptions::APPEND)
-				throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
+			throw std::runtime_error("XmltarInvocation::XmltarInvocation: no files specified");
 
 		MatchingPathsFromGlobs(globals_.options_.sourceFileGlobs_,&globals_.filesToBeIncluded_);
 		globals_.filesToBeIncluded_.push(ExtendedPath(ExtendedPath::PathType::MAX));
-	}
 
-	spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
-	{
+		spdlog::debug("Before if (options_.excludeFileGlobs_.size())");
+
 		MatchingPathsFromGlobs(globals_.options_.excludeFileGlobs_,&globals_.filesToBeExcluded_);
 		globals_.filesToBeExcluded_.push(ExtendedPath(ExtendedPath::PathType::MAX));
 	}
@@ -257,7 +270,7 @@ XmltarInvocation::XmltarInvocation(XmltarGlobals & globals)
 			}
 		}
 		else {
-			std::shared_ptr<XmltarMemberCreate> nextMember;
+			// std::shared_ptr<XmltarMemberCreate> nextMember;
 			XmltarArchiveExtractSingleVolume xmltarArchiveSingleMultiVolume(globals_,globals_.options_.base_xmltar_file_name_.value());
 		}
 	}
@@ -323,7 +336,7 @@ void XmltarInvocation::MatchingPathsFromGlobs(
 		glob_t globs;
 		globs.gl_offs=0;
 		if (glob(pattern.c_str(),GLOB_ERR,GlobErrorFunction,&globs)!=0){
-			std::cerr << "MatchingPathsFromGlobs: " << globErrorPath << std::endl;
+			std::cerr << "MatchingPathsFromGlobs: cannot process path \"" << EncodeStringToXMLSafeString(globErrorPath) << "\" globError=" << globError << std::endl;
 			throw std::runtime_error("MatchingPathsFromGlobs: error");
 		}
 
@@ -332,8 +345,10 @@ void XmltarInvocation::MatchingPathsFromGlobs(
 
 		globfree(&globs);
 
-		for(auto & i : tmp)
+		for(auto & i : tmp){
+			std::cerr << "XmltarInvocation::MatchingPathsFromGlobs: inserting match " << i << std::endl;
 			matchingPaths->push(i);
+		}
 	}
 }
 

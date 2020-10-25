@@ -35,6 +35,7 @@ class XmltarSingleVolumeXmlHandler : public XmlParser {
 	XmltarArchiveExtractSingleVolume & xmltarArchiveExtractSingleVolume_;
 	bool firstDecodedLine_;
 	bool encounteredTrailingTabs_;
+	bool skipRegularFile_;
 public:
 	XmltarSingleVolumeXmlHandler(XmltarArchiveExtractSingleVolume & xmltarArchiveExtractSingleVolume)
 		: xmltarArchiveExtractSingleVolume_(xmltarArchiveExtractSingleVolume), firstDecodedLine_(false), encounteredTrailingTabs_(false){
@@ -47,8 +48,6 @@ public:
 
 class XmltarArchiveExtractSingleVolume : public XmltarArchive {
 public:
-	//std::unique_ptr<CompressorInterface> decoder_;
-	//std::unique_ptr<CompressorInterface> fileDecompression_;
 	std::fstream fs_;
 
 public:
@@ -56,6 +55,8 @@ public:
 		XmltarGlobals & globals,
 		std::string filename
 	);
+
+	bool Matches(std::string const & filename);
 };
 
 #endif /* SRC_COMMON_XMLTAR_XMLTARARCHIVEEXTRACTSINGLEVOLUME_HPP_ */
