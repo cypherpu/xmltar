@@ -57,10 +57,10 @@ void XmltarSingleVolumeXmlHandler::startElement(const XML_Char *name, const XML_
 	}
 
 	if (elements_.back().name_=="content" && elements_.back().attributes_.at("type")=="directory")
-			std::filesystem::create_directories(elements_.end()[-2].attributes_.at("name"));
+			std::filesystem::create_directories(DecodeXMLSafeStringToString(elements_.end()[-2].attributes_.at("name")));
 	else if (elements_.back().name_=="stream" && elements_.end()[-2].attributes_.at("type")=="regular"){
 		// create directories leading to file
-		std::filesystem::path p=std::filesystem::path(elements_.end()[-3].attributes_.at("name"));
+		std::filesystem::path p=std::filesystem::path(DecodeXMLSafeStringToString(elements_.end()[-3].attributes_.at("name")));
 		if (p.has_parent_path())
 			std::filesystem::create_directories(p.parent_path());
 		// FIXME - investigate file open flags
