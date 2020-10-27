@@ -38,49 +38,43 @@ along with xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include <unicode/uchar.h>
 
 #include "Utilities/Options-TarStyle.hpp"
-#include "Utilities/Crypto/Encryptor.hpp"
-#include "Utilities/Crypto/Decryptor.hpp"
-#include "Utilities/Crypto/EncryptIdentity.hpp"
-#include "Utilities/Crypto/DecryptIdentity.hpp"
-#include "Compressors/Compressor.hpp"
 
 template<typename RNG>
 std::string RandomUTF8Character(RNG & rng){
 	std::uniform_int_distribution<unsigned int> codePoints(0,0x10ffff);
 
-	size_t codePoint;
+	int32_t utf32CodePoint;
 	std::string utf8CodePoint;
 	UErrorCode errorCode;
 	int32_t unicodeLength;
 
 	do {
-		codePoint=codePoints(rng);
+		utf32CodePoint=codePoints(rng);
 
-		//std::cerr << "codePoint=" << std::hex << codePoint << std::endl;
 		utf8CodePoint.clear();
-		if (0x00<=codePoint && codePoint<=0x7f){
-			char c=codePoint;
+		if (0x00<=utf32CodePoint && utf32CodePoint<=0x7f){
+			char c=utf32CodePoint;
 			utf8CodePoint.push_back(c);
 		}
-		else if (codePoint<=0x07ff){
-			char c1=0xc0 | (0x1f & (codePoint>>6));
-			char c2=0x80 | (0x3f & codePoint);
+		else if (utf32CodePoint<=0x07ff){
+			char c1=0xc0 | (0x1f & (utf32CodePoint>>6));
+			char c2=0x80 | (0x3f & utf32CodePoint);
 			utf8CodePoint.push_back(c1);
 			utf8CodePoint.push_back(c2);
 		}
-		else if (codePoint<=0xffff){
-			char c1=0xe0 | (0x0f & (codePoint>>12));
-			char c2=0x80 | (0x3f & (codePoint >> 6));
-			char c3=0x80 | (0x3f & codePoint);
+		else if (utf32CodePoint<=0xffff){
+			char c1=0xe0 | (0x0f & (utf32CodePoint>>12));
+			char c2=0x80 | (0x3f & (utf32CodePoint >> 6));
+			char c3=0x80 | (0x3f & utf32CodePoint);
 			utf8CodePoint.push_back(c1);
 			utf8CodePoint.push_back(c2);
 			utf8CodePoint.push_back(c3);
 		}
-		else if (codePoint<=0x10ffff){
-			char c1=0xf0 | (0x03 & (codePoint>>18));
-			char c2=0x80 | (0x3f & (codePoint>>12));
-			char c3=0x80 | (0x3f & (codePoint>>6));
-			char c4=0x80 | (0x3f & codePoint);
+		else if (utf32CodePoint<=0x10ffff){
+			char c1=0xf0 | (0x03 & (utf32CodePoint>>18));
+			char c2=0x80 | (0x3f & (utf32CodePoint>>12));
+			char c3=0x80 | (0x3f & (utf32CodePoint>>6));
+			char c4=0x80 | (0x3f & utf32CodePoint);
 			utf8CodePoint.push_back(c1);
 			utf8CodePoint.push_back(c2);
 			utf8CodePoint.push_back(c3);
@@ -88,15 +82,13 @@ std::string RandomUTF8Character(RNG & rng){
 		}
 		else throw std::logic_error("RandomUTF8Character: invalid code point");
 
-		//for(int i=0; i<utf8CodePoint.size(); ++i)
-		//	std::cerr << "utf8CodePoint[" << i << "]=" << std::hex << (int) (unsigned char) utf8CodePoint[i] << std::endl;
-
 		UChar buf[9];
 		int32_t destLength;
 		errorCode=U_ZERO_ERROR;
 		u_strFromUTF8(buf,5,&destLength,utf8CodePoint.data(),utf8CodePoint.size(),&errorCode);
 		if (U_FAILURE(errorCode)){
-			UCharCategory cat=(UCharCategory) u_charType(codePoint);
+			/*
+			UCharCategory cat=(UCharCategory) u_charType(utf32CodePoint);
 			std::cerr << "\t\t\t";
 			switch(cat){
 			case U_UNASSIGNED:
@@ -196,6 +188,7 @@ std::string RandomUTF8Character(RNG & rng){
 				std::cerr << "Unknown category!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 				break;
 			}
+			*/
 			continue;
 		}
 		unicodeLength=u_countChar32(buf,destLength);
@@ -210,11 +203,10 @@ template<typename RNG>
 std::string RandomUTF8Filename(int filenameLength, RNG & rng){
 	std::string filename;
 
-	for( ; ; ){
-		filename.clear();
-		for(int i=0; i<filenameLength; ++i)
+	for(int i=0; i<filenameLength; ++i){
+		std::string newUTF8Character=RandomUTF8Character(rng);
+		if (newUTF8Character!=std::string(1,'\0') && newUTF8Character!="/")
 			filename+=RandomUTF8Character(rng);
-		if (filename!="/") break;
 	}
 
 	return filename;
