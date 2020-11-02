@@ -30,7 +30,7 @@ along with Xmltar.  If not, see <https://www.gnu.org/licenses/>.
 #include <termios.h>
 #include <unistd.h>
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <boost/format.hpp>
 #include <spdlog/spdlog.h>

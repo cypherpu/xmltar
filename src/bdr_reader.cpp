@@ -21,8 +21,9 @@
 #include <sys/ioctl.h>
 #include <linux/cdrom.h>
 #include <errno.h>
+#include <climits>
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "Process/Process.hpp"
 #include "Process/Connection.hpp"

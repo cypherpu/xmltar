@@ -25,7 +25,7 @@ along with Assess.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <fstream>
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "Xmltar/XmltarGlobals.hpp"
 

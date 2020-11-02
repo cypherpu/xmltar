@@ -11,7 +11,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-lgtest",
 				"-lzstd",
@@ -31,6 +31,7 @@ cc_binary(
 				"-licuio",
 				"-licutu",
 				"-licuuc",
+				"-lfmt",
 				]
 )
 
@@ -41,7 +42,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-g","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-lgtest",
 				"-lzstd",
@@ -57,6 +58,7 @@ cc_binary(
 				"-lstdc++fs",
 				"-lcrypto",
 				"-lsodium",
+				"-lfmt",
 				]
 )
 
@@ -67,7 +69,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-pg",
 				"-lgtest",
@@ -84,6 +86,7 @@ cc_binary(
 				"-lstdc++fs",
 				"-lcrypto",
 				"-lsodium",
+				"-lfmt",
 				]
 )
 
@@ -95,7 +98,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-pg",
 				"-lgtest",
@@ -112,6 +115,7 @@ cc_binary(
 				"-lstdc++fs",
 				"-lcrypto",
 				"-lsodium",
+				"-lfmt",
 				]
 )
 
@@ -122,7 +126,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-pg",
 				"-lgtest",
@@ -139,6 +143,7 @@ cc_binary(
 				"-lstdc++fs",
 				"-lcrypto",
 				"-lsodium",
+				"-lfmt",
 				]
 )
 
@@ -149,7 +154,7 @@ cc_binary(
 			+glob(["src/common/**/*.hpp"])
 			,
 	includes = [],
-	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated"],
+	copts = ["-pg","-std=c++2a","-Isrc","-Isrc/common","-Isrc/common/Generated","-DSPDLOG_FMT_EXTERNAL"],
 	linkopts = [
 				"-pg",
 				"-lgtest",
@@ -166,5 +171,6 @@ cc_binary(
 				"-lstdc++fs",
 				"-lcrypto",
 				"-lsodium",
+				"-lfmt",
 				]
 )
